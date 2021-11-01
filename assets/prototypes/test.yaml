@@ -1,0 +1,7 @@
+---
+name: "Test Prototype"
+components:
+  - type: SpriteBundleDef
+    value:
+      texture_path: "textures/sprite.png"
+      other_path: "foo"
