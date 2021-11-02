@@ -27,7 +27,35 @@ impl Deref for HandlePath {
 	}
 }
 
-pub trait PrototypeDataContainer: 'static {
+// TODO: Remove me
+pub trait PrototypeDataContainer: 'static {}
+
+pub struct ProtoData {
+	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
+	handles: HashMap<
+		String, // Prototype Name
+		HashMap<
+			TypeId, // Component Type
+			HashMap<
+				String, // Handle Path
+				HashMap<
+					Uuid,          // Asset UUID
+					HandleUntyped, // Handle
+				>,
+			>,
+		>,
+	>,
+	prototypes: HashMap<String, Box<dyn Prototypical>>,
+}
+
+impl ProtoData {
+	pub fn new() -> Self {
+		Self {
+			handles: HashMap::default(),
+			prototypes: HashMap::default(),
+		}
+	}
+
 	/// Get a loaded prototype with the given name
 	///
 	/// # Arguments
@@ -35,7 +63,9 @@ pub trait PrototypeDataContainer: 'static {
 	/// * `name`: The name of the prototype
 	///
 	/// returns: Option<&Prototype>
-	fn get_prototype(&self, name: &str) -> Option<&Box<dyn Prototypical>>;
+	pub fn get_prototype(&self, name: &str) -> Option<&Box<dyn Prototypical>> {
+		self.prototypes.get(name)
+	}
 
 	/// Store a handle
 	///
@@ -74,104 +104,7 @@ pub trait PrototypeDataContainer: 'static {
 	///     data.insert_handle(&proto, &comp, &comp.texture_path, handle);
 	/// }
 	/// ```
-	fn insert_handle<T: Asset>(
-		&mut self,
-		protoytpe: &Box<dyn Prototypical>,
-		component: &dyn ProtoComponent,
-		path: &HandlePath,
-		handle: Handle<T>,
-	);
-
-	/// Get a cloned handle
-	///
-	/// # Arguments
-	///
-	/// * `protoytpe`: The Prototype this handle belongs to
-	/// * `component`: The ProtoComponent this handle belongs to
-	/// * `path`: The handle's path
-	///
-	/// returns: Option<Handle<T>>
-	fn get_handle<T: Asset>(
-		&self,
-		protoytpe: &dyn Prototypical,
-		component: &dyn ProtoComponent,
-		path: &HandlePath,
-	) -> Option<Handle<T>> {
-		let handle = self.get_untyped_handle(protoytpe, component, path, T::TYPE_UUID)?;
-		Some(handle.clone().typed::<T>())
-	}
-
-	/// Get a weakly cloned handle
-	///
-	/// # Arguments
-	///
-	/// * `protoytpe`: The Prototype this handle belongs to
-	/// * `component`: The ProtoComponent this handle belongs to
-	/// * `path`: The handle's path
-	///
-	/// returns: Option<Handle<T>>
-	fn get_handle_weak<T: Asset>(
-		&self,
-		protoytpe: &dyn Prototypical,
-		component: &dyn ProtoComponent,
-		path: &HandlePath,
-	) -> Option<Handle<T>> {
-		let handle = self.get_untyped_handle(protoytpe, component, path, T::TYPE_UUID)?;
-		Some(handle.clone_weak().typed::<T>())
-	}
-
-	/// Get a untyped handle reference
-	///
-	/// # Arguments
-	///
-	/// * `protoytpe`: The Prototype this handle belongs to
-	/// * `component`: The ProtoComponent this handle belongs to
-	/// * `path`: The handle's path
-	/// * `asset_type`: The asset type
-	///
-	/// returns: Option<&HandleUntyped>
-	fn get_untyped_handle(
-		&self,
-		protoytpe: &dyn Prototypical,
-		component: &dyn ProtoComponent,
-		path: &HandlePath,
-		asset_type: Uuid,
-	) -> Option<&HandleUntyped>;
-}
-
-pub struct ProtoData {
-	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
-	handles: HashMap<
-		String, // Prototype Name
-		HashMap<
-			TypeId, // Component Type
-			HashMap<
-				String, // Handle Path
-				HashMap<
-					Uuid,          // Asset UUID
-					HandleUntyped, // Handle
-				>,
-			>,
-		>,
-	>,
-	prototypes: HashMap<String, Box<dyn Prototypical>>,
-}
-
-impl ProtoData {
-	pub fn new() -> Self {
-		Self {
-			handles: HashMap::default(),
-			prototypes: HashMap::default(),
-		}
-	}
-}
-
-impl PrototypeDataContainer for ProtoData {
-	fn get_prototype(&self, name: &str) -> Option<&Box<dyn Prototypical>> {
-		self.prototypes.get(name)
-	}
-
-	fn insert_handle<T: Asset>(
+	pub fn insert_handle<T: Asset>(
 		&mut self,
 		protoytpe: &Box<dyn Prototypical>,
 		component: &dyn ProtoComponent,
@@ -191,7 +124,55 @@ impl PrototypeDataContainer for ProtoData {
 		path_map.insert(T::TYPE_UUID, handle.clone_untyped());
 	}
 
-	fn get_untyped_handle(
+	/// Get a cloned handle
+	///
+	/// # Arguments
+	///
+	/// * `protoytpe`: The Prototype this handle belongs to
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	///
+	/// returns: Option<Handle<T>>
+	pub fn get_handle<T: Asset>(
+		&self,
+		protoytpe: &dyn Prototypical,
+		component: &dyn ProtoComponent,
+		path: &HandlePath,
+	) -> Option<Handle<T>> {
+		let handle = self.get_untyped_handle(protoytpe, component, path, T::TYPE_UUID)?;
+		Some(handle.clone().typed::<T>())
+	}
+
+	/// Get a weakly cloned handle
+	///
+	/// # Arguments
+	///
+	/// * `protoytpe`: The Prototype this handle belongs to
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	///
+	/// returns: Option<Handle<T>>
+	pub fn get_handle_weak<T: Asset>(
+		&self,
+		protoytpe: &dyn Prototypical,
+		component: &dyn ProtoComponent,
+		path: &HandlePath,
+	) -> Option<Handle<T>> {
+		let handle = self.get_untyped_handle(protoytpe, component, path, T::TYPE_UUID)?;
+		Some(handle.clone_weak().typed::<T>())
+	}
+
+	/// Get a untyped handle reference
+	///
+	/// # Arguments
+	///
+	/// * `protoytpe`: The Prototype this handle belongs to
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	/// * `asset_type`: The asset type
+	///
+	/// returns: Option<&HandleUntyped>
+	pub fn get_untyped_handle(
 		&self,
 		protoytpe: &dyn Prototypical,
 		component: &dyn ProtoComponent,
