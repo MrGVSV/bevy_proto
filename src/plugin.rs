@@ -22,6 +22,7 @@ impl Plugin for ProtoPlugin {
 			app.insert_resource(ProtoDataOptions {
 				directories: vec![String::from("assets/prototypes")],
 				deserializer: Box::new(DefaultProtoDeserializer),
+				extensions: Some(vec!["yaml", "json"]),
 			});
 		}
 

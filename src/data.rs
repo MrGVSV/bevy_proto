@@ -1,16 +1,19 @@
-use crate::prototype::Prototype;
-use crate::{ProtoComponent, Prototypical};
+use std::any::{Any, TypeId};
+use std::borrow::Borrow;
+use std::error::Error;
+use std::ffi::OsStr;
+use std::ops::Deref;
+
 use bevy::asset::{Asset, HandleUntyped};
 use bevy::ecs::prelude::World;
-use bevy::prelude::{Assets, ColorMaterial, FromWorld, Handle};
+use bevy::prelude::{Assets, ColorMaterial, FromWorld, Handle, Res};
 use bevy::reflect::{TypeUuid, Uuid};
 use bevy::utils::HashMap;
 use dyn_clone::DynClone;
 use serde::{Deserialize, Serialize};
-use std::any::{Any, TypeId};
-use std::borrow::Borrow;
-use std::error::Error;
-use std::ops::Deref;
+
+use crate::prototype::Prototype;
+use crate::{ProtoComponent, Prototypical};
 
 /// A String newtype for a handle's asset path
 #[derive(Serialize, Deserialize, Clone, Hash, Eq, PartialEq, Debug)]
@@ -211,10 +214,10 @@ impl FromWorld for ProtoData {
 
 		let options = world
 			.get_resource::<ProtoDataOptions>()
-			.expect("Expected options for ProtoData");
-		let deserializer = options.deserializer.clone();
+			.expect("Expected options for ProtoData")
+			.clone();
 
-		for directory in options.directories.clone() {
+		for directory in options.directories {
 			if let Ok(dir) = std::fs::read_dir(directory) {
 				for file_info in dir {
 					if file_info.is_err() {
@@ -223,8 +226,17 @@ impl FromWorld for ProtoData {
 					let file_info = file_info.unwrap();
 
 					let path = file_info.path();
+
+					if let Some(filters) = &options.extensions {
+						if let Some(ext) = path.extension().and_then(OsStr::to_str) {
+							if filters.iter().find(|filter| *filter == &ext).is_none() {
+								continue;
+							}
+						}
+					}
+
 					if let Ok(data) = std::fs::read_to_string(path) {
-						if let Some(proto) = deserializer.deserialize(&data) {
+						if let Some(proto) = options.deserializer.deserialize(&data) {
 							for component in proto.iter_components() {
 								component.prepare(world, &proto, &mut myself);
 							}
@@ -274,4 +286,21 @@ pub struct ProtoDataOptions {
 	pub directories: Vec<String>,
 	/// A custom deserializer for prototypes
 	pub deserializer: Box<dyn ProtoDeserializer + Send + Sync>,
+	/// A collection of extensions to filter the directories by. These do __not__
+	/// have a dot ('.') prepended to them.
+	///
+	/// A value of None allows all files to be read.
+	///
+	/// # Examples
+	///
+	/// ```
+	/// use bevy_proto::ProtoDataOptions;
+	///
+	/// let opts = ProtoDataOptions {
+	/// 	// Only allow .yaml or .json files
+	/// 	extensions: Some(vec!["yaml", "json"]),
+	/// 	..Default::default()
+	/// };
+	/// ```
+	pub extensions: Option<Vec<&'static str>>,
 }
