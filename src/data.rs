@@ -25,9 +25,6 @@ impl Deref for HandlePath {
 	}
 }
 
-// TODO: Remove me
-pub trait PrototypeDataContainer: 'static {}
-
 /// A resource containing data for all prototypes that need data stored
 pub struct ProtoData {
 	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
