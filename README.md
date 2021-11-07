@@ -1,4 +1,4 @@
-# `bevy_proto`
+# bevy_proto
 
 Create entities in the Bevy game engine with a simple config file.
 
