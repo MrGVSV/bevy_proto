@@ -47,12 +47,11 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
 		impl bevy_proto::ProtoComponent for #ident {
 			fn insert_self(
 				&self,
-				entity: &mut bevy::ecs::system::EntityCommands,
-				slice: &bevy_proto::ProtoSlice,
+				commands: &mut bevy_proto::ProtoCommands,
 				asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
 			) {
 				let component = #generator;
-				entity.insert(component);
+				commands.insert(component);
 			}
 		}
 	};

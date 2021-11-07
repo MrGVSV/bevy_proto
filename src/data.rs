@@ -2,10 +2,11 @@ use std::any::{Any, TypeId};
 use std::borrow::Borrow;
 use std::error::Error;
 use std::ffi::OsStr;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 use bevy::asset::{Asset, HandleUntyped};
 use bevy::ecs::prelude::World;
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Assets, ColorMaterial, FromWorld, Handle, Res};
 use bevy::reflect::{TypeUuid, Uuid};
 use bevy::utils::HashMap;
@@ -186,15 +187,21 @@ impl ProtoData {
 		path_map.get(&asset_type)
 	}
 
-	/// Create a slice into this resource
+	/// Create a [`ProtoCommands`] object for the given prototype
 	///
 	/// # Arguments
 	///
-	/// * `prototype`: The prototype this slice belongs to
+	/// * `prototype`: The associated prototype
+	/// * `commands`: The [`EntityCommands`]
 	///
-	/// returns: ProtoSlice
-	pub fn slice<'a>(&'a self, prototype: &'a dyn Prototypical) -> ProtoSlice<'a> {
-		ProtoSlice {
+	/// returns: ProtoCommands
+	pub fn get_commands<'a, 'b, 'c>(
+		&'c self,
+		prototype: &'c dyn Prototypical,
+		commands: &'c mut EntityCommands<'a, 'b>,
+	) -> ProtoCommands<'a, 'b, 'c> {
+		ProtoCommands {
+			commands,
 			prototype,
 			data: self,
 		}
@@ -248,13 +255,24 @@ impl FromWorld for ProtoData {
 	}
 }
 
-pub struct ProtoSlice<'a> {
-	prototype: &'a dyn Prototypical,
-	data: &'a ProtoData,
+/// A wrapper around [`EntityCommands`] and [`ProtoData`] for a specified prototype.
+/// This allows [`ProtoData`] to be accessed with the underlying prototype directly,
+/// and grants direct access to the [`EntityCommands`] that spawned that prototype in.
+pub struct ProtoCommands<'a, 'b, 'c> {
+	/// The associated [`EntityCommands`]
+	commands: &'c mut EntityCommands<'a, 'b>,
+	/// The associated prototype
+	prototype: &'c dyn Prototypical,
+	/// The [`ProtoData`] resource
+	data: &'c ProtoData,
 }
 
-impl<'a> ProtoSlice<'a> {
-	/// Get the prototype in this slice
+impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
+	/// Get raw access to [`EntityCommands`]
+	pub fn raw_commands(&'c mut self) -> &'c mut EntityCommands<'a, 'b> {
+		self.commands
+	}
+	/// Get the associated prototype
 	pub fn protoype(&self) -> &dyn Prototypical {
 		self.prototype
 	}
@@ -313,6 +331,20 @@ impl<'a> ProtoSlice<'a> {
 	) -> Option<&HandleUntyped> {
 		self.data
 			.get_untyped_handle(self.prototype, component, path, asset_type)
+	}
+}
+
+impl<'a, 'b, 'c> Deref for ProtoCommands<'a, 'b, 'c> {
+	type Target = EntityCommands<'a, 'b>;
+
+	fn deref(&self) -> &Self::Target {
+		&self.commands
+	}
+}
+
+impl<'a, 'b, 'c> DerefMut for ProtoCommands<'a, 'b, 'c> {
+	fn deref_mut(&mut self) -> &mut Self::Target {
+		&mut self.commands
 	}
 }
 

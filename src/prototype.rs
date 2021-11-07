@@ -1,9 +1,10 @@
+use std::any::Any;
+use std::slice::Iter;
+
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{AssetServer, Entity, Res};
 use serde::{Deserialize, Serialize};
-use std::any::Any;
-use std::slice::Iter;
 
 use crate::{ProtoComponent, ProtoData};
 
@@ -56,7 +57,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	) -> EntityCommands<'a, 'b>;
 }
 
-/// A basic prototype object, providing the basics for the prototype system
+/// The default prototype object, providing the basics for the prototype system
 #[derive(Serialize, Deserialize)]
 pub struct Prototype {
 	/// The name of this prototype
@@ -74,16 +75,16 @@ impl Prototypical for Prototype {
 		self.components.iter()
 	}
 
-	fn spawn<'a, 'b>(
-		&self,
+	fn spawn<'a, 'b, 'c>(
+		&'c self,
 		commands: &'b mut Commands<'a>,
 		data: &Res<ProtoData>,
 		asset_server: &Res<AssetServer>,
 	) -> EntityCommands<'a, 'b> {
-		let mut entity = commands.spawn();
-		let slice = data.slice(self);
+		let mut entity: EntityCommands<'a, 'b> = commands.spawn();
+		let mut proto_commands = data.get_commands(self, &mut entity);
 		for component in self.iter_components() {
-			component.insert_self(&mut entity, &slice, asset_server);
+			component.insert_self(&mut proto_commands, asset_server);
 		}
 
 		entity
