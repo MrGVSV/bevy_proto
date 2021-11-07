@@ -1,6 +1,6 @@
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Entity, Res};
+use bevy::prelude::{AssetServer, Entity, Res};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::slice::Iter;
@@ -22,6 +22,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	///
 	/// * `commands`: The calling system's world commands
 	/// * `data`: The prototype data in this world
+	/// * `asset_server`: The asset server
 	///
 	/// returns: EntityCommands
 	///
@@ -31,7 +32,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	/// use bevy::prelude::*;
 	/// use bevy_proto::{ProtoData, Prototype, Prototypical};
 	///
-	/// fn setup_system(mut commands: Commands, data: Res<ProtoData>) {
+	/// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>) {
 	///     let proto: Prototype = serde_yaml::from_str(r#"
 	///     name: My Prototype
 	///     components:
@@ -41,7 +42,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	///           - speed: 10.0
 	///     "#).unwrap();
 	///
-	///     let entity = proto.spawn(&mut commands, &data).id();
+	///     let entity = proto.spawn(&mut commands, &data, &asset_server).id();
 	///
 	///     // ...
 	/// }
@@ -51,6 +52,7 @@ pub trait Prototypical: 'static + Send + Sync {
 		&self,
 		commands: &'b mut Commands<'a>,
 		data: &Res<ProtoData>,
+		asset_server: &Res<AssetServer>,
 	) -> EntityCommands<'a, 'b>;
 }
 
@@ -76,10 +78,12 @@ impl Prototypical for Prototype {
 		&self,
 		commands: &'b mut Commands<'a>,
 		data: &Res<ProtoData>,
+		asset_server: &Res<AssetServer>,
 	) -> EntityCommands<'a, 'b> {
 		let mut entity = commands.spawn();
+		let slice = data.slice(self);
 		for component in self.iter_components() {
-			component.insert_self(&mut entity, self, data);
+			component.insert_self(&mut entity, &slice, asset_server);
 		}
 
 		entity
