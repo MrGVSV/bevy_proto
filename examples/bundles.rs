@@ -1,4 +1,5 @@
-use bevy::ecs::system::EntityCommands;
+#![allow(unused_doc_comments)]
+
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,7 @@ struct SpriteBundleDef {
 
 #[typetag::serde]
 impl ProtoComponent for SpriteBundleDef {
-	fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+	fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
 		// === Get Prepared Assets === //
 		let material: Handle<ColorMaterial> = commands
 			.get_handle(self, &self.texture_path)

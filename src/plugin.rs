@@ -1,6 +1,5 @@
 use crate::{ProtoData, ProtoDataOptions, ProtoDeserializer, Prototype, Prototypical};
 use bevy::app::{AppBuilder, Plugin};
-use std::ops::Deref;
 
 pub struct ProtoPlugin {
 	pub options: Option<ProtoDataOptions>,

@@ -1,13 +1,9 @@
 //! This module provides some helper functions for processing field data,
 //! namely their attributes
 
-use proc_macro::{TokenStream, TokenTree};
 use std::iter::Peekable;
 use std::slice::Iter;
 
-use proc_macro2::{Span, TokenStream as TokenStream2};
-use quote::quote;
-use syn::spanned::Spanned;
 use syn::*;
 
 use crate::constants::{ATTR_IDENT, CLONE_IDENT, COPY_IDENT};
@@ -63,9 +59,9 @@ pub(crate) fn get_dupe_attr(field: &Field) -> Option<ProtoCompDupeAttr> {
 	let mut dupe: Option<ProtoCompDupeAttr> = None;
 	let mut iter: Peekable<Iter<Attribute>> = field.attrs.iter().peekable();
 
-	/// Try to find a valid attribute specifying the duplication method
-	/// This loop checks each attribute and finds the first one to meet
-	/// that conditiion.
+	// Try to find a valid attribute specifying the duplication method
+	// This loop checks each attribute and finds the first one to meet
+	// that conditiion.
 	while dupe.is_none() && iter.peek().is_some() {
 		let meta = find_attr_meta(&mut iter)?;
 

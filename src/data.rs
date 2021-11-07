@@ -1,19 +1,16 @@
 use std::any::{Any, TypeId};
-use std::borrow::Borrow;
-use std::error::Error;
 use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
 
 use bevy::asset::{Asset, HandleUntyped};
 use bevy::ecs::prelude::World;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Assets, ColorMaterial, FromWorld, Handle, Res};
-use bevy::reflect::{TypeUuid, Uuid};
+use bevy::prelude::{FromWorld, Handle};
+use bevy::reflect::Uuid;
 use bevy::utils::HashMap;
 use dyn_clone::DynClone;
 use serde::{Deserialize, Serialize};
 
-use crate::prototype::Prototype;
 use crate::{ProtoComponent, Prototypical};
 
 /// A String newtype for a handle's asset path

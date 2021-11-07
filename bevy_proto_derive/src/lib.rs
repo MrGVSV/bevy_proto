@@ -1,7 +1,7 @@
-use proc_macro::{TokenStream, TokenTree};
+use proc_macro::TokenStream;
 
 use fields::ProtoCompDupeAttr;
-use proc_macro2::{Span, TokenStream as TokenStream2};
+use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::*;
@@ -32,11 +32,9 @@ mod fields;
 #[proc_macro_derive(ProtoComponent, attributes(proto_comp))]
 pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
 	let item: Item = parse(input.clone()).expect("Could not parse input stream");
-	let DeriveInput {
-		ident, data, attrs, ..
-	} = parse_macro_input!(input);
+	let DeriveInput { ident, data, .. } = parse_macro_input!(input);
 
-	let mut generator = match data {
+	let generator = match data {
 		Data::Struct(data_struct) => proc_fields(data_struct.fields),
 		_ => syn::Error::new(item.span(), "ProtoComp can only be applied on struct types")
 			.to_compile_error(),
