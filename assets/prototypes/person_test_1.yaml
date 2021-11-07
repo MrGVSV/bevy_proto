@@ -1,0 +1,9 @@
+---
+name: "Person Test 1"
+components:
+  - type: Person
+    value:
+      name: "Inigo Montoya"
+  - type: Ordered
+    value:
+      order: 1

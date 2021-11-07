@@ -1,0 +1,17 @@
+{
+    "name": "Person Test 2",
+    "components": [
+      {
+        "type": "Person",
+        "value": {
+                   "name": "Slim Shady"
+        }
+      },
+      {
+        "type": "Ordered",
+        "value": {
+          "order": 2
+        }
+      }
+    ]
+  }
