@@ -30,6 +30,7 @@ impl Deref for HandlePath {
 // TODO: Remove me
 pub trait PrototypeDataContainer: 'static {}
 
+/// A resource containing data for all prototypes that need data stored
 pub struct ProtoData {
 	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
 	handles: HashMap<
@@ -184,6 +185,20 @@ impl ProtoData {
 		let path_map = comp_map.get(path.as_str())?;
 		path_map.get(&asset_type)
 	}
+
+	/// Create a slice into this resource
+	///
+	/// # Arguments
+	///
+	/// * `prototype`: The prototype this slice belongs to
+	///
+	/// returns: ProtoSlice
+	pub fn slice<'a>(&'a self, prototype: &'a dyn Prototypical) -> ProtoSlice<'a> {
+		ProtoSlice {
+			prototype,
+			data: self,
+		}
+	}
 }
 
 impl FromWorld for ProtoData {
@@ -230,6 +245,74 @@ impl FromWorld for ProtoData {
 		}
 
 		myself
+	}
+}
+
+pub struct ProtoSlice<'a> {
+	prototype: &'a dyn Prototypical,
+	data: &'a ProtoData,
+}
+
+impl<'a> ProtoSlice<'a> {
+	/// Get the prototype in this slice
+	pub fn protoype(&self) -> &dyn Prototypical {
+		self.prototype
+	}
+
+	/// Get raw access to the underlying [`ProtoData`] resource
+	pub fn raw_data(&self) -> &ProtoData {
+		self.data
+	}
+
+	/// Get a cloned handle
+	///
+	/// # Arguments
+	///
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	///
+	/// returns: Option<Handle<T>>
+	pub fn get_handle<T: Asset>(
+		&self,
+		component: &dyn ProtoComponent,
+		path: &HandlePath,
+	) -> Option<Handle<T>> {
+		self.data.get_handle(self.prototype, component, path)
+	}
+
+	/// Get a weakly cloned handle
+	///
+	/// # Arguments
+	///
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	///
+	/// returns: Option<Handle<T>>
+	pub fn get_handle_weak<T: Asset>(
+		&self,
+		component: &dyn ProtoComponent,
+		path: &HandlePath,
+	) -> Option<Handle<T>> {
+		self.data.get_handle_weak(self.prototype, component, path)
+	}
+
+	/// Get a untyped handle reference
+	///
+	/// # Arguments
+	///
+	/// * `component`: The ProtoComponent this handle belongs to
+	/// * `path`: The handle's path
+	/// * `asset_type`: The asset type
+	///
+	/// returns: Option<&HandleUntyped>
+	pub fn get_untyped_handle(
+		&self,
+		component: &dyn ProtoComponent,
+		path: &HandlePath,
+		asset_type: Uuid,
+	) -> Option<&HandleUntyped> {
+		self.data
+			.get_untyped_handle(self.prototype, component, path, asset_type)
 	}
 }
 
