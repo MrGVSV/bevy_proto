@@ -9,7 +9,7 @@ use syn::*;
 mod constants;
 mod fields;
 
-/// Automatically implements [`ProtoComponent`](`bevy_proto::ProtoComponent`) for the given
+/// Automatically implements [`ProtoComponent`] for the given
 /// struct. This works on all structs, including tuple and unit structs. Enums are not
 /// currently supported.
 ///
@@ -28,6 +28,23 @@ mod fields;
 /// 	#[proto_comp(Copy)]
 /// 	some_int: i32,
 /// }
+///
+/// // Which generates:
+/// //
+/// // #[typetag::serde]
+/// // impl bevy_proto::ProtoComponent for #ident { ///
+/// // 	fn insert_self(
+/// //  		&self,
+/// //  		commands: &mut bevy_proto::ProtoCommands,
+/// //  		asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
+/// //  	) {
+/// //  		let component = Self {
+/// //				some_string: ::std::clone::Clone::clone(&self.some_string),
+/// //				some_int: self.some_int
+/// //			};
+/// //  		commands.insert(component);
+/// //  	}
+/// //  }
 /// ```
 #[proc_macro_derive(ProtoComponent, attributes(proto_comp))]
 pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
