@@ -4,7 +4,10 @@ use fields::ProtoCompDupeAttr;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::spanned::Spanned;
-use syn::*;
+use syn::{
+	parse, parse_macro_input, Data, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, Index,
+	Item,
+};
 
 mod constants;
 mod fields;
