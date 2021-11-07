@@ -3,7 +3,6 @@ use proc_macro::TokenStream;
 use fields::ProtoCompDupeAttr;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
-use syn::spanned::Spanned;
 use syn::*;
 
 mod constants;
