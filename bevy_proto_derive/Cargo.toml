@@ -2,7 +2,11 @@
 name = "bevy_proto_derive"
 version = "0.1.0"
 edition = "2018"
+authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Derive macro for use with bevy_proto"
+repository = "https://github.com/MrGVSV/bevy_proto"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
 
 [lib]
 proc-macro = true

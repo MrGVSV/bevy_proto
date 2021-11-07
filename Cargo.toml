@@ -2,6 +2,13 @@
 name = "bevy_proto"
 version = "0.1.0"
 edition = "2018"
+authors = ["Gino Valente <gino.valente.code@gmail.com>"]
+description = "Create config files for entities in Bevy"
+repository = "https://github.com/MrGVSV/bevy_proto"
+license = "MIT OR Apache-2.0"
+keywords = ["bevy", "archetype", "config", "entity"]
+readme = "README.md"
+exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
 bevy_proto_derive = { path = "bevy_proto_derive" }
@@ -10,6 +17,9 @@ serde = "1.0.130"
 typetag = "0.1"
 serde_yaml = "0.8"
 dyn-clone = "1.0.4"
+
+[badges]
+maintenance = { status = "experimental" }
 
 [[example]]
 name = "basic"
