@@ -43,7 +43,16 @@
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/syn-a3cd484ed5bf1920/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wgpu-core-b345d19e0b7bc63f/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macros/target/debug/build/proc-macro2-e24793af8441af25/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macros/target/debug/build/syn-61e2ba07707ce58b/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/macros/target/debug/build/syn-afb418858f1b77ad/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/bevy_proto_derive/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/bevy_proto_derive/target/debug/build/proc-macro2-e24793af8441af25/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/bevy_proto_derive/target/debug/build/syn-61e2ba07707ce58b/out" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/macros/target" />
+      <excludeFolder url="file://$MODULE_DIR$/bevy_proto_derive/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

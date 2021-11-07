@@ -10,3 +10,15 @@ serde = "1.0.130"
 typetag = "0.1"
 serde_yaml = "0.8"
 dyn-clone = "1.0.4"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "bundles"
+path = "examples/bundles.rs"
+
+[[example]]
+name = "bench"
+path = "examples/bench.rs"
