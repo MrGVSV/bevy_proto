@@ -11,7 +11,7 @@ readme = "README.md"
 exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
-bevy_proto_derive = { path = "bevy_proto_derive" }
+bevy_proto_derive = { version = "0.1.0", path = "bevy_proto_derive" }
 bevy = "0.5"
 serde = "1.0.130"
 typetag = "0.1"
