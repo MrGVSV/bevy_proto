@@ -192,7 +192,7 @@ impl ProtoData {
 	pub fn get_commands<'a, 'b, 'c>(
 		&'c self,
 		prototype: &'c dyn Prototypical,
-		commands: &'c mut EntityCommands<'a, 'b>,
+		commands: EntityCommands<'a, 'b>,
 	) -> ProtoCommands<'a, 'b, 'c> {
 		ProtoCommands {
 			commands,
@@ -254,7 +254,7 @@ impl FromWorld for ProtoData {
 /// and grants direct access to the [`EntityCommands`] that spawned that prototype in.
 pub struct ProtoCommands<'a, 'b, 'c> {
 	/// The associated [`EntityCommands`]
-	commands: &'c mut EntityCommands<'a, 'b>,
+	commands: EntityCommands<'a, 'b>,
 	/// The associated prototype
 	prototype: &'c dyn Prototypical,
 	/// The [`ProtoData`] resource
@@ -264,7 +264,7 @@ pub struct ProtoCommands<'a, 'b, 'c> {
 impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
 	/// Get raw access to [`EntityCommands`]
 	pub fn raw_commands(&'c mut self) -> &'c mut EntityCommands<'a, 'b> {
-		self.commands
+		&mut self.commands
 	}
 	/// Get the associated prototype
 	pub fn protoype(&self) -> &dyn Prototypical {
@@ -325,6 +325,12 @@ impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
 	) -> Option<&HandleUntyped> {
 		self.data
 			.get_untyped_handle(self.prototype, component, path, asset_type)
+	}
+}
+
+impl<'a, 'b, 'c> From<ProtoCommands<'a, 'b, 'c>> for EntityCommands<'a, 'b> {
+	fn from(cmds: ProtoCommands<'a, 'b, 'c>) -> Self {
+		cmds.commands
 	}
 }
 

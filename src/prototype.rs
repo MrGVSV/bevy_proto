@@ -2,10 +2,10 @@ use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{AssetServer, Res};
+use bevy::prelude::{AssetServer, Entity, Res};
 use serde::{Deserialize, Serialize};
 
-use crate::{ProtoComponent, ProtoData};
+use crate::{ProtoCommands, ProtoComponent, ProtoData};
 
 /// Allows access to a prototype's name and components so that it can be spawned in
 pub trait Prototypical: 'static + Send + Sync {
@@ -13,14 +13,30 @@ pub trait Prototypical: 'static + Send + Sync {
 	///
 	/// This should be unique amongst all prototypes in the world
 	fn name(&self) -> &str;
+
 	/// Returns an iterator of [`ProtoComponent`] objects
 	fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>>;
+
+	/// Creates the [`ProtoCommands`] object used for modifying the given entity
+	///
+	/// # Arguments
+	///
+	/// * `entity`: The entity commands
+	/// * `data`: The prototype data in this world
+	///
+	/// returns: ProtoCommands
+	///
+	fn create_commands<'a, 'b, 'c>(
+		&'c self,
+		entity: EntityCommands<'a, 'b>,
+		data: &'c Res<ProtoData>,
+	) -> ProtoCommands<'a, 'b, 'c>;
 
 	/// Spawns an entity with this prototype's component structure
 	///
 	/// # Arguments
 	///
-	/// * `commands`: The calling system's world commands
+	/// * `commands`: The world `Commands`
 	/// * `data`: The prototype data in this world
 	/// * `asset_server`: The asset server
 	///
@@ -48,12 +64,20 @@ pub trait Prototypical: 'static + Send + Sync {
 	/// }
 	///
 	/// ```
-	fn spawn<'a, 'b>(
-		&self,
+	fn spawn<'a, 'b, 'c>(
+		&'c self,
 		commands: &'b mut Commands<'a>,
 		data: &Res<ProtoData>,
 		asset_server: &Res<AssetServer>,
-	) -> EntityCommands<'a, 'b>;
+	) -> EntityCommands<'a, 'b> {
+		let mut entity = commands.spawn();
+		let mut proto_commands = self.create_commands(entity, data);
+		for component in self.iter_components() {
+			component.insert_self(&mut proto_commands, asset_server);
+		}
+
+		proto_commands.into()
+	}
 }
 
 /// The default prototype object, providing the basics for the prototype system
@@ -74,18 +98,11 @@ impl Prototypical for Prototype {
 		self.components.iter()
 	}
 
-	fn spawn<'a, 'b, 'c>(
+	fn create_commands<'a, 'b, 'c>(
 		&'c self,
-		commands: &'b mut Commands<'a>,
-		data: &Res<ProtoData>,
-		asset_server: &Res<AssetServer>,
-	) -> EntityCommands<'a, 'b> {
-		let mut entity: EntityCommands<'a, 'b> = commands.spawn();
-		let mut proto_commands = data.get_commands(self, &mut entity);
-		for component in self.iter_components() {
-			component.insert_self(&mut proto_commands, asset_server);
-		}
-
-		entity
+		entity: EntityCommands<'a, 'b>,
+		data: &'c Res<ProtoData>,
+	) -> ProtoCommands<'a, 'b, 'c> {
+		data.get_commands(self, entity)
 	}
 }
