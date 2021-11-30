@@ -112,16 +112,10 @@ fn spawn_internal<'a>(
 	match template {
 		Some(template_name) if traversed.contains(template_name) => {
 			// ! === Found Circular Dependency === ! //
-			let tree: String = traversed
-				.iter()
-				.map(|n| format!("'{}' -> ", n))
-				.collect::<String>()
-				.add(&format!("'{}'", template_name));
-			warn!(
-				"{} ({})\n\t{}",
-				"Found a circular dependency when trying to spawn a prototype!",
-				tree,
-				"The rest of the spawn has been skipped, but make sure you remove any template that might call itself!"
+			handle_cycle!(
+				template_name,
+				traversed,
+				"For now, the rest of the spawn has been skipped."
 			);
 		}
 		Some(template_name) => {
