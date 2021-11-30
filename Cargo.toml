@@ -17,6 +17,7 @@ serde = "1.0.130"
 typetag = "0.1"
 serde_yaml = "0.8"
 dyn-clone = "1.0.4"
+indexmap = "1.7.0"
 
 [badges]
 maintenance = { status = "experimental" }

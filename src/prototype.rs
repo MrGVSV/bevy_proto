@@ -1,8 +1,11 @@
+use std::ops::Add;
 use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
+use bevy::log::warn;
 use bevy::prelude::{AssetServer, Entity, Res};
+use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
 use crate::{ProtoCommands, ProtoComponent, ProtoData};
@@ -77,11 +80,70 @@ pub trait Prototypical: 'static + Send + Sync {
 	) -> EntityCommands<'a, 'b> {
 		let mut entity = commands.spawn();
 		let mut proto_commands = self.create_commands(entity, data);
-		for component in self.iter_components() {
-			component.insert_self(&mut proto_commands, asset_server);
-		}
+
+		spawn_internal(
+			self.name(),
+			self.template(),
+			self.iter_components(),
+			&mut proto_commands,
+			data,
+			asset_server,
+			&mut IndexSet::default(),
+		);
 
 		proto_commands.into()
+	}
+}
+
+/// Internal method used for recursing up the template hierarchy and spawning components
+/// from the top to the bottom
+fn spawn_internal<'a>(
+	name: &'a str,
+	template: Option<&'a str>,
+	components: Iter<'a, Box<dyn ProtoComponent>>,
+	proto_commands: &mut ProtoCommands,
+	data: &'a Res<ProtoData>,
+	asset_server: &Res<AssetServer>,
+	traversed: &mut IndexSet<&'a str>,
+) {
+	// We insert first on the off chance that someone made a prototype its own template...
+	traversed.insert(name);
+
+	match template {
+		Some(template_name) if traversed.contains(template_name) => {
+			// ! === Found Circular Dependency === ! //
+			let tree: String = traversed
+				.iter()
+				.map(|n| format!("'{}' -> ", n))
+				.collect::<String>()
+				.add(&format!("'{}'", template_name));
+			warn!(
+				"{} ({})\n\t{}",
+				"Found a circular dependency when trying to spawn a prototype!",
+				tree,
+				"The rest of the spawn has been skipped, but make sure you remove any template that might call itself!"
+			);
+		}
+		Some(template_name) => {
+			// === Spawn Template === //
+			if let Some(parent) = data.get_prototype(template_name) {
+				spawn_internal(
+					parent.name(),
+					parent.template(),
+					parent.iter_components(),
+					proto_commands,
+					data,
+					asset_server,
+					traversed,
+				);
+			}
+		}
+		_ => (),
+	}
+
+	// === Spawn Self === //
+	for component in components {
+		component.insert_self(proto_commands, asset_server);
 	}
 }
 
