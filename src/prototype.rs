@@ -14,6 +14,11 @@ pub trait Prototypical: 'static + Send + Sync {
 	/// This should be unique amongst all prototypes in the world
 	fn name(&self) -> &str;
 
+	/// The name of the template (if any)
+	fn template(&self) -> Option<&str> {
+		None
+	}
+
 	/// Returns an iterator of [`ProtoComponent`] objects
 	fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>>;
 
@@ -85,13 +90,21 @@ pub trait Prototypical: 'static + Send + Sync {
 pub struct Prototype {
 	/// The name of this prototype
 	pub name: String,
+	/// The name of this prototype's template (if any)
+	#[serde(default)]
+	pub template: Option<String>,
 	/// The components belonging to this prototype
+	#[serde(default)]
 	pub components: Vec<Box<dyn ProtoComponent>>,
 }
 
 impl Prototypical for Prototype {
 	fn name(&self) -> &str {
 		&self.name
+	}
+
+	fn template(&self) -> Option<&str> {
+		self.template.as_deref()
 	}
 
 	fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>> {
