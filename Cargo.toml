@@ -31,5 +31,9 @@ name = "bundles"
 path = "examples/bundles.rs"
 
 [[example]]
+name = "templates"
+path = "examples/templates.rs"
+
+[[example]]
 name = "bench"
 path = "examples/bench.rs"

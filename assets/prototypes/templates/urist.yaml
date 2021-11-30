@@ -1,0 +1,11 @@
+---
+name: "Urist"
+template: "NPC"
+components:
+  - type: Named
+    value: "Urist McTemplate"
+  - type: Occupation
+    value: Miner
+  - type: Health
+    value:
+      max: 30
