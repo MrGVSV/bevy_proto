@@ -89,6 +89,19 @@
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/spirv_cross-92f5eb96f3e330ca/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/syn-d24964da4a552da2/out" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/target/debug/build/wgpu-core-9e7dcfd45269de6e/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/anyhow-207d2f77f67ebc32/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/bindgen-035935d52541cbf0/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/clang-sys-6e1545d4b0c64958/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/coreaudio-sys-76d4c2b33e82286c/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/crc32fast-1a6bf8548c374f71/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/futures-core-ec176d2ada13bcf4/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/libc-7cfe5d5dc0599624/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/minimp3-sys-e18745c0e0425d7c/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/objc_exception-39de94abcb4ad621/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/ryu-3637d246b06acaf1/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/serde_json-104b6728d01ba9ed/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/spirv-reflect-87f8a3040e4eaeb9/out" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/target/debug/build/spirv_cross-1c6efeb0792a1d86/out" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/macros/target" />
       <excludeFolder url="file://$MODULE_DIR$/bevy_proto_derive/target" />

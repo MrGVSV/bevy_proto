@@ -20,8 +20,9 @@ dyn-clone = "1.0.4"
 indexmap = "1.7.0"
 
 [features]
-default = []
-no_cycles = []
+default = ["analysis"]
+analysis = []
+no_cycles = ["analysis"]
 
 [badges]
 maintenance = { status = "experimental" }
