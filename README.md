@@ -199,7 +199,7 @@ Then inherit the template in another Prototype:
 # assets/prototypes/peasant.yaml
 ---
 name: "Peasant"
-template: "NPC"
+template: NPC
 ```
 
 You can also override template components:
@@ -208,6 +208,7 @@ You can also override template components:
 # assets/prototypes/adventurer.yaml
 ---
 name: "Adventurer"
+template: NPC
 components:
   - type: Inventory
     value: ["sword"]
