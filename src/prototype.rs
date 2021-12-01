@@ -1,3 +1,5 @@
+use std::fmt::Formatter;
+use std::iter::Rev;
 use std::ops::Add;
 use std::slice::Iter;
 
@@ -6,7 +8,10 @@ use bevy::ecs::system::EntityCommands;
 use bevy::log::warn;
 use bevy::prelude::{AssetServer, Entity, Res};
 use indexmap::IndexSet;
-use serde::{Deserialize, Serialize};
+use serde::{
+	de::{self, Error, SeqAccess, Visitor},
+	Deserialize, Deserializer, Serialize,
+};
 
 use crate::{ProtoCommands, ProtoComponent, ProtoData};
 
@@ -17,9 +22,14 @@ pub trait Prototypical: 'static + Send + Sync {
 	/// This should be unique amongst all prototypes in the world
 	fn name(&self) -> &str;
 
-	/// The name of the template (if any)
-	fn template(&self) -> Option<&str> {
-		None
+	/// The names of the parent templates (if any)
+	fn templates(&self) -> &[String] {
+		&[]
+	}
+
+	/// The names of the parent templates (if any) in reverse order
+	fn templates_rev(&self) -> Rev<Iter<'_, String>> {
+		self.templates().iter().rev()
 	}
 
 	/// Returns an iterator of [`ProtoComponent`] objects
@@ -83,7 +93,7 @@ pub trait Prototypical: 'static + Send + Sync {
 
 		spawn_internal(
 			self.name(),
-			self.template(),
+			self.templates().iter().rev(),
 			self.iter_components(),
 			&mut proto_commands,
 			data,
@@ -99,7 +109,7 @@ pub trait Prototypical: 'static + Send + Sync {
 /// from the top to the bottom
 fn spawn_internal<'a>(
 	name: &'a str,
-	template: Option<&'a str>,
+	templates: Rev<Iter<'a, String>>,
 	components: Iter<'a, Box<dyn ProtoComponent>>,
 	proto_commands: &mut ProtoCommands,
 	data: &'a Res<ProtoData>,
@@ -109,30 +119,30 @@ fn spawn_internal<'a>(
 	// We insert first on the off chance that someone made a prototype its own template...
 	traversed.insert(name);
 
-	match template {
-		Some(template_name) if traversed.contains(template_name) => {
+	for template in templates {
+		if traversed.contains(template.as_str()) {
 			// ! === Found Circular Dependency === ! //
 			handle_cycle!(
-				template_name,
+				template,
 				traversed,
 				"For now, the rest of the spawn has been skipped."
 			);
+
+			continue;
 		}
-		Some(template_name) => {
-			// === Spawn Template === //
-			if let Some(parent) = data.get_prototype(template_name) {
-				spawn_internal(
-					parent.name(),
-					parent.template(),
-					parent.iter_components(),
-					proto_commands,
-					data,
-					asset_server,
-					traversed,
-				);
-			}
+
+		// === Spawn Template === //
+		if let Some(parent) = data.get_prototype(template) {
+			spawn_internal(
+				parent.name(),
+				parent.templates_rev(),
+				parent.iter_components(),
+				proto_commands,
+				data,
+				asset_server,
+				traversed,
+			);
 		}
-		_ => (),
 	}
 
 	// === Spawn Self === //
@@ -148,7 +158,8 @@ pub struct Prototype {
 	pub name: String,
 	/// The name of this prototype's template (if any)
 	#[serde(default)]
-	pub template: Option<String>,
+	#[serde(deserialize_with = "deserialize_templates_list")]
+	pub templates: Vec<String>,
 	/// The components belonging to this prototype
 	#[serde(default)]
 	pub components: Vec<Box<dyn ProtoComponent>>,
@@ -159,8 +170,8 @@ impl Prototypical for Prototype {
 		&self.name
 	}
 
-	fn template(&self) -> Option<&str> {
-		self.template.as_deref()
+	fn templates(&self) -> &[String] {
+		&self.templates
 	}
 
 	fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>> {
@@ -174,4 +185,56 @@ impl Prototypical for Prototype {
 	) -> ProtoCommands<'a, 'b, 'c> {
 		data.get_commands(self, entity)
 	}
+}
+
+/// A function used to deserialize a list of templates
+///
+/// A template list can take on the following forms:
+///
+/// * Inline List:
+///   > ```yaml
+///   > templates: [ A, B, C ]
+///   > ```
+/// * Multi-Line List:
+///   > ```yaml
+///   > templates:
+///   >   - A
+///   >   - B
+///   >   - C
+///   > ```
+/// * Comma-Separated String:
+///   > ```yaml
+///   > templates: A, B, C # OR: "A, B, C"
+///   > ```
+pub fn deserialize_templates_list<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	struct TemplatesList;
+
+	impl<'de> Visitor<'de> for TemplatesList {
+		type Value = Vec<String>;
+
+		fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+			formatter.write_str("string or vec")
+		}
+
+		fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+		where
+			E: Error,
+		{
+			// Split string by commas
+			// Allowing for: "A, B, C" to become [A, B, C]
+			Ok(v.split(",").map(|s| s.trim().to_string()).collect())
+		}
+
+		fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+		where
+			A: SeqAccess<'de>,
+		{
+			Deserialize::deserialize(de::value::SeqAccessDeserializer::new(seq))
+		}
+	}
+
+	deserializer.deserialize_any(TemplatesList)
 }
