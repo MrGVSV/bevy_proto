@@ -347,11 +347,9 @@ The default Prototype object looks like this:
 pub struct Prototype {
     /// The name of this prototype
 	  pub name: String,
-	  /// The name of this prototype's template (if any)
-	  #[serde(default)]
-	  pub template: Option<String>,
+	  /// The names of this prototype's templates (if any)
+	  pub templates: Vec<String>,
 	  /// The components belonging to this prototype
-	  #[serde(default)]
 	  pub components: Vec<Box<dyn ProtoComponent>>,
 }
 ```

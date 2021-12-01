@@ -156,7 +156,9 @@ fn spawn_internal<'a>(
 pub struct Prototype {
 	/// The name of this prototype
 	pub name: String,
-	/// The name of this prototype's template (if any)
+	/// The names of this prototype's templates (if any)
+	///
+	/// See [`deserialize_templates_list`], for how these names are deserialized.
 	#[serde(default)]
 	#[serde(alias = "template")]
 	#[serde(deserialize_with = "deserialize_templates_list")]
