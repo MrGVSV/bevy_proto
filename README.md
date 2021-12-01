@@ -32,8 +32,8 @@ components:
 * **Inherit** functionality from other prototypes:
 
   >  ```yaml
-  >  name: Enemy
-  >  template: Creature
+  >  name: Skeleton
+  >  templates: Enemy, Creature
   >  components:
   >    # ...
   >  ```
@@ -199,7 +199,7 @@ Then inherit the template in another Prototype:
 # assets/prototypes/peasant.yaml
 ---
 name: "Peasant"
-template: "NPC"
+template: NPC
 ```
 
 You can also override template components:
@@ -208,10 +208,25 @@ You can also override template components:
 # assets/prototypes/adventurer.yaml
 ---
 name: "Adventurer"
+template: NPC
 components:
   - type: Inventory
     value: ["sword"]
 ```
+
+Multiple templates can be specified as well. However, conflicting components will be overridden in reverse order (templates listed first can override templates listed last):
+
+```yaml
+# assets/prototypes/fast_adventurer.yaml
+---
+name: "Fast Adventurer"
+templates: Speedy, NPC # "Speedy" may override "NPC"
+components:
+  - type: Inventory
+    value: ["sword"]
+```
+
+> Templates can be specified as a standard YAML list or as a comma-separated string (like in the example above). Additionally,  `templates` is an alias for `template`, so either one may be used.
 
 ### Spawning the Prototype
 
