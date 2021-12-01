@@ -1,5 +1,13 @@
 # bevy_proto
 
+[![Crates.io](https://img.shields.io/crates/v/bevy_proto)](https://crates.io/crates/bevy_proto)
+
+[![Docs](https://img.shields.io/docsrs/bevy_proto)](https://docs.rs/bevy_proto/latest/bevy_proto/)
+
+[![License](https://img.shields.io/crates/l/bevy_proto)](./License.md)
+
+
+
 Create entities in the Bevy game engine with a simple config file.
 
 ```yaml
