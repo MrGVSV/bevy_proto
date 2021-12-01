@@ -1,6 +1,6 @@
 ---
 name: "Bob"
-templates: NPC
+template: NPC
 components:
   - type: Named
     value: "Bob Roberts"

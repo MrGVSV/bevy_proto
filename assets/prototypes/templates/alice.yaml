@@ -1,6 +1,6 @@
 ---
 name: "Alice"
-templates: NPC
+template: NPC
 components:
   - type: Named
     value: "Alice Allison"

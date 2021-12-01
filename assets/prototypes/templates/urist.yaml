@@ -5,7 +5,6 @@ name: "Urist"
 templates:
   - Healthy
   - NPC
-  -
 # Templates can also be listed inline:
 #   templates: [ Healthy, NPC ]
 # Or without brackets (deserialized as a comma-separated string):
