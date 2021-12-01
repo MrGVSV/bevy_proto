@@ -158,6 +158,7 @@ pub struct Prototype {
 	pub name: String,
 	/// The name of this prototype's template (if any)
 	#[serde(default)]
+	#[serde(alias = "template")]
 	#[serde(deserialize_with = "deserialize_templates_list")]
 	pub templates: Vec<String>,
 	/// The components belonging to this prototype
