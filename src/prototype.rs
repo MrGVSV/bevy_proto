@@ -1,12 +1,10 @@
 use std::fmt::Formatter;
 use std::iter::Rev;
-use std::ops::Add;
 use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::log::warn;
-use bevy::prelude::{AssetServer, Entity, Res};
+use bevy::prelude::{AssetServer, Res};
 use indexmap::IndexSet;
 use serde::{
 	de::{self, Error, SeqAccess, Visitor},
@@ -88,7 +86,7 @@ pub trait Prototypical: 'static + Send + Sync {
 		data: &Res<ProtoData>,
 		asset_server: &Res<AssetServer>,
 	) -> EntityCommands<'a, 'b> {
-		let mut entity = commands.spawn();
+		let entity = commands.spawn();
 		let mut proto_commands = self.create_commands(entity, data);
 
 		spawn_internal(

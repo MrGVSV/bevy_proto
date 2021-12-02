@@ -1,5 +1,4 @@
 use std::any::{Any, TypeId};
-use std::collections::hash_map::{Values, ValuesMut};
 use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
 
@@ -293,7 +292,7 @@ fn analyze_deps(data: &ProtoData) {
 				check_for_cycles(parent, data, traversed);
 			}
 		}
-	};
+	}
 }
 
 /// A wrapper around [`EntityCommands`] and [`ProtoData`] for a specified prototype.
