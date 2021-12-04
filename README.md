@@ -38,8 +38,8 @@ components:
 * **Inherit** functionality from other prototypes:
 
   >  ```yaml
-  >  name: Enemy
-  >  template: Creature
+  >  name: Skeleton
+  >  templates: Enemy, Creature
   >  components:
   >    # ...
   >  ```
@@ -220,6 +220,20 @@ components:
     value: ["sword"]
 ```
 
+Multiple templates can be specified as well. However, conflicting components will be overridden in reverse order (templates listed first can override templates listed last):
+
+```yaml
+# assets/prototypes/fast_adventurer.yaml
+---
+name: "Fast Adventurer"
+templates: Speedy, NPC # "Speedy" may override "NPC"
+components:
+  - type: Inventory
+    value: ["sword"]
+```
+
+> Templates can be specified as a standard YAML list or as a comma-separated string (like in the example above). Additionally,  `templates` is an alias for `template`, so either one may be used.
+
 ### Spawning the Prototype
 
 To spawn a prototype, add a system that has access to:
@@ -339,11 +353,9 @@ The default Prototype object looks like this:
 pub struct Prototype {
     /// The name of this prototype
 	  pub name: String,
-	  /// The name of this prototype's template (if any)
-	  #[serde(default)]
-	  pub template: Option<String>,
+	  /// The names of this prototype's templates (if any)
+	  pub templates: Vec<String>,
 	  /// The components belonging to this prototype
-	  #[serde(default)]
 	  pub components: Vec<Box<dyn ProtoComponent>>,
 }
 ```

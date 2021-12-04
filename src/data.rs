@@ -93,7 +93,7 @@ impl ProtoData {
 	///     };
 	///     let proto = Prototype {
 	///         name: String::from("My Prototype"),
-	///         template: None,
+	///         templates: Vec::default(),
 	///         components: vec![Box::new(comp)]
 	///     };
 	///
@@ -279,18 +279,18 @@ fn analyze_deps(data: &ProtoData) {
 	) {
 		traversed.insert(proto.name());
 
-		match proto.template() {
-			Some(template_name) if traversed.contains(template_name) => {
+		for template in proto.templates_rev() {
+			if traversed.contains(template.as_str()) {
 				// ! --- Found Circular Dependency --- ! //
-				handle_cycle!(template_name, traversed);
+				handle_cycle!(template, traversed);
+
+				continue;
 			}
-			Some(template_name) => {
-				if let Some(parent) = data.get_prototype(template_name) {
-					// --- Check Template --- //
-					check_for_cycles(parent, data, traversed);
-				}
+
+			if let Some(parent) = data.get_prototype(template) {
+				// --- Check Template --- //
+				check_for_cycles(parent, data, traversed);
 			}
-			_ => (),
 		}
 	}
 }
