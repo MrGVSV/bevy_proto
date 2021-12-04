@@ -1,4 +1,6 @@
 extern crate bevy_proto_derive;
+#[macro_use]
+mod utils;
 mod components;
 mod data;
 mod plugin;

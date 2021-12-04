@@ -5,6 +5,61 @@ pub struct ProtoPlugin {
 	pub options: Option<ProtoDataOptions>,
 }
 
+impl ProtoPlugin {
+	/// Specify the directory containing the prototype files
+	///
+	/// # Arguments
+	///
+	/// * `dir`: The directory path, relative to the project root
+	///
+	/// returns: ProtoPlugin
+	///
+	/// # Examples
+	///
+	/// ```
+	/// use bevy_proto::ProtoPlugin;
+	///
+	/// let plugin = ProtoPlugin::with_dir("assets/config");
+	/// ```
+	pub fn with_dir(dir: &str) -> Self {
+		Self {
+			options: Some(ProtoDataOptions {
+				directories: vec![dir.to_string()],
+				deserializer: Box::new(DefaultProtoDeserializer),
+				extensions: Some(vec!["yaml", "json"]),
+			}),
+		}
+	}
+
+	/// Specify a set of directories containing the prototype files
+	///
+	/// # Arguments
+	///
+	/// * `dirs`: The directory paths, relative to the project root
+	///
+	/// returns: ProtoPlugin
+	///
+	/// # Examples
+	///
+	/// ```
+	/// use bevy_proto::ProtoPlugin;
+	///
+	/// let plugin = ProtoPlugin::with_dirs(vec![
+	///   String::from("assets/config"),
+	///   String::from("assets/mods"),
+	/// ]);
+	/// ```
+	pub fn with_dirs(dirs: Vec<String>) -> Self {
+		Self {
+			options: Some(ProtoDataOptions {
+				directories: dirs,
+				deserializer: Box::new(DefaultProtoDeserializer),
+				extensions: Some(vec!["yaml", "json"]),
+			}),
+		}
+	}
+}
+
 impl Default for ProtoPlugin {
 	fn default() -> Self {
 		Self { options: None }

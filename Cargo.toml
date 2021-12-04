@@ -17,6 +17,12 @@ serde = "1.0.130"
 typetag = "0.1"
 serde_yaml = "0.8"
 dyn-clone = "1.0.4"
+indexmap = "1.7.0"
+
+[features]
+default = ["analysis"]
+analysis = []
+no_cycles = ["analysis"]
 
 [badges]
 maintenance = { status = "experimental" }
@@ -28,6 +34,10 @@ path = "examples/basic.rs"
 [[example]]
 name = "bundles"
 path = "examples/bundles.rs"
+
+[[example]]
+name = "templates"
+path = "examples/templates.rs"
 
 [[example]]
 name = "bench"

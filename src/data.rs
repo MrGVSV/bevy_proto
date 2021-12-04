@@ -9,6 +9,7 @@ use bevy::prelude::{FromWorld, Handle};
 use bevy::reflect::Uuid;
 use bevy::utils::HashMap;
 use dyn_clone::DynClone;
+use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
 use crate::{ProtoComponent, Prototypical};
@@ -92,6 +93,7 @@ impl ProtoData {
 	///     };
 	///     let proto = Prototype {
 	///         name: String::from("My Prototype"),
+	///         template: None,
 	///         components: vec![Box::new(comp)]
 	///     };
 	///
@@ -192,13 +194,23 @@ impl ProtoData {
 	pub fn get_commands<'a, 'b, 'c>(
 		&'c self,
 		prototype: &'c dyn Prototypical,
-		commands: &'c mut EntityCommands<'a, 'b>,
+		commands: EntityCommands<'a, 'b>,
 	) -> ProtoCommands<'a, 'b, 'c> {
 		ProtoCommands {
 			commands,
 			prototype,
 			data: self,
 		}
+	}
+
+	/// Get an iterator over all prototypes
+	pub fn iter(&self) -> impl Iterator<Item = &Box<dyn Prototypical>> {
+		self.prototypes.values()
+	}
+
+	/// Get a mutable iterator over all prototypes
+	pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Box<dyn Prototypical>> {
+		self.prototypes.values_mut()
 	}
 }
 
@@ -245,7 +257,41 @@ impl FromWorld for ProtoData {
 			}
 		}
 
+		#[cfg(feature = "analysis")]
+		analyze_deps(&myself);
+
 		myself
+	}
+}
+
+/// Performs some analysis on the given [`ProtoData`] resource
+fn analyze_deps(data: &ProtoData) {
+	// === Perform Analysis === //
+	for proto in data.iter() {
+		check_for_cycles(proto, data, &mut IndexSet::default());
+	}
+
+	// === Analysis Functions === //
+	fn check_for_cycles<'a>(
+		proto: &'a Box<dyn Prototypical>,
+		data: &'a ProtoData,
+		traversed: &mut IndexSet<&'a str>,
+	) {
+		traversed.insert(proto.name());
+
+		match proto.template() {
+			Some(template_name) if traversed.contains(template_name) => {
+				// ! --- Found Circular Dependency --- ! //
+				handle_cycle!(template_name, traversed);
+			}
+			Some(template_name) => {
+				if let Some(parent) = data.get_prototype(template_name) {
+					// --- Check Template --- //
+					check_for_cycles(parent, data, traversed);
+				}
+			}
+			_ => (),
+		}
 	}
 }
 
@@ -254,7 +300,7 @@ impl FromWorld for ProtoData {
 /// and grants direct access to the [`EntityCommands`] that spawned that prototype in.
 pub struct ProtoCommands<'a, 'b, 'c> {
 	/// The associated [`EntityCommands`]
-	commands: &'c mut EntityCommands<'a, 'b>,
+	commands: EntityCommands<'a, 'b>,
 	/// The associated prototype
 	prototype: &'c dyn Prototypical,
 	/// The [`ProtoData`] resource
@@ -264,7 +310,7 @@ pub struct ProtoCommands<'a, 'b, 'c> {
 impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
 	/// Get raw access to [`EntityCommands`]
 	pub fn raw_commands(&'c mut self) -> &'c mut EntityCommands<'a, 'b> {
-		self.commands
+		&mut self.commands
 	}
 	/// Get the associated prototype
 	pub fn protoype(&self) -> &dyn Prototypical {
@@ -325,6 +371,12 @@ impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
 	) -> Option<&HandleUntyped> {
 		self.data
 			.get_untyped_handle(self.prototype, component, path, asset_type)
+	}
+}
+
+impl<'a, 'b, 'c> From<ProtoCommands<'a, 'b, 'c>> for EntityCommands<'a, 'b> {
+	fn from(cmds: ProtoCommands<'a, 'b, 'c>) -> Self {
+		cmds.commands
 	}
 }
 
