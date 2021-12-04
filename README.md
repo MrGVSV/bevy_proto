@@ -58,7 +58,7 @@ components:
 
 ```toml
 [dependencies]
-bevy_proto = "0.1.0"
+bevy_proto = "0.2.0"
 ```
 
 Then add it to your app like so:
