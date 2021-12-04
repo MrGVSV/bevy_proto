@@ -112,6 +112,14 @@ With all of that said, this package is meant to speed up development and make ch
 humans (especially non-programmers) to interact with. If the performance hit is too much for your project, you are
 better off sticking with the standard methods of defining entities.
 
+## 📓 Examples
+
+Check out these examples for more details as to how to use this crate:
+
+* [basic](examples/basic.rs) - The most basic way to add prototypes
+* [bundles](examples/bundles.rs) - A demonstration of a more complex prototype that includes assets
+* [templates](examples/templates.rs) - An example of how templates affect your prototypes
+
 ## ✨ Usage
 
 ### Creating Components
