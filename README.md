@@ -129,7 +129,7 @@ First, create a struct that implements `ProtoComponent`. This can be done one of
 For simple components, `ProtoComponent` may be derived:
 
 ```rust
-use bevy_proto::proto_comp;
+use bevy_proto::ProtoComponent;
 
 #[derive(Serialize, Deserialize, ProtoComponent)]
 struct Movement {
