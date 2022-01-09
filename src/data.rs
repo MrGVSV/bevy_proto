@@ -79,6 +79,7 @@ impl ProtoData {
 	///
 	/// ```
 	/// use bevy::prelude::*;
+	/// use bevy::render::render_resource::Texture;
 	/// use bevy_proto::{HandlePath, ProtoData, Prototype, PrototypeDataContainer};
 	///
 	/// struct MyComponent {

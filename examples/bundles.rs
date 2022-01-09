@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use bevy_proto::{HandlePath, ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin, Prototypical};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component)]
 struct SpriteBundleDef {
 	pub texture_path: HandlePath,
 }
@@ -62,7 +62,7 @@ fn spawn_sprite(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<
 }
 
 fn main() {
-	App::build()
+	App::new()
 		.add_plugins(DefaultPlugins)
 		// This plugin should come AFTER any others that it might rely on
 		// In this case, we need access to what's added by [`DefaultPlugins`]

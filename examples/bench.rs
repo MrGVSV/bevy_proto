@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use bevy::prelude::*;
+use bevy::render::render_resource::Texture;
 use serde::{Deserialize, Serialize};
 
 use bevy_proto::{HandlePath, ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin, Prototypical};
@@ -83,7 +84,7 @@ fn main() {
 /// The code below is covered in the `bundles` example. It's an implementation
 /// detail we don't need to focus on for this particular example
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component)]
 struct SpriteBundleDef {
 	pub texture_path: HandlePath,
 }

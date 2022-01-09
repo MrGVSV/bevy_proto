@@ -7,7 +7,7 @@ use bevy_proto::{ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin};
 
 /// This is the component we will use with our prototype
 /// It must derive both Serialize and Deserialize from serde in order to compile
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component)]
 struct Person {
 	pub name: String,
 }
@@ -44,7 +44,7 @@ impl ProtoComponent for Person {
 ///
 /// Here, we call the attribute with the "Copy" argument as this struct can
 /// readily derive Copy and should be marginally faster than Clone
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct Ordered {
 	#[proto_comp(Copy)]
 	pub order: i32,
@@ -81,7 +81,7 @@ fn introduce(query: Query<(&Person, &Ordered), Added<Person>>) {
 }
 
 fn main() {
-	App::build()
+	App::new()
 		.add_plugins(DefaultPlugins)
 		// This plugin should come AFTER any others that it might rely on
 		// In this case, we need access to what's added by [`DefaultPlugins`]
