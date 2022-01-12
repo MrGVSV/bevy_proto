@@ -32,7 +32,7 @@ impl ProtoPlugin {
 		}
 	}
 
-	/// Same as with_dir but recursively loads prototype files.
+	/// Same as [with_dir] but recursively loads prototype files.
 	///
 	/// # Arguments
 	///
