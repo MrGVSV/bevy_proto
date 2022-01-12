@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use bevy_proto::{ProtoComponent, ProtoData, ProtoPlugin};
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct NPC;
 
 #[derive(Serialize, Deserialize, ProtoComponent, Component)]

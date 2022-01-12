@@ -42,11 +42,11 @@ pub trait Prototypical: 'static + Send + Sync {
 	///
 	/// returns: ProtoCommands
 	///
-	fn create_commands<'a, 'b, 'c>(
-		&'c self,
-		entity: EntityCommands<'a, 'b>,
-		data: &'c Res<ProtoData>,
-	) -> ProtoCommands<'a, 'b, 'c>;
+	fn create_commands<'w, 's, 'a, 'p>(
+		&'p self,
+		entity: EntityCommands<'w, 's, 'a>,
+		data: &'p Res<ProtoData>,
+	) -> ProtoCommands<'w, 's, 'a, 'p>;
 
 	/// Spawns an entity with this prototype's component structure
 	///
@@ -80,12 +80,12 @@ pub trait Prototypical: 'static + Send + Sync {
 	/// }
 	///
 	/// ```
-	fn spawn<'a, 'b, 'c>(
-		&'c self,
-		commands: &'b mut Commands<'a>,
+	fn spawn<'w, 's, 'a, 'p>(
+		&'p self,
+		commands: &'a mut Commands<'w, 's>,
 		data: &Res<ProtoData>,
 		asset_server: &Res<AssetServer>,
-	) -> EntityCommands<'a, 'b> {
+	) -> EntityCommands<'w, 's, 'a> {
 		let entity = commands.spawn();
 		let mut proto_commands = self.create_commands(entity, data);
 
@@ -179,11 +179,11 @@ impl Prototypical for Prototype {
 		self.components.iter()
 	}
 
-	fn create_commands<'a, 'b, 'c>(
-		&'c self,
-		entity: EntityCommands<'a, 'b>,
-		data: &'c Res<ProtoData>,
-	) -> ProtoCommands<'a, 'b, 'c> {
+	fn create_commands<'w, 's, 'a, 'p>(
+		&'p self,
+		entity: EntityCommands<'w, 's, 'a>,
+		data: &'p Res<ProtoData>,
+	) -> ProtoCommands<'w, 's, 'a, 'p> {
 		data.get_commands(self, entity)
 	}
 }
