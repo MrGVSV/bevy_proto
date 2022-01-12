@@ -467,7 +467,7 @@ pub struct ProtoDataOptions {
 	///
 	/// let opts = ProtoDataOptions {
 	/// 	directories: vec![String::from("assets/prototypes")],
-	///		recursive_loading: true,
+	///	recursive_loading: true,
 	/// 	extensions: Some(vec!["yaml"]),
 	/// 	..Default::default()
 	/// };
