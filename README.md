@@ -398,7 +398,9 @@ fn main() {
 
                 // You can also change the prototype directories here
                 directories: vec![String::from("assets/prototypes")],
-                // Or update the allowed extensions within those directories
+                // And specify whether you want the prototype files to be recursively loaded
+                recursive_loading: false,
+                // You can also update the allowed extensions within those directories
                 extensions: Some(vec!["yaml", "json"]),
             }
         })

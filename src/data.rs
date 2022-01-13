@@ -227,40 +227,70 @@ impl FromWorld for ProtoData {
 			.clone();
 
 		for directory in options.directories {
-			if let Ok(dir) = std::fs::read_dir(directory) {
-				for file_info in dir {
-					if file_info.is_err() {
-						continue;
-					}
-					let file_info = file_info.unwrap();
-
-					let path = file_info.path();
-
-					if let Some(filters) = &options.extensions {
-						if let Some(ext) = path.extension().and_then(OsStr::to_str) {
-							if filters.iter().find(|filter| *filter == &ext).is_none() {
-								continue;
-							}
-						}
-					}
-
-					if let Ok(data) = std::fs::read_to_string(path) {
-						if let Some(proto) = options.deserializer.deserialize(&data) {
-							for component in proto.iter_components() {
-								component.prepare(world, &proto, &mut myself);
-							}
-
-							myself.prototypes.insert(proto.name().to_string(), proto);
-						}
-					}
-				}
-			}
+			process_path(
+				world,
+				&options.extensions,
+				&options.deserializer,
+				&mut myself,
+				&directory,
+				options.recursive_loading,
+			);
 		}
 
 		#[cfg(feature = "analysis")]
 		analyze_deps(&myself);
 
 		myself
+	}
+}
+
+/// Helper function to populate our ProtoData.
+fn process_path(
+	world: &mut World,
+	extensions: &Option<Vec<&str>>,
+	deserializer: &Box<dyn ProtoDeserializer + Send + Sync>,
+	myself: &mut ProtoData,
+	directory: &String,
+	recursive: bool,
+) {
+	if let Ok(dir) = std::fs::read_dir(directory) {
+		for file_info in dir {
+			if file_info.is_err() {
+				continue;
+			}
+			let file_info = file_info.unwrap();
+
+			let path = file_info.path();
+
+			if recursive && path.is_dir() {
+				process_path(
+					world,
+					extensions,
+					deserializer,
+					myself,
+					&path.to_str().unwrap().to_string(),
+					recursive,
+				);
+			}
+
+			if let Some(filters) = &extensions {
+				if let Some(ext) = path.extension().and_then(OsStr::to_str) {
+					if filters.iter().find(|filter| *filter == &ext).is_none() {
+						continue;
+					}
+				}
+			}
+
+			if let Ok(data) = std::fs::read_to_string(path) {
+				if let Some(proto) = deserializer.deserialize(&data) {
+					for component in proto.iter_components() {
+						component.prepare(world, &proto, myself);
+					}
+
+					myself.prototypes.insert(proto.name().to_string(), proto);
+				}
+			}
+		}
 	}
 }
 
@@ -426,6 +456,23 @@ dyn_clone::clone_trait_object!(ProtoDeserializer);
 pub struct ProtoDataOptions {
 	/// Directories containing prototype data
 	pub directories: Vec<String>,
+	/// Whether to resursively load extension files from the specified top-level directories.
+	///
+	/// # Examples
+	///
+	/// Example that recursively loads all yaml files from the assets/prototypes directory.
+	///
+	/// ```
+	/// use bevy_proto::ProtoDataOptions;
+	///
+	/// let opts = ProtoDataOptions {
+	/// 	directories: vec![String::from("assets/prototypes")],
+	///	recursive_loading: true,
+	/// 	extensions: Some(vec!["yaml"]),
+	/// 	..Default::default()
+	/// };
+	/// ```
+	pub recursive_loading: bool,
 	/// A custom deserializer for prototypes
 	pub deserializer: Box<dyn ProtoDeserializer + Send + Sync>,
 	/// A collection of extensions to filter the directories by. These do __not__
