@@ -2,8 +2,6 @@ use bevy::prelude::{AssetServer, Res, World};
 
 use crate::{ProtoCommands, ProtoData, Prototypical};
 
-pub trait NoStorageComponent: Send + Sync + 'static {}
-
 /// A trait that allows components to be used within [`Prototypical`] structs
 #[typetag::serde(tag = "type", content = "value")]
 pub trait ProtoComponent: Send + Sync + 'static {

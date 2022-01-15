@@ -79,7 +79,6 @@ impl ProtoData {
 	///
 	/// ```
 	/// use bevy::prelude::*;
-	/// use bevy::render::render_resource::Texture;
 	/// use bevy_proto::{HandlePath, ProtoData, Prototype, PrototypeDataContainer};
 	///
 	/// struct MyComponent {
@@ -98,7 +97,7 @@ impl ProtoData {
 	///         components: vec![Box::new(comp)]
 	///     };
 	///
-	///     let handle: Handle<Texture> =  asset_server.load(comp.texture_path.0.as_str());
+	///     let handle: Handle<Image> =  asset_server.load(comp.texture_path.0.as_str());
 	///
 	///     data.insert_handle(&proto, &comp, &comp.texture_path, handle);
 	/// }
@@ -468,7 +467,7 @@ pub struct ProtoDataOptions {
 	///
 	/// let opts = ProtoDataOptions {
 	/// 	directories: vec![String::from("assets/prototypes")],
-	///	recursive_loading: true,
+	///	    recursive_loading: true,
 	/// 	extensions: Some(vec!["yaml"]),
 	/// 	..Default::default()
 	/// };

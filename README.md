@@ -67,7 +67,7 @@ Then add it to your app like so:
 use bevy_proto::ProtoPlugin;
 
 fn main() {
-    App::build()
+    App::new()
         .add_plugins(DefaultPlugins)
         // add dependent plugins, resources, etc. here
         // ...
@@ -295,7 +295,7 @@ struct Renderable {
 impl ProtoComponent for Creature {
     // Required
     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
-        let handle: Handle<Texture> = asset_server.load(self.texture_path.as_str());
+        let handle: Handle<Image> = asset_server.load(self.texture_path.as_str());
 
         entity.insert(SomeTexture {
             texture_handle: handle
@@ -340,14 +340,10 @@ impl ProtoComponent for Creature {
     ) {
         // === Load Handles === //
         let asset_server = world.get_resource::<AssetServer>().unwrap();
-        let texture: Handle<Texture> = asset_server.load(self.texture_path.as_str());
-
-        // === Transform Handles === //
-        let mut mat_res = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-        let mat = mat_res.add(texture.into());
+        let texture: Handle<Image> = asset_server.load(self.texture_path.as_str());
 
         // === Save Handles === //
-        data.insert_handle(prototype, self, &self.texture_path, mat);
+        data.insert_handle(prototype, self, &self.texture_path, texture);
     }
 }
 ```
