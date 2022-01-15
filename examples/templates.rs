@@ -18,10 +18,10 @@ use serde::{Deserialize, Serialize};
 
 use bevy_proto::{ProtoComponent, ProtoData, ProtoPlugin};
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct NPC;
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct Occupation(OccupationType);
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
@@ -31,12 +31,12 @@ enum OccupationType {
 	Shopkeeper,
 }
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct Health {
 	max: u16,
 }
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Serialize, Deserialize, ProtoComponent, Component)]
 struct Named(String);
 
 /// Spawn in the NPC
@@ -67,7 +67,7 @@ fn on_spawn(query: Query<(&Health, &Occupation, Option<&Named>), Added<NPC>>) {
 }
 
 fn main() {
-	App::build()
+	App::new()
 		.add_plugins(DefaultPlugins)
 		.add_plugin(ProtoPlugin::with_dir("assets/prototypes/templates"))
 		.add_startup_system(spawn_npc.system())

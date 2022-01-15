@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use bevy_proto::{HandlePath, ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin, Prototypical};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Component)]
 struct SpriteBundleDef {
 	pub texture_path: HandlePath,
 }
@@ -14,13 +14,13 @@ struct SpriteBundleDef {
 impl ProtoComponent for SpriteBundleDef {
 	fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
 		// === Get Prepared Assets === //
-		let material: Handle<ColorMaterial> = commands
+		let texture: Handle<Image> = commands
 			.get_handle(self, &self.texture_path)
-			.expect("Expected ColorMaterial handle to have been created");
+			.expect("Expected Image handle to have been created");
 
 		// === Generate Bundle === //
 		let my_bundle = SpriteBundle {
-			material,
+			texture,
 			..Default::default()
 		};
 
@@ -38,14 +38,10 @@ impl ProtoComponent for SpriteBundleDef {
 	fn prepare(&self, world: &mut World, prototype: &Box<dyn Prototypical>, data: &mut ProtoData) {
 		// === Load Handles === //
 		let asset_server = world.get_resource::<AssetServer>().unwrap();
-		let texture: Handle<Texture> = asset_server.load(self.texture_path.as_str());
-
-		// === Transform Handles === //
-		let mut mat_res = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-		let mat = mat_res.add(texture.into());
+		let texture: Handle<Image> = asset_server.load(self.texture_path.as_str());
 
 		// === Save Handles === //
-		data.insert_handle(prototype, self, &self.texture_path, mat);
+		data.insert_handle(prototype, self, &self.texture_path, texture);
 	}
 }
 
@@ -62,7 +58,7 @@ fn spawn_sprite(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<
 }
 
 fn main() {
-	App::build()
+	App::new()
 		.add_plugins(DefaultPlugins)
 		// This plugin should come AFTER any others that it might rely on
 		// In this case, we need access to what's added by [`DefaultPlugins`]

@@ -97,7 +97,7 @@ impl ProtoData {
 	///         components: vec![Box::new(comp)]
 	///     };
 	///
-	///     let handle: Handle<Texture> =  asset_server.load(comp.texture_path.0.as_str());
+	///     let handle: Handle<Image> =  asset_server.load(comp.texture_path.0.as_str());
 	///
 	///     data.insert_handle(&proto, &comp, &comp.texture_path, handle);
 	/// }
@@ -191,11 +191,11 @@ impl ProtoData {
 	/// * `commands`: The [`EntityCommands`]
 	///
 	/// returns: ProtoCommands
-	pub fn get_commands<'a, 'b, 'c>(
-		&'c self,
-		prototype: &'c dyn Prototypical,
-		commands: EntityCommands<'a, 'b>,
-	) -> ProtoCommands<'a, 'b, 'c> {
+	pub fn get_commands<'w, 's, 'a, 'p>(
+		&'p self,
+		prototype: &'p dyn Prototypical,
+		commands: EntityCommands<'w, 's, 'a>,
+	) -> ProtoCommands<'w, 's, 'a, 'p> {
 		ProtoCommands {
 			commands,
 			prototype,
@@ -328,18 +328,18 @@ fn analyze_deps(data: &ProtoData) {
 /// A wrapper around [`EntityCommands`] and [`ProtoData`] for a specified prototype.
 /// This allows [`ProtoData`] to be accessed with the underlying prototype directly,
 /// and grants direct access to the [`EntityCommands`] that spawned that prototype in.
-pub struct ProtoCommands<'a, 'b, 'c> {
+pub struct ProtoCommands<'w, 's, 'a, 'p> {
 	/// The associated [`EntityCommands`]
-	commands: EntityCommands<'a, 'b>,
+	commands: EntityCommands<'w, 's, 'a>,
 	/// The associated prototype
-	prototype: &'c dyn Prototypical,
+	prototype: &'p dyn Prototypical,
 	/// The [`ProtoData`] resource
-	data: &'c ProtoData,
+	data: &'p ProtoData,
 }
 
-impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
+impl<'w, 's, 'a, 'p> ProtoCommands<'w, 's, 'a, 'p> {
 	/// Get raw access to [`EntityCommands`]
-	pub fn raw_commands(&'c mut self) -> &'c mut EntityCommands<'a, 'b> {
+	pub fn raw_commands(&'p mut self) -> &'p mut EntityCommands<'w, 's, 'a> {
 		&mut self.commands
 	}
 	/// Get the associated prototype
@@ -404,21 +404,21 @@ impl<'a, 'b, 'c> ProtoCommands<'a, 'b, 'c> {
 	}
 }
 
-impl<'a, 'b, 'c> From<ProtoCommands<'a, 'b, 'c>> for EntityCommands<'a, 'b> {
-	fn from(cmds: ProtoCommands<'a, 'b, 'c>) -> Self {
+impl<'w, 's, 'a, 'p> From<ProtoCommands<'w, 's, 'a, 'p>> for EntityCommands<'w, 's, 'a> {
+	fn from(cmds: ProtoCommands<'w, 's, 'a, 'p>) -> Self {
 		cmds.commands
 	}
 }
 
-impl<'a, 'b, 'c> Deref for ProtoCommands<'a, 'b, 'c> {
-	type Target = EntityCommands<'a, 'b>;
+impl<'w, 's, 'a, 'p> Deref for ProtoCommands<'w, 's, 'a, 'p> {
+	type Target = EntityCommands<'w, 's, 'a>;
 
 	fn deref(&self) -> &Self::Target {
 		&self.commands
 	}
 }
 
-impl<'a, 'b, 'c> DerefMut for ProtoCommands<'a, 'b, 'c> {
+impl<'w, 's, 'a, 'p> DerefMut for ProtoCommands<'w, 's, 'a, 'p> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.commands
 	}
@@ -467,7 +467,7 @@ pub struct ProtoDataOptions {
 	///
 	/// let opts = ProtoDataOptions {
 	/// 	directories: vec![String::from("assets/prototypes")],
-	///	recursive_loading: true,
+	///	    recursive_loading: true,
 	/// 	extensions: Some(vec!["yaml"]),
 	/// 	..Default::default()
 	/// };

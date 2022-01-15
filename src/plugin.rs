@@ -1,5 +1,5 @@
 use crate::{ProtoData, ProtoDataOptions, ProtoDeserializer, Prototype, Prototypical};
-use bevy::app::{AppBuilder, Plugin};
+use bevy::app::{App, Plugin};
 
 pub struct ProtoPlugin {
 	pub options: Option<ProtoDataOptions>,
@@ -124,7 +124,7 @@ impl Default for ProtoPlugin {
 }
 
 impl Plugin for ProtoPlugin {
-	fn build(&self, app: &mut AppBuilder) {
+	fn build(&self, app: &mut App) {
 		if let Some(opts) = &self.options {
 			// Insert custom prototype options
 			app.insert_resource(opts.clone());

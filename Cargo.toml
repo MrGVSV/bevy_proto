@@ -1,7 +1,7 @@
 [package]
 name = "bevy_proto"
-version = "0.2.1"
-edition = "2018"
+version = "0.2.2"
+edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Create config files for entities in Bevy"
 repository = "https://github.com/MrGVSV/bevy_proto"
@@ -12,7 +12,7 @@ exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
 bevy_proto_derive = { version = "0.1.0", path = "bevy_proto_derive" }
-bevy = "0.5"
+bevy = "0.6"
 serde = "1.0.130"
 typetag = "0.1"
 serde_yaml = "0.8"
