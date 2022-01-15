@@ -1,4 +1,3 @@
-use bevy::ecs::component::Component;
 use bevy::prelude::{AssetServer, Res, World};
 
 use crate::{ProtoCommands, ProtoData, Prototypical};
