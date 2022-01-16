@@ -11,7 +11,9 @@ use serde::{
 	Deserialize, Deserializer, Serialize,
 };
 
-use crate::{ProtoCommands, ProtoComponent, ProtoData};
+use crate::{
+	components::ProtoComponent, data::ProtoCommands, data::ProtoData, utils::handle_cycle,
+};
 
 /// Allows access to a prototype's name and components so that it can be spawned in
 pub trait Prototypical: 'static + Send + Sync {

@@ -79,3 +79,5 @@ macro_rules! handle_cycle {
 		);
 	}};
 }
+
+pub(crate) use handle_cycle;

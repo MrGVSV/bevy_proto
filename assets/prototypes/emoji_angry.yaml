@@ -1,0 +1,5 @@
+---
+name: "Angry"
+components:
+  - type: Face
+    value: Frowning

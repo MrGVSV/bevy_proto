@@ -1,5 +1,9 @@
-use crate::{ProtoData, ProtoDataOptions, ProtoDeserializer, Prototype, Prototypical};
 use bevy::app::{App, Plugin};
+
+use crate::{
+	data::{ProtoData, ProtoDataOptions, ProtoDeserializer},
+	prototype::{Prototype, Prototypical},
+};
 
 pub struct ProtoPlugin {
 	pub options: Option<ProtoDataOptions>,

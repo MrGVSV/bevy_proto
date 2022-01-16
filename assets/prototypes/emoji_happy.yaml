@@ -1,0 +1,6 @@
+---
+name: "Happy"
+components:
+  - type: EmojiDef
+    value:
+      emoji: 😁

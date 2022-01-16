@@ -1,6 +1,7 @@
 use bevy::prelude::{AssetServer, Res, World};
 
-use crate::{ProtoCommands, ProtoData, Prototypical};
+use crate::data::{ProtoCommands, ProtoData};
+use crate::prototype::Prototypical;
 
 /// A trait that allows components to be used within [`Prototypical`] structs
 #[typetag::serde(tag = "type", content = "value")]

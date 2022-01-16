@@ -1,0 +1,6 @@
+---
+name: "Sad"
+components:
+  - type: EmojiDef
+    value:
+      emoji: 😢
