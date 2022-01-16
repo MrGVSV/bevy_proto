@@ -58,7 +58,7 @@ components:
 
 ```toml
 [dependencies]
-bevy_proto = "0.2.0"
+bevy_proto = "0.3"
 ```
 
 Then add it to your app like so:
@@ -83,9 +83,17 @@ fn main() {
 
 Check out these examples for more details as to how to use this crate:
 
-* [basic](examples/basic.rs) - The most basic way to add prototypes
-* [bundles](examples/bundles.rs) - A demonstration of a more complex prototype that includes assets
-* [templates](examples/templates.rs) - An example of how templates affect your prototypes
+* [attributes](https://github.com/MrGVSV/bevy_proto/blob/main/examples/attributes.rs) - A showcase of the available derive helper attributes
+* [basic](https://github.com/MrGVSV/bevy_proto/blob/main/examples/basic.rs) - The most basic way to add prototypes
+* [bundles](https://github.com/MrGVSV/bevy_proto/blob/main/examples/bundles.rs) - A demonstration of a more complex prototype that includes assets
+* [templates](https://github.com/MrGVSV/bevy_proto/blob/main/examples/templates.rs) - An example of how templates affect your prototypes
+
+## 🕊 Bevy Compatibility
+
+| bevy | bevy_proto |
+| ---- | ---------- |
+| 0.6  | 0.3.0      |
+| 0.5  | 0.2.1      |
 
 ## ✨ Usage
 

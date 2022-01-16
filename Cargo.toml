@@ -1,6 +1,6 @@
 [package]
 name = "bevy_proto"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Create config files for entities in Bevy"
@@ -11,7 +11,7 @@ readme = "README.md"
 exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
-bevy_proto_derive = { version = "0.1.0", path = "bevy_proto_derive" }
+bevy_proto_derive = { version = "0.2", path = "bevy_proto_derive" }
 bevy = { version = "0.6", default-features = false }
 serde = "1.0"
 typetag = "0.1"
@@ -24,11 +24,10 @@ bevy = "0.6"
 
 [features]
 default = ["analysis"]
+# If enabled, analyses prototype dependencies and logging (or panicking if `no_cycles` is enabled) on error
 analysis = []
+# If enabled, panics when a dependency cycle is found, otherwise logs a warning
 no_cycles = ["analysis"]
-
-[badges]
-maintenance = { status = "experimental" }
 
 [[example]]
 name = "basic"
