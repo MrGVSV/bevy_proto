@@ -3,11 +3,11 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use bevy_proto::{ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin};
+use bevy_proto::prelude::*;
 
 /// This is the component we will use with our prototype
-/// It must derive both Serialize and Deserialize from serde in order to compile
-#[derive(Serialize, Deserialize, Component)]
+/// It must impl/derive Serialize, Clone, and Deserialize from serde in order to compile
+#[derive(Clone, Serialize, Deserialize, Component)]
 struct Person {
 	pub name: String,
 }
@@ -35,18 +35,13 @@ impl ProtoComponent for Person {
 ///
 /// The [`Person`] component defined above could have simply been written as:
 /// ```
-/// #[derive(Serialize, Deserialize, ProtoComponent)]
+/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
 /// struct Person {
-/// 	// Optional: #[proto_comp(Clone)]
 /// 	pub name: String,
 /// }
 /// ```
-///
-/// Here, we call the attribute with the "Copy" argument as this struct can
-/// readily derive Copy and should be marginally faster than Clone
-#[derive(Serialize, Deserialize, ProtoComponent, Component)]
+#[derive(Copy, Clone, Serialize, Deserialize, ProtoComponent, Component)]
 struct Ordered {
-	#[proto_comp(Copy)]
 	pub order: i32,
 }
 

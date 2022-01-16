@@ -14,6 +14,5 @@ impl PartialEq<Symbol> for syn::Path {
 	}
 }
 
-pub(crate) const ATTR_IDENT: Symbol = Symbol("proto_comp");
-pub(crate) const COPY_IDENT: Symbol = Symbol("Copy");
-pub(crate) const CLONE_IDENT: Symbol = Symbol("Clone");
+pub(crate) const WITH_IDENT: Symbol = Symbol("with");
+pub(crate) const INTO_IDENT: Symbol = Symbol("into");

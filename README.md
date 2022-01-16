@@ -98,21 +98,19 @@ For simple components, `ProtoComponent` may be derived:
 ```rust
 use bevy_proto::ProtoComponent;
 
-#[derive(Serialize, Deserialize, ProtoComponent)]
+#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
 struct Movement {
-    #[proto_comp(Copy)]
     speed: u16
 }
 
 // Also works on tuple structs:
-#[derive(Serialize, Deserialize, ProtoComponent)]
-struct Inventory ( 
-    // Optional: #[proto_comp(Clone)]
+#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+struct Inventory (
     Option<Vec<String>>
-)
+);
 ```
 
-> By default, the fields of a `ProtoComponent` are cloned into spawned entities. This can be somewhat controlled via the `proto_comp` attribute, which can tell the compiler to use the `Copy` trait instead.
+> By default, the `ProtoComponent` is cloned into spawned entities.
 
 Otherwise, you can define them manually (the two attributes are required with this method):
 
@@ -137,6 +135,8 @@ impl ProtoComponent for Inventory {
 ```
 
 > A `ProtoComponent` does *not* need to be a component itself. It can be used purely as a [DTO](https://en.wikipedia.org/wiki/Data_transfer_object) to generate other components or bundles. You have full access to the `EntityCommands` so you can insert bundles or even multiple components at once.
+>
+> Other ways of generating components from non-component `ProtoComponent` structs can be found in the [attributes](https://github.com/MrGVSV/bevy_proto/blob/main/examples/attributes.rs) example.
 
 ### Defining the Prototype
 

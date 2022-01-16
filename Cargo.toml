@@ -36,6 +36,10 @@ name = "bundles"
 path = "examples/bundles.rs"
 
 [[example]]
+name = "attributes"
+path = "examples/attributes.rs"
+
+[[example]]
 name = "templates"
 path = "examples/templates.rs"
 

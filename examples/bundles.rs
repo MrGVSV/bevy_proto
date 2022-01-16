@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use bevy_proto::{HandlePath, ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin, Prototypical};
+use bevy_proto::prelude::*;
 
 #[derive(Serialize, Deserialize, Component)]
 struct SpriteBundleDef {
