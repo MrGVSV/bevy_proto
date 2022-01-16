@@ -79,39 +79,6 @@ fn main() {
 }
 ```
 
-## ⚠️ Disclaimer
-
-Before you install it into your project, please understand the limitations of this crate. While it makes working with
-some entities easier, it may come at a bit of a performance cost depending on your project.
-
-According to the [`bench`](/examples/bench.rs) example, spawning a Prototype can be about 1.8x slower than defining the
-entity in the system manually (this may vary depending on the data being loaded). This difference becomes much smaller for release builds, but is still a tad slower. For some projects,— except maybe for those that are really intensive or
-spawn lots of entities very frequently,— this may not be a problem.
-
-Still, it's good to consider the drawbacks of using this system and see if it's right for your own project. Here's a
-breakdown of the top current/potential issues:
-
-* *Dynamic Dispatch* - This crate uses dynamic trait objects to add or remove any component on a Prototype. However,
-  this comes at a cost since the compiler can no longer know the types in advance, preventing things like static
-  dispatch, monomorphization, etc.
-
-* *Load Time* - This is likely not noticeable for smaller projects (although I haven't tested with hundreds of
-  Prototypes myself), but the crate currently does need to load all Prototypes at startup. This is so it can prepare any
-  other needed resources and assets in order to spawn the Prototype.
-
-* *Assets* - This crate also (currently) stores all required assets in its own resource `ProtoData`. This means that
-  resources that may only be needed once will be kept loaded during the entire lifetime of the application, since it
-  holds onto the handle. This can be prevented by hosting the asset on a separate component and manually creating the handles when spawning that Prototype:
-  
-  ```rust
-  // Attach fictional OtherComponent with asset "my_asset" which should unload when despawned
-  prototype.spawn(...).insert(OtherComponent(my_asset));
-  ```
-
-With all of that said, this package is meant to speed up development and make changes to entity archetypes easier for
-humans (especially non-programmers) to interact with. If the performance hit is too much for your project, you are
-better off sticking with the standard methods of defining entities.
-
 ## 📓 Examples
 
 Check out these examples for more details as to how to use this crate:
@@ -407,3 +374,36 @@ fn main() {
 ```
 
 > All fields in `ProtoDataOptions` must be specified if you wish to use a custom deserializer. Even if you want to continue using the defaults, you must still specify them. The additional fields shown above are also the defaults if you wish to copy them.
+
+## ⚠️ Disclaimer
+
+Before you install it into your project, please understand the limitations of this crate. While it makes working with
+some entities easier, it may come at a bit of a performance cost depending on your project.
+
+According to the [`bench`](/examples/bench.rs) example, spawning a Prototype can be about 1.8x slower than defining the
+entity in the system manually (this may vary depending on the data being loaded). This difference becomes much smaller for release builds, but is still a tad slower. For some projects,— except maybe for those that are really intensive or
+spawn lots of entities very frequently,— this may not be a problem.
+
+Still, it's good to consider the drawbacks of using this system and see if it's right for your own project. Here's a
+breakdown of the top current/potential issues:
+
+* *Dynamic Dispatch* - This crate uses dynamic trait objects to add or remove any component on a Prototype. However,
+  this comes at a cost since the compiler can no longer know the types in advance, preventing things like static
+  dispatch, monomorphization, etc.
+
+* *Load Time* - This is likely not noticeable for smaller projects (although I haven't tested with hundreds of
+  Prototypes myself), but the crate currently does need to load all Prototypes at startup. This is so it can prepare any
+  other needed resources and assets in order to spawn the Prototype.
+
+* *Assets* - This crate also (currently) stores all required assets in its own resource `ProtoData`. This means that
+  resources that may only be needed once will be kept loaded during the entire lifetime of the application, since it
+  holds onto the handle. This can be prevented by hosting the asset on a separate component and manually creating the handles when spawning that Prototype:
+
+  ```rust
+  // Attach fictional OtherComponent with asset "my_asset" which should unload when despawned
+  prototype.spawn(...).insert(OtherComponent(my_asset));
+  ```
+
+With all of that said, this package is meant to speed up development and make changes to entity archetypes easier for
+humans (especially non-programmers) to interact with. If the performance hit is too much for your project, you are
+better off sticking with the standard methods of defining entities.
