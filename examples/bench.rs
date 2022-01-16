@@ -1,9 +1,8 @@
 use std::time::Instant;
 
 use bevy::prelude::*;
+use bevy_proto::prelude::*;
 use serde::{Deserialize, Serialize};
-
-use bevy_proto::{HandlePath, ProtoCommands, ProtoComponent, ProtoData, ProtoPlugin, Prototypical};
 
 const ENTITY_COUNT: u128 = 200_000;
 const BATCH_SIZE: u128 = 5_000;
@@ -36,10 +35,7 @@ fn spawn_sprites_proto(
 	);
 }
 
-fn spawn_sprites_programmatic(
-	mut commands: Commands,
-	asset_server: Res<AssetServer>,
-) {
+fn spawn_sprites_programmatic(mut commands: Commands, asset_server: Res<AssetServer>) {
 	println!("Spawning Programmatically:");
 	let mut total: u128 = 0;
 	let mut before = Instant::now();
@@ -72,8 +68,8 @@ fn main() {
 	App::new()
 		.add_plugins(DefaultPlugins)
 		.add_plugin(ProtoPlugin::default())
-		.add_startup_system(spawn_sprites_proto.system().label("prototype"))
-		.add_startup_system(spawn_sprites_programmatic.system().after("prototype"))
+		.add_startup_system(spawn_sprites_proto.label("prototype"))
+		.add_startup_system(spawn_sprites_programmatic.after("prototype"))
 		.run();
 }
 

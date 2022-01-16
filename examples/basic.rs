@@ -83,7 +83,7 @@ fn main() {
 		// so we place this line after that one
 		.add_plugin(ProtoPlugin::default())
 		// Add our spawner system (this one only runs once at startup)
-		.add_startup_system(spawn_person.system())
-		.add_system(introduce.system())
+		.add_startup_system(spawn_person)
+		.add_system(introduce)
 		.run();
 }
