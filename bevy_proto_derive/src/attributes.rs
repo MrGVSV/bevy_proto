@@ -41,10 +41,7 @@ impl Parse for ProtoCompAttr {
 		} else if path == INTO_IDENT {
 			Ok(Self::Into(ident))
 		} else {
-			Err(Error::new(
-				Span::call_site(),
-				format!("Unexpected path '{:?}'", path),
-			))
+			Err(Error::new(Span::call_site(), "Unexpected path"))
 		}
 	}
 }
