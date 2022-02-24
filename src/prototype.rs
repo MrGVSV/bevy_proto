@@ -4,7 +4,7 @@ use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{AssetServer, Res};
+use bevy::prelude::{AssetServer, Entity, Res};
 use indexmap::IndexSet;
 use serde::{
 	de::{self, Error, SeqAccess, Visitor},
@@ -64,7 +64,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	///
 	/// ```
 	/// use bevy::prelude::*;
-	/// use bevy_proto::{ProtoData, Prototype, Prototypical};
+	/// use bevy_proto::prelude::{ProtoData, Prototype, Prototypical};
 	///
 	/// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>) {
 	///     let proto: Prototype = serde_yaml::from_str(r#"
@@ -89,6 +89,56 @@ pub trait Prototypical: 'static + Send + Sync {
 		asset_server: &Res<AssetServer>,
 	) -> EntityCommands<'w, 's, 'a> {
 		let entity = commands.spawn();
+		self.insert(entity, data, asset_server)
+	}
+
+	/// Inserts this prototype's component structure to the given entity
+	///
+	/// __Note:__ This _will_ override existing components of the same type.
+	///
+	/// # Arguments
+	///
+	/// * `entity`: The `EntityCommands` for a given entity
+	/// * `data`: The prototype data in this world
+	/// * `asset_server`: The asset server
+	///
+	/// returns: EntityCommands
+	///
+	/// # Examples
+	///
+	/// ```
+	/// use bevy::prelude::*;
+	/// use bevy_proto::prelude::{ProtoData, Prototype, Prototypical};
+	///
+	/// #[derive(Component, Default)]
+	/// struct Player(pub Entity);
+	///
+	/// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>, player: Query<&Player>) {
+	///     let proto: Prototype = serde_yaml::from_str(r#"
+	///     name: My Prototype
+	///     components:
+	///       - type: SomeMarkerComponent
+	///       - type: SomeComponent
+	///         value:
+	///           - speed: 10.0
+	///     "#).unwrap();
+	///
+	///     // Get the EntityCommands for the player entity
+	/// 	let entity = commands.entity(player.single().0);
+	///
+	///     // Insert the new components
+	///     let entity = proto.insert(entity, &data, &asset_server).id();
+	///
+	///     // ...
+	/// }
+	///
+	/// ```
+	fn insert<'w, 's, 'a, 'p>(
+		&'p self,
+		entity: EntityCommands<'w, 's, 'a>,
+		data: &Res<ProtoData>,
+		asset_server: &Res<AssetServer>,
+	) -> EntityCommands<'w, 's, 'a> {
 		let mut proto_commands = self.create_commands(entity, data);
 
 		spawn_internal(
