@@ -60,8 +60,13 @@ fn spawn_person(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<
 	// Spawn it again!
 	proto.spawn(&mut commands, &data, &asset_server);
 
+	// Insert on an existing entity!
+	let entity = commands.spawn().id();
+	let entity_cmds = commands.entity(entity);
+	proto.insert(entity_cmds, &data, &asset_server);
+
 	// Spawn in others!
-	for i in 1..4 {
+	for i in 2..=3 {
 		data.get_prototype(format!("Person Test {}", i).as_str())
 			.unwrap()
 			.spawn(&mut commands, &data, &asset_server);
