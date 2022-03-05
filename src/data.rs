@@ -112,13 +112,13 @@ impl ProtoData {
 		let proto_map = self
 			.handles
 			.entry(protoytpe.name().to_string())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		let comp_map = proto_map
 			.entry(component.type_id())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		let path_map = comp_map
 			.entry(path.to_string())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		path_map.insert(T::TYPE_UUID, handle.clone_untyped());
 	}
 
@@ -250,7 +250,7 @@ fn process_path(
 	extensions: &Option<Vec<&str>>,
 	deserializer: &Box<dyn ProtoDeserializer + Send + Sync>,
 	myself: &mut ProtoData,
-	directory: &String,
+	directory: &str,
 	recursive: bool,
 ) {
 	if let Ok(dir) = std::fs::read_dir(directory) {
@@ -275,7 +275,7 @@ fn process_path(
 
 			if let Some(filters) = &extensions {
 				if let Some(ext) = path.extension().and_then(OsStr::to_str) {
-					if filters.iter().find(|filter| *filter == &ext).is_none() {
+					if !filters.iter().any(|filter| filter == &ext) {
 						continue;
 					}
 				}

@@ -278,7 +278,7 @@ where
 		{
 			// Split string by commas
 			// Allowing for: "A, B, C" to become [A, B, C]
-			Ok(v.split(",").map(|s| s.trim().to_string()).collect())
+			Ok(v.split(',').map(|s| s.trim().to_string()).collect())
 		}
 
 		fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
