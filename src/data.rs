@@ -104,7 +104,7 @@ impl ProtoData {
 	/// ```
 	pub fn insert_handle<T: Asset>(
 		&mut self,
-		protoytpe: &Box<dyn Prototypical>,
+		protoytpe: &dyn Prototypical,
 		component: &dyn ProtoComponent,
 		path: &HandlePath,
 		handle: Handle<T>,

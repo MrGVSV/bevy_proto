@@ -4,7 +4,7 @@ use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{AssetServer, Entity, Res};
+use bevy::prelude::{AssetServer, Res};
 use indexmap::IndexSet;
 use serde::{
 	de::{self, Error, SeqAccess, Visitor},
