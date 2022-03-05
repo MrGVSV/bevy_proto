@@ -8,5 +8,5 @@ use crate::prototype::Prototypical;
 pub trait ProtoComponent: Send + Sync + 'static {
 	fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>);
 	#[allow(unused_variables)]
-	fn prepare(&self, world: &mut World, prototype: &Box<dyn Prototypical>, data: &mut ProtoData) {}
+	fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {}
 }

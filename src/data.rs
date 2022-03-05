@@ -60,8 +60,8 @@ impl ProtoData {
 	/// * `name`: The name of the prototype
 	///
 	/// returns: Option<&Prototype>
-	pub fn get_prototype(&self, name: &str) -> Option<&Box<dyn Prototypical>> {
-		self.prototypes.get(name)
+	pub fn get_prototype(&self, name: &str) -> Option<&dyn Prototypical> {
+		self.prototypes.get(name).map(|b| b.as_ref())
 	}
 
 	/// Store a handle
@@ -230,7 +230,7 @@ impl FromWorld for ProtoData {
 			process_path(
 				world,
 				&options.extensions,
-				&options.deserializer,
+				options.deserializer.as_ref(),
 				&mut myself,
 				&directory,
 				options.recursive_loading,
@@ -248,7 +248,7 @@ impl FromWorld for ProtoData {
 fn process_path(
 	world: &mut World,
 	extensions: &Option<Vec<&str>>,
-	deserializer: &Box<dyn ProtoDeserializer + Send + Sync>,
+	deserializer: &(dyn ProtoDeserializer + Send + Sync),
 	myself: &mut ProtoData,
 	directory: &str,
 	recursive: bool,
@@ -284,7 +284,7 @@ fn process_path(
 			if let Ok(data) = std::fs::read_to_string(path) {
 				if let Some(proto) = deserializer.deserialize(&data) {
 					for component in proto.iter_components() {
-						component.prepare(world, &proto, myself);
+						component.prepare(world, proto.as_ref(), myself);
 					}
 
 					myself.prototypes.insert(proto.name().to_string(), proto);
@@ -298,12 +298,12 @@ fn process_path(
 fn analyze_deps(data: &ProtoData) {
 	// === Perform Analysis === //
 	for proto in data.iter() {
-		check_for_cycles(proto, data, &mut IndexSet::default());
+		check_for_cycles(proto.as_ref(), data, &mut IndexSet::default());
 	}
 
 	// === Analysis Functions === //
 	fn check_for_cycles<'a>(
-		proto: &'a Box<dyn Prototypical>,
+		proto: &'a dyn Prototypical,
 		data: &'a ProtoData,
 		traversed: &mut IndexSet<&'a str>,
 	) {
