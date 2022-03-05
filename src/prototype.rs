@@ -124,7 +124,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	///     "#).unwrap();
 	///
 	///     // Get the EntityCommands for the player entity
-	/// 	let entity = commands.entity(player.single().0);
+	///     let entity = commands.entity(player.single().0);
 	///
 	///     // Insert the new components
 	///     let entity = proto.insert(entity, &data, &asset_server).id();

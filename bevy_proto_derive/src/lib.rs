@@ -21,8 +21,8 @@ mod constants;
 ///
 /// #[derive(Clone, Serialize, Deserialize, ProtoComponent)]
 /// struct SomeComponent {
-/// 	some_string: String,
-/// 	some_int: i32,
+///     some_string: String,
+///     some_int: i32,
 /// }
 ///
 /// // Which generates:

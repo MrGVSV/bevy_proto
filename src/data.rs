@@ -439,11 +439,11 @@ pub trait ProtoDeserializer: DynClone {
 	/// // The default implementation:
 	/// use bevy_proto::{Prototype, Prototypical};
 	/// fn example_deserialize(data: &str) -> Option<Box<dyn Prototypical>> {
-	/// 	if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
-	///  		Some(Box::new(value))
-	///  	} else {
-	/// 		None
-	///  	}
+	///     if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
+	///         Some(Box::new(value))
+	///     } else {
+	///         None
+	///     }
 	/// }
 	/// ```
 	fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>>;
@@ -466,10 +466,10 @@ pub struct ProtoDataOptions {
 	/// use bevy_proto::ProtoDataOptions;
 	///
 	/// let opts = ProtoDataOptions {
-	/// 	directories: vec![String::from("assets/prototypes")],
-	///	    recursive_loading: true,
-	/// 	extensions: Some(vec!["yaml"]),
-	/// 	..Default::default()
+	///     directories: vec![String::from("assets/prototypes")],
+	///     recursive_loading: true,
+	///     extensions: Some(vec!["yaml"]),
+	///     ..Default::default()
 	/// };
 	/// ```
 	pub recursive_loading: bool,
@@ -486,9 +486,9 @@ pub struct ProtoDataOptions {
 	/// use bevy_proto::ProtoDataOptions;
 	///
 	/// let opts = ProtoDataOptions {
-	/// 	// Only allow .yaml or .json files
-	/// 	extensions: Some(vec!["yaml", "json"]),
-	/// 	..Default::default()
+	///     // Only allow .yaml or .json files
+	///     extensions: Some(vec!["yaml", "json"]),
+	///     ..Default::default()
 	/// };
 	/// ```
 	pub extensions: Option<Vec<&'static str>>,
