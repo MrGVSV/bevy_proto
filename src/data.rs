@@ -26,6 +26,8 @@ impl Deref for HandlePath {
 	}
 }
 
+type UuidHandleMap = HashMap<Uuid, HandleUntyped>;
+
 /// A resource containing data for all prototypes that need data stored
 pub struct ProtoData {
 	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
@@ -35,10 +37,7 @@ pub struct ProtoData {
 			TypeId, // Component Type
 			HashMap<
 				String, // Handle Path
-				HashMap<
-					Uuid,          // Asset UUID
-					HandleUntyped, // Handle
-				>,
+				UuidHandleMap,
 			>,
 		>,
 	>,
@@ -46,7 +45,7 @@ pub struct ProtoData {
 }
 
 impl ProtoData {
-	pub fn new() -> Self {
+	pub fn empty() -> Self {
 		Self {
 			handles: HashMap::default(),
 			prototypes: HashMap::default(),
@@ -60,8 +59,8 @@ impl ProtoData {
 	/// * `name`: The name of the prototype
 	///
 	/// returns: Option<&Prototype>
-	pub fn get_prototype(&self, name: &str) -> Option<&Box<dyn Prototypical>> {
-		self.prototypes.get(name)
+	pub fn get_prototype(&self, name: &str) -> Option<&dyn Prototypical> {
+		self.prototypes.get(name).map(|b| b.as_ref())
 	}
 
 	/// Store a handle
@@ -104,7 +103,7 @@ impl ProtoData {
 	/// ```
 	pub fn insert_handle<T: Asset>(
 		&mut self,
-		protoytpe: &Box<dyn Prototypical>,
+		protoytpe: &dyn Prototypical,
 		component: &dyn ProtoComponent,
 		path: &HandlePath,
 		handle: Handle<T>,
@@ -112,13 +111,13 @@ impl ProtoData {
 		let proto_map = self
 			.handles
 			.entry(protoytpe.name().to_string())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		let comp_map = proto_map
 			.entry(component.type_id())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		let path_map = comp_map
 			.entry(path.to_string())
-			.or_insert(HashMap::default());
+			.or_insert_with(HashMap::default);
 		path_map.insert(T::TYPE_UUID, handle.clone_untyped());
 	}
 
@@ -230,7 +229,7 @@ impl FromWorld for ProtoData {
 			process_path(
 				world,
 				&options.extensions,
-				&options.deserializer,
+				options.deserializer.as_ref(),
 				&mut myself,
 				&directory,
 				options.recursive_loading,
@@ -248,9 +247,9 @@ impl FromWorld for ProtoData {
 fn process_path(
 	world: &mut World,
 	extensions: &Option<Vec<&str>>,
-	deserializer: &Box<dyn ProtoDeserializer + Send + Sync>,
+	deserializer: &(dyn ProtoDeserializer + Send + Sync),
 	myself: &mut ProtoData,
-	directory: &String,
+	directory: &str,
 	recursive: bool,
 ) {
 	if let Ok(dir) = std::fs::read_dir(directory) {
@@ -275,7 +274,7 @@ fn process_path(
 
 			if let Some(filters) = &extensions {
 				if let Some(ext) = path.extension().and_then(OsStr::to_str) {
-					if filters.iter().find(|filter| *filter == &ext).is_none() {
+					if !filters.iter().any(|filter| filter == &ext) {
 						continue;
 					}
 				}
@@ -284,7 +283,7 @@ fn process_path(
 			if let Ok(data) = std::fs::read_to_string(path) {
 				if let Some(proto) = deserializer.deserialize(&data) {
 					for component in proto.iter_components() {
-						component.prepare(world, &proto, myself);
+						component.prepare(world, proto.as_ref(), myself);
 					}
 
 					myself.prototypes.insert(proto.name().to_string(), proto);
@@ -298,12 +297,12 @@ fn process_path(
 fn analyze_deps(data: &ProtoData) {
 	// === Perform Analysis === //
 	for proto in data.iter() {
-		check_for_cycles(proto, data, &mut IndexSet::default());
+		check_for_cycles(proto.as_ref(), data, &mut IndexSet::default());
 	}
 
 	// === Analysis Functions === //
 	fn check_for_cycles<'a>(
-		proto: &'a Box<dyn Prototypical>,
+		proto: &'a dyn Prototypical,
 		data: &'a ProtoData,
 		traversed: &mut IndexSet<&'a str>,
 	) {
@@ -439,11 +438,11 @@ pub trait ProtoDeserializer: DynClone {
 	/// // The default implementation:
 	/// use bevy_proto::{Prototype, Prototypical};
 	/// fn example_deserialize(data: &str) -> Option<Box<dyn Prototypical>> {
-	/// 	if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
-	///  		Some(Box::new(value))
-	///  	} else {
-	/// 		None
-	///  	}
+	///     if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
+	///         Some(Box::new(value))
+	///     } else {
+	///         None
+	///    }
 	/// }
 	/// ```
 	fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>>;
@@ -466,10 +465,10 @@ pub struct ProtoDataOptions {
 	/// use bevy_proto::ProtoDataOptions;
 	///
 	/// let opts = ProtoDataOptions {
-	/// 	directories: vec![String::from("assets/prototypes")],
-	///	    recursive_loading: true,
-	/// 	extensions: Some(vec!["yaml"]),
-	/// 	..Default::default()
+	///     directories: vec![String::from("assets/prototypes")],
+	///     recursive_loading: true,
+	///     extensions: Some(vec!["yaml"]),
+	///     ..Default::default()
 	/// };
 	/// ```
 	pub recursive_loading: bool,
@@ -486,9 +485,9 @@ pub struct ProtoDataOptions {
 	/// use bevy_proto::ProtoDataOptions;
 	///
 	/// let opts = ProtoDataOptions {
-	/// 	// Only allow .yaml or .json files
-	/// 	extensions: Some(vec!["yaml", "json"]),
-	/// 	..Default::default()
+	///     // Only allow .yaml or .json files
+	///     extensions: Some(vec!["yaml", "json"]),
+	///     ..Default::default()
 	/// };
 	/// ```
 	pub extensions: Option<Vec<&'static str>>,

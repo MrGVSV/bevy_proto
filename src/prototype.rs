@@ -4,7 +4,7 @@ use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{AssetServer, Entity, Res};
+use bevy::prelude::{AssetServer, Res};
 use indexmap::IndexSet;
 use serde::{
 	de::{self, Error, SeqAccess, Visitor},
@@ -124,7 +124,7 @@ pub trait Prototypical: 'static + Send + Sync {
 	///     "#).unwrap();
 	///
 	///     // Get the EntityCommands for the player entity
-	/// 	let entity = commands.entity(player.single().0);
+	///     let entity = commands.entity(player.single().0);
 	///
 	///     // Insert the new components
 	///     let entity = proto.insert(entity, &data, &asset_server).id();
@@ -278,7 +278,7 @@ where
 		{
 			// Split string by commas
 			// Allowing for: "A, B, C" to become [A, B, C]
-			Ok(v.split(",").map(|s| s.trim().to_string()).collect())
+			Ok(v.split(',').map(|s| s.trim().to_string()).collect())
 		}
 
 		fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>

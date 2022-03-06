@@ -5,6 +5,7 @@ use crate::{
 	prototype::{Prototype, Prototypical},
 };
 
+#[derive(Default)]
 pub struct ProtoPlugin {
 	pub options: Option<ProtoDataOptions>,
 }
@@ -118,12 +119,6 @@ impl ProtoPlugin {
 				extensions: Some(vec!["yaml", "json"]),
 			}),
 		}
-	}
-}
-
-impl Default for ProtoPlugin {
-	fn default() -> Self {
-		Self { options: None }
 	}
 }
 

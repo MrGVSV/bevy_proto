@@ -37,7 +37,7 @@ impl ProtoComponent for Person {
 /// ```
 /// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
 /// struct Person {
-/// 	pub name: String,
+///     pub name: String,
 /// }
 /// ```
 #[derive(Copy, Clone, Serialize, Deserialize, ProtoComponent, Component)]
