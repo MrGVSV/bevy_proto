@@ -26,6 +26,8 @@ impl Deref for HandlePath {
 	}
 }
 
+type UuidHandleMap = HashMap<Uuid, HandleUntyped>;
+
 /// A resource containing data for all prototypes that need data stored
 pub struct ProtoData {
 	/// Maps Prototype Name -> Component Type -> HandlePath -> Asset Type -> HandleUntyped
@@ -35,10 +37,7 @@ pub struct ProtoData {
 			TypeId, // Component Type
 			HashMap<
 				String, // Handle Path
-				HashMap<
-					Uuid,          // Asset UUID
-					HandleUntyped, // Handle
-				>,
+				UuidHandleMap,
 			>,
 		>,
 	>,
@@ -46,7 +45,7 @@ pub struct ProtoData {
 }
 
 impl ProtoData {
-	pub fn new() -> Self {
+	pub fn empty() -> Self {
 		Self {
 			handles: HashMap::default(),
 			prototypes: HashMap::default(),
@@ -443,7 +442,7 @@ pub trait ProtoDeserializer: DynClone {
 	///         Some(Box::new(value))
 	///     } else {
 	///         None
-	///     }
+	///    }
 	/// }
 	/// ```
 	fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>>;
