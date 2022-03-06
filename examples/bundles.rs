@@ -35,7 +35,7 @@ impl ProtoComponent for SpriteBundleDef {
 	/// Please keep in mind the ordering here. Rust's borrow checker still applies here: we can't have
 	/// both a mutable and immutable access to world at the same time. Therefore, you will need to break
 	/// your world access into chunks, getting whatever handles or data you need along the way
-	fn prepare(&self, world: &mut World, prototype: &Box<dyn Prototypical>, data: &mut ProtoData) {
+	fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {
 		// === Load Handles === //
 		let asset_server = world.get_resource::<AssetServer>().unwrap();
 		let texture: Handle<Image> = asset_server.load(self.texture_path.as_str());
