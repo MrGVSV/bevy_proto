@@ -26,14 +26,14 @@ struct Occupation(OccupationType);
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug)]
 enum OccupationType {
-	Unemployed,
-	Miner,
-	Shopkeeper,
+    Unemployed,
+    Miner,
+    Shopkeeper,
 }
 
 #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
 struct Health {
-	max: u16,
+    max: u16,
 }
 
 #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
@@ -41,36 +41,36 @@ struct Named(String);
 
 /// Spawn in the NPC
 fn spawn_npc(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-	let proto = data.get_prototype("Alice").expect("Should exist!");
-	proto.spawn(&mut commands, &data, &asset_server);
-	let proto = data.get_prototype("Bob").expect("Should exist!");
-	proto.spawn(&mut commands, &data, &asset_server);
-	let proto = data.get_prototype("Urist").expect("Should exist!");
-	proto.spawn(&mut commands, &data, &asset_server);
-	let proto = data.get_prototype("Mystery").expect("Should exist!");
-	proto.spawn(&mut commands, &data, &asset_server);
+    let proto = data.get_prototype("Alice").expect("Should exist!");
+    proto.spawn(&mut commands, &data, &asset_server);
+    let proto = data.get_prototype("Bob").expect("Should exist!");
+    proto.spawn(&mut commands, &data, &asset_server);
+    let proto = data.get_prototype("Urist").expect("Should exist!");
+    proto.spawn(&mut commands, &data, &asset_server);
+    let proto = data.get_prototype("Mystery").expect("Should exist!");
+    proto.spawn(&mut commands, &data, &asset_server);
 }
 
 /// Handle the NPC spawning
 fn on_spawn(query: Query<(&Health, &Occupation, Option<&Named>), Added<NPC>>) {
-	for (health, occupation, name) in query.iter() {
-		let name = if let Some(name) = name {
-			format!("'{}'", name.0)
-		} else {
-			String::from("<UNKNOWN>")
-		};
-		println!(
-			"NPC {} => MaxHP: {} | Occupation: {:?}",
-			name, health.max, occupation.0
-		);
-	}
+    for (health, occupation, name) in query.iter() {
+        let name = if let Some(name) = name {
+            format!("'{}'", name.0)
+        } else {
+            String::from("<UNKNOWN>")
+        };
+        println!(
+            "NPC {} => MaxHP: {} | Occupation: {:?}",
+            name, health.max, occupation.0
+        );
+    }
 }
 
 fn main() {
-	App::new()
-		.add_plugins(DefaultPlugins)
-		.add_plugin(ProtoPlugin::with_dir("assets/prototypes/templates"))
-		.add_startup_system(spawn_npc)
-		.add_system(on_spawn)
-		.run();
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_plugin(ProtoPlugin::with_dir("assets/prototypes/templates"))
+        .add_startup_system(spawn_npc)
+        .add_system(on_spawn)
+        .run();
 }

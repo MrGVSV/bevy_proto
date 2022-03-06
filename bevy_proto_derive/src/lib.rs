@@ -41,49 +41,49 @@ mod constants;
 /// ```
 #[proc_macro_derive(ProtoComponent, attributes(proto_comp))]
 pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
-	let DeriveInput {
-		ident, data, attrs, ..
-	} = parse_macro_input!(input);
+    let DeriveInput {
+        ident, data, attrs, ..
+    } = parse_macro_input!(input);
 
-	let mut generator = None;
-	for attr in attrs {
-		let struct_attr: Result<ProtoCompAttr> = attr.parse_args();
-		if let Ok(struct_attr) = struct_attr {
-			generator = Some(quote! { #struct_attr });
-			break;
-		}
-	}
+    let mut generator = None;
+    for attr in attrs {
+        let struct_attr: Result<ProtoCompAttr> = attr.parse_args();
+        if let Ok(struct_attr) = struct_attr {
+            generator = Some(quote! { #struct_attr });
+            break;
+        }
+    }
 
-	let generator = if let Some(generator) = generator {
-		generator
-	} else {
-		match data {
-			Data::Struct(..) | Data::Enum(..) => {
-				quote! {
-					let component = self.clone();
-					commands.insert(component);
-				}
-			}
-			_ => syn::Error::new(
-				Span::call_site(),
-				"ProtoComponent can only be applied on struct types",
-			)
-			.to_compile_error(),
-		}
-	};
+    let generator = if let Some(generator) = generator {
+        generator
+    } else {
+        match data {
+            Data::Struct(..) | Data::Enum(..) => {
+                quote! {
+                    let component = self.clone();
+                    commands.insert(component);
+                }
+            }
+            _ => syn::Error::new(
+                Span::call_site(),
+                "ProtoComponent can only be applied on struct types",
+            )
+            .to_compile_error(),
+        }
+    };
 
-	let output = quote! {
-		#[typetag::serde]
-		impl bevy_proto::prelude::ProtoComponent for #ident {
-			fn insert_self(
-				&self,
-				commands: &mut bevy_proto::prelude::ProtoCommands,
-				asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
-			) {
-				#generator;
-			}
-		}
-	};
+    let output = quote! {
+        #[typetag::serde]
+        impl bevy_proto::prelude::ProtoComponent for #ident {
+            fn insert_self(
+                &self,
+                commands: &mut bevy_proto::prelude::ProtoCommands,
+                asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
+            ) {
+                #generator;
+            }
+        }
+    };
 
-	output.into()
+    output.into()
 }

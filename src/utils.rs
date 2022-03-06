@@ -25,11 +25,11 @@ use std::ops::Add;
 /// // Output: 'A' -> 'B' -> 'C' -> 'B'
 /// ```
 pub(crate) fn make_cycle_tree(template_name: &str, traversed: &IndexSet<&str>) -> String {
-	traversed
-		.iter()
-		.map(|n| format!("'{}' -> ", n))
-		.collect::<String>()
-		.add(&format!("'{}'", template_name))
+    traversed
+        .iter()
+        .map(|n| format!("'{}' -> ", n))
+        .collect::<String>()
+        .add(&format!("'{}'", template_name))
 }
 
 /// Handles a dependency cycle by panicking
