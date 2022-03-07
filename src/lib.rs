@@ -8,10 +8,10 @@ pub mod prototype;
 mod utils;
 
 pub mod prelude {
-	pub use bevy_proto_derive::*;
+    pub use bevy_proto_derive::*;
 
-	pub use super::components::*;
-	pub use super::data::*;
-	pub use super::plugin::*;
-	pub use super::prototype::{Prototype, Prototypical};
+    pub use super::components::*;
+    pub use super::data::*;
+    pub use super::plugin::*;
+    pub use super::prototype::{Prototype, Prototypical};
 }

@@ -3,15 +3,15 @@
 pub(crate) struct Symbol(&'static str);
 
 impl<'a> PartialEq<Symbol> for &'a syn::Path {
-	fn eq(&self, ident: &Symbol) -> bool {
-		self.is_ident(ident.0)
-	}
+    fn eq(&self, ident: &Symbol) -> bool {
+        self.is_ident(ident.0)
+    }
 }
 
 impl PartialEq<Symbol> for syn::Path {
-	fn eq(&self, ident: &Symbol) -> bool {
-		self.is_ident(ident.0)
-	}
+    fn eq(&self, ident: &Symbol) -> bool {
+        self.is_ident(ident.0)
+    }
 }
 
 pub(crate) const WITH_IDENT: Symbol = Symbol("with");
