@@ -1,4 +1,4 @@
-use std::fmt::Formatter;
+use std::fmt::{Debug, Formatter};
 use std::iter::Rev;
 use std::slice::Iter;
 
@@ -11,6 +11,7 @@ use serde::{
     Deserialize, Deserializer, Serialize,
 };
 
+use crate::components::ComponentList;
 use crate::{
     components::ProtoComponent, data::ProtoCommands, data::ProtoData, utils::handle_cycle,
 };
@@ -202,20 +203,15 @@ fn spawn_internal<'a>(
 }
 
 /// The default prototype object, providing the basics for the prototype system
-#[derive(Serialize, Deserialize)]
 pub struct Prototype {
     /// The name of this prototype
     pub name: String,
     /// The names of this prototype's templates (if any)
     ///
     /// See [`deserialize_templates_list`], for how these names are deserialized.
-    #[serde(default)]
-    #[serde(alias = "template")]
-    #[serde(deserialize_with = "deserialize_templates_list")]
     pub templates: Vec<String>,
     /// The components belonging to this prototype
-    #[serde(default)]
-    pub components: Vec<Box<dyn ProtoComponent>>,
+    pub components: ComponentList,
 }
 
 impl Prototypical for Prototype {
@@ -237,6 +233,16 @@ impl Prototypical for Prototype {
         data: &'p Res<ProtoData>,
     ) -> ProtoCommands<'w, 's, 'a, 'p> {
         data.get_commands(self, entity)
+    }
+}
+
+impl Debug for Prototype {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Prototype")
+            .field("name", &self.name)
+            .field("templates", &self.templates)
+            .field("components", &self.components.len())
+            .finish()
     }
 }
 

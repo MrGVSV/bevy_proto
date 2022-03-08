@@ -6,6 +6,9 @@ pub mod plugin;
 pub mod prototype;
 #[macro_use]
 mod utils;
+mod command;
+mod prototypical;
+mod serde;
 
 pub mod prelude {
     pub use bevy_proto_derive::*;

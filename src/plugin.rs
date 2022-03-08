@@ -147,10 +147,11 @@ struct DefaultProtoDeserializer;
 
 impl ProtoDeserializer for DefaultProtoDeserializer {
     fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>> {
-        if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
-            Some(Box::new(value))
-        } else {
-            None
-        }
+        // if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
+        // 	Some(Box::new(value))
+        // } else {
+        // 	None
+        // }
+        None
     }
 }

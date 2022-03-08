@@ -87,3 +87,16 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
 
     output.into()
 }
+
+fn get_crate() -> proc_macro2::TokenStream {
+    use proc_macro_crate::{crate_name, FoundCrate};
+
+    let found_crate = crate_name("bevy_proto").expect("bevy_proto is present in `Cargo.toml`");
+    match found_crate {
+        FoundCrate::Itself => quote!(crate),
+        FoundCrate::Name(name) => {
+            let ident = Ident::new(&name, Span::call_site());
+            quote!( #ident )
+        }
+    }
+}
