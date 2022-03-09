@@ -17,7 +17,7 @@ impl ProtoPlugin {
     /// Creates a [`ProtoPlugin`], using the given path to find prototype files.
     /// See also: [`with_dir_recursive`][`ProtoPlugin::with_dir_recursive`].
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `dir`: The directory path, relative to the project root.
     ///
@@ -39,10 +39,10 @@ impl ProtoPlugin {
         }
     }
 
-    /// Creates a [`ProtoPlugin`], using the given path recursively to find prototype files.
+    /// Creates a [`ProtoPlugin`], using the given path to recursively find prototype files.
     /// See also: [`with_dir`][`ProtoPlugin::with_dir`].
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `dir`: The directory path, relative to the project root.
     ///
@@ -66,7 +66,7 @@ impl ProtoPlugin {
 
     /// Creates a [`ProtoPlugin`], using the given vec of paths to find prototype files.
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `dirs`: The directory paths, relative to the project root.
     ///
@@ -91,9 +91,9 @@ impl ProtoPlugin {
         }
     }
 
-    /// Creates a [`ProtoPlugin`], using the given vec of dirs recursively to find prototype files.
+    /// Creates a [`ProtoPlugin`], using the given vec of dirs to recursively find prototype files.
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `dirs`: The directory paths, relative to the project root
     ///

@@ -4,41 +4,38 @@ use bevy::prelude::{AssetServer, Res, World};
 use crate::data::{ProtoCommands, ProtoData};
 use crate::prototype::Prototypical;
 
-/// Specifies how a struct inserts components into an entity.
+/// Specifies how a type inserts components into an entity.
 ///
-/// Any struct which is `Send + Sync + 'static` can implement [`ProtoComponent`].
-/// The implementing struct may or may not be a component itself.
-/// Commonly, [data transfer objects](https://en.wikipedia.org/wiki/Data_transfer_object)
-/// can implement [`ProtoComponent`] to generate components or bundles.
+/// Types implementing [`ProtoComponent`] describe how to insert any number of components or bundles when spawning a prototype.
+/// Any type which is `Send + Sync + 'static` can implement [`ProtoComponent`].
 ///
-/// The [`insert_self`][`ProtoComponent::insert_self`] method provides full mutable access to [`EntityCommands`][bevy::ecs::system::EntityCommands].
-/// Implementations can arbitrarily insert zero, one, or many components or bundles at once into an entity.
-///
-/// This trait allows components to be used within [`Prototypical`](crate::prototype::Prototypical) structs.
+/// Notably, this means a [`ProtoComponent`] might not be a [`Component`][bevy::prelude::Component] itself.
+/// The [`ProtoComponent`] can be a kind of [data transfer object](https://en.wikipedia.org/wiki/Data_transfer_object) which
+/// describes inserting any arbitrary set of components or bundles.
 ///
 /// # Examples
 ///
-/// For simple components, [`ProtoComponent`] can be derived:
+/// To just insert a type which is a [`Component`][bevy::prelude::Component], [`ProtoComponent`] can be derived:
 ///
 /// ```
 /// use serde::{Deserialize, Serialize};
 /// use bevy::prelude::*;
 /// use bevy_proto::prelude::*;
 ///
-/// #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
 /// pub struct Movement {
 ///     speed: u16,
 /// }
 ///
 /// // Also works on tuple structs:
-/// #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-/// struct Inventory (Option<Vec<String>>);
+/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
+/// struct Inventory(Option<Vec<String>>);
 /// ```
 ///
-/// The derived implementation clones `Self` and inserts the cloned value into the entity.
-/// To derive [`ProtoComponent`], a struct must also be [`Clone`], [`serde::Deserialize`], [`serde::Serialize`], and [`Component`][bevy::ecs::component::Component].
+/// The derived [`ProtoComponent`] implementation clones `Self` and inserts the cloned value into the entity.
+/// A deriving type must also be [`Clone`], [`serde::Deserialize`], [`serde::Serialize`], and [`Component`][bevy::ecs::component::Component].
 ///
-/// [`ProtoComponent`] can also be implemented manually:
+/// For other cases, [`ProtoComponent`] can be implemented manually:
 ///
 /// ```
 /// use serde::{Deserialize, Serialize};
@@ -46,19 +43,36 @@ use crate::prototype::Prototypical;
 /// use bevy::ecs::system::EntityCommands;
 /// use bevy_proto::prelude::*;
 ///
-/// #[derive(Serialize, Deserialize, Component)] // Required
-/// struct Inventory(Option<Vec<String>>);
+/// // We'll implement `ProtoComponent` on this `Inventory` struct.
+/// // Our implementation will insert multiple different components.
+/// #[derive(Serialize, Deserialize)] // Required
+/// struct Inventory {
+///     items: Items,
+///     quest_items: QuestItems,
+/// }
+///
+/// // This `Items` struct will be one of the component types we insert.
+/// #[derive(Clone, Serialize, Deserialize, Component)]
+/// struct Items(Vec<String>);
+///
+/// // We will also insert this separate `QuestItems` struct.
+/// #[derive(Clone, Serialize, Deserialize, Component)]
+/// struct QuestItems(Vec<String>);
 ///
 /// #[typetag::serde] // Required
 /// impl ProtoComponent for Inventory {
-///     // Required
+///     // The `Inventory` implementation of `insert_self` inserts two components:
+///     // one for `Items`, and one for `QuestItems`.
 ///     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
-///         commands.insert(
-///             Self (self.0.clone())
-///         );
+///         commands.insert(self.items.clone());
+///         commands.insert(self.quest_items.clone());
 ///     }
 /// }
 /// ```
+///
+/// Implementations of insert_self can arbitrarily insert zero, one, or many components or bundles.
+///
+///  This trait allows components to be used within [`Prototypical`](crate::prototype::Prototypical) structs.
 #[typetag::serde(tag = "type", content = "value")]
 pub trait ProtoComponent: Send + Sync + 'static {
     /// Defines how this struct inserts components and/or bundles into an entity.

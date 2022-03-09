@@ -38,7 +38,7 @@ pub trait Prototypical: 'static + Send + Sync {
 
     /// Creates [`ProtoCommands`] used to modify the given entity.
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `entity`: The entity commands
     /// * `data`: The prototype data in this world
@@ -51,7 +51,7 @@ pub trait Prototypical: 'static + Send + Sync {
 
     /// Spawns an entity with this prototype's component structure.
     ///
-    /// # Parameters
+    /// # Arguments
     ///
     /// * `commands`: The world `Commands`
     /// * `data`: The prototype data in this world

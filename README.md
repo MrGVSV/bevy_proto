@@ -359,11 +359,11 @@ impl ProtoDeserializer for CustomProtoDeserializer {
 }
 
 fn main() {
-    App::build()
+    App::new()
         .add_plugins(DefaultPlugins)
         // ...
         .add_plugin(ProtoPlugin {
-            options: ProtoDataOptions {
+            options: Some(ProtoDataOptions {
                 // Specify your custom deserializer
                 deserializer: Box::new(CustomProtoDeserializer),
 
@@ -373,7 +373,7 @@ fn main() {
                 recursive_loading: false,
                 // You can also update the allowed extensions within those directories
                 extensions: Some(vec!["yaml", "json"]),
-            }
+            })
         })
         // other plugins, resources, not needed by ProtoPlugin
         // ...
