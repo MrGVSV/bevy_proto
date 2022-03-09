@@ -1,12 +1,13 @@
 extern crate bevy_proto_derive;
 
-pub mod components;
 pub mod data;
 pub mod plugin;
 pub mod prototype;
 #[macro_use]
 mod utils;
 mod command;
+mod components;
+mod errors;
 mod prototypical;
 mod serde;
 

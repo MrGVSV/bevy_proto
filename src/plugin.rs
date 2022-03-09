@@ -2,7 +2,7 @@ use bevy::app::{App, Plugin};
 
 use crate::{
     data::{ProtoData, ProtoDataOptions, ProtoDeserializer},
-    prototype::{Prototype, Prototypical},
+    prototype::Prototypical,
 };
 
 #[derive(Default)]
@@ -146,7 +146,7 @@ impl Plugin for ProtoPlugin {
 struct DefaultProtoDeserializer;
 
 impl ProtoDeserializer for DefaultProtoDeserializer {
-    fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>> {
+    fn deserialize(&self, _data: &str) -> Option<Box<dyn Prototypical>> {
         // if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
         // 	Some(Box::new(value))
         // } else {

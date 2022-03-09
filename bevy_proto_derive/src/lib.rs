@@ -45,6 +45,8 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
         ident, data, attrs, ..
     } = parse_macro_input!(input);
 
+    let bevy_proto = get_crate();
+
     let mut generator = None;
     for attr in attrs {
         let struct_attr: Result<ProtoCompAttr> = attr.parse_args();
@@ -73,14 +75,17 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
     };
 
     let output = quote! {
-        #[typetag::serde]
-        impl bevy_proto::prelude::ProtoComponent for #ident {
+        impl #bevy_proto::prelude::ProtoComponent for #ident {
             fn insert_self(
                 &self,
-                commands: &mut bevy_proto::prelude::ProtoCommands,
+                commands: &mut #bevy_proto::prelude::ProtoCommands,
                 asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
             ) {
                 #generator;
+            }
+
+            fn as_reflect(&self) -> &dyn bevy::prelude::Reflect {
+                self
             }
         }
     };

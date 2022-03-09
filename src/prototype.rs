@@ -8,7 +8,7 @@ use bevy::prelude::{AssetServer, Res};
 use indexmap::IndexSet;
 use serde::{
     de::{self, Error, SeqAccess, Visitor},
-    Deserialize, Deserializer, Serialize,
+    Deserialize, Deserializer,
 };
 
 use crate::components::ComponentList;
@@ -203,6 +203,7 @@ fn spawn_internal<'a>(
 }
 
 /// The default prototype object, providing the basics for the prototype system
+#[derive(Debug, PartialEq)]
 pub struct Prototype {
     /// The name of this prototype
     pub name: String,
@@ -233,16 +234,6 @@ impl Prototypical for Prototype {
         data: &'p Res<ProtoData>,
     ) -> ProtoCommands<'w, 's, 'a, 'p> {
         data.get_commands(self, entity)
-    }
-}
-
-impl Debug for Prototype {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Prototype")
-            .field("name", &self.name)
-            .field("templates", &self.templates)
-            .field("components", &self.components.len())
-            .finish()
     }
 }
 
