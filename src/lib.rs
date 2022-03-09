@@ -7,23 +7,23 @@
 //! - [`ProtoPlugin`](plugin::ProtoPlugin) provides configuration for asset loading.
 //!
 //! # Examples
+//!
 //! Define a serialized prototype:
+//! ```yaml
+//! # assets/prototypes/simple-enemy.yaml
+//! name: "Simple Enemy"
+//! components:
+//!     - type: Enemy
+//!     - type: Attack
+//!       value:
+//!         damage: 10
+//! ```
+//!
+//! Implement `ProtoComponent` for the component types:
 //! ```
 //! use bevy::prelude::*;
 //! use bevy_proto::prelude::*;
 //! use serde::{Deserialize, Serialize};
-//!
-//! // Define a serialized prototype.
-//! // In this example we would load this from a .yaml file in "assets/prototypes".
-//!
-//! // name: "Simple Enemy"
-//! // components:
-//! //     - type: Enemy
-//! //     - type: Attack
-//! //       value:
-//! //         damage: 10
-//!
-//! // Implement `ProtoComponent` for the component types:
 //!
 //! #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
 //! struct Enemy;
@@ -32,8 +32,13 @@
 //! struct Attack {
 //!     damage: u16
 //! }
+//! ```
 //!
-//! // Add the plugin:
+//! Add the plugin:
+//! ```
+//! use bevy::prelude::*;
+//! use bevy_proto::prelude::*;
+//!
 //! fn main() {
 //!     App::new()
 //!         .add_plugins(DefaultPlugins)
@@ -50,8 +55,13 @@
 //!            })
 //!         });
 //! }
+//! ```
 //!
-//! // Finally, spawn a prototype with a system:
+//! Finally, spawn a prototype with a system:
+//!
+//! ```
+//! use bevy::prelude::*;
+//! use bevy_proto::prelude::*;
 //!
 //! fn spawn_enemy(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
 //!     let proto = data.get_prototype("Simple Enemy").expect("Prototype doesn't exist!");
