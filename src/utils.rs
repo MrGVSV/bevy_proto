@@ -12,7 +12,7 @@ use std::ops::Add;
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use indexmap::IndexSet;
 ///
 /// let mut traversed = IndexSet::<_>::default();
