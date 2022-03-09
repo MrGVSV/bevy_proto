@@ -1,8 +1,9 @@
 use crate::components::ComponentList;
-use crate::prelude::Prototype;
+use crate::prelude::{Prototype, TemplateList};
 use bevy::reflect::{serde::ReflectDeserializer, TypeRegistry};
+use serde::de::value::SeqAccessDeserializer;
 use serde::de::{DeserializeSeed, Error, MapAccess, SeqAccess, Visitor};
-use serde::Deserializer;
+use serde::{Deserialize, Deserializer};
 use std::fmt::Formatter;
 
 /// A deserializer for [`Prototype`] data
@@ -51,7 +52,9 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
         while let Some(key) = map.next_key::<String>()? {
             match key.as_str() {
                 "name" => name = Some(map.next_value()?),
-                "template" | "templates" => templates = Some(map.next_value()?),
+                "template" | "templates" => {
+                    templates = Some(map.next_value_seed(TemplateListDeserializer)?)
+                }
                 "components" => {
                     components =
                         Some(map.next_value_seed(ComponentListDeserializer::new(self.registry))?)
@@ -116,5 +119,71 @@ impl<'a, 'de> Visitor<'de> for ComponentListVisitor<'a> {
             list.push(value);
         }
         ComponentList::from_reflected(&list, &self.registry).map_err(V::Error::custom)
+    }
+}
+
+/// A custom deserializer for [`TemplateList`] data
+///
+/// This can be used in your own custom [`Prototypical`](crate::Prototypical) struct to
+/// easily deserialize a list of templates.
+///
+/// For prototypes defined in YAML, a template list can take on the following forms:
+///
+/// * Inline List:
+///   > ```yaml
+///   > templates: [ A, B, C ]
+///   > ```
+/// * Multi-Line List:
+///   > ```yaml
+///   > templates:
+///   >   - A
+///   >   - B
+///   >   - C
+///   > ```
+/// * Comma-Separated String:
+///   > ```yaml
+///   > templates: A, B, C # OR: "A, B, C"
+///   > ```
+///
+/// > This also applies to other serialization formats: templates can be defined as either
+/// > lists or comma-separated strings
+pub struct TemplateListDeserializer;
+
+impl<'de> DeserializeSeed<'de> for TemplateListDeserializer {
+    type Value = TemplateList;
+
+    fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(TemplateListVisitor)
+    }
+}
+
+struct TemplateListVisitor;
+
+impl<'de> Visitor<'de> for TemplateListVisitor {
+    type Value = TemplateList;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("string or vec")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        // Split string by commas
+        // Allowing for: "A, B, C" to become [A, B, C]
+        let list = v.split(',').map(|s| s.trim().to_string()).collect();
+        Ok(TemplateList::new(list))
+    }
+
+    fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: SeqAccess<'de>,
+    {
+        let list = Deserialize::deserialize(SeqAccessDeserializer::new(seq))?;
+        Ok(TemplateList::new(list))
     }
 }

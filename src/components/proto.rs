@@ -5,7 +5,7 @@ use bevy::reflect::{FromReflect, FromType};
 
 /// A trait that allows components to be used within [`Prototypical`] structs
 pub trait ProtoComponent: Reflect + Send + Sync + 'static {
-    // fn attach(&self, entity: EntityMut);
+    // fn apply(&self, entity: EntityMut);
     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>);
     #[allow(unused_variables)]
     fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {}

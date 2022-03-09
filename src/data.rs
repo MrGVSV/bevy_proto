@@ -308,17 +308,19 @@ fn analyze_deps(data: &ProtoData) {
     ) {
         traversed.insert(proto.name());
 
-        for template in proto.templates_rev() {
-            if traversed.contains(template.as_str()) {
-                // ! --- Found Circular Dependency --- ! //
-                handle_cycle!(template, traversed);
+        if let Some(templates) = proto.templates() {
+            for template in templates.iter_inheritance_order() {
+                if traversed.contains(template.as_str()) {
+                    // ! --- Found Circular Dependency --- ! //
+                    handle_cycle!(template, traversed);
 
-                continue;
-            }
+                    continue;
+                }
 
-            if let Some(parent) = data.get_prototype(template) {
-                // --- Check Template --- //
-                check_for_cycles(parent, data, traversed);
+                if let Some(parent) = data.get_prototype(template) {
+                    // --- Check Template --- //
+                    check_for_cycles(parent, data, traversed);
+                }
             }
         }
     }

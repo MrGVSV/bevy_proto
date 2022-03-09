@@ -1,29 +1,30 @@
 mod de;
 mod ser;
 
-pub use de::{ComponentListDeserializer, PrototypeDeserializer};
+pub use de::{ComponentListDeserializer, PrototypeDeserializer, TemplateListDeserializer};
 pub use ser::{ComponentListSerializer, PrototypeSerializer};
 
 #[cfg(test)]
 pub(crate) mod tests {
     use super::{PrototypeDeserializer, PrototypeSerializer};
-    use crate::prelude::{ComponentList, ProtoComponent, Prototype, ReflectProtoComponent};
+    use crate::prelude::{
+        ComponentList, ProtoComponent, Prototype, ReflectProtoComponent, TemplateList,
+    };
     use bevy::prelude::{Component, Reflect};
     use bevy::reflect::{FromReflect, TypeRegistry, TypeRegistryArc};
     use serde::de::DeserializeSeed;
     use serde::{Deserialize, Serialize};
     use serde_yaml::Error;
 
-    #[derive(
-        Reflect, FromReflect, Component, ProtoComponent, Clone, Debug, Serialize, Deserialize,
-    )]
+    #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
     #[reflect(ProtoComponent)]
     pub struct MyComponent {
         foo: usize,
         bar: Option<Name>,
     }
 
-    #[derive(Reflect, FromReflect, Clone, Debug, Serialize, Deserialize)]
+    // `Serialize + Deserialize` required since it's stored as an `Option<Name>` in `MyComponent`
+    #[derive(Reflect, FromReflect, Clone, Serialize, Deserialize)]
     pub struct Name {
         x: String,
     }
@@ -31,7 +32,7 @@ pub(crate) mod tests {
     fn setup() -> (Prototype, TypeRegistryArc) {
         let prototype = Prototype {
             name: String::from("Foo"),
-            templates: vec![String::from("IFoo"), String::from("IBar")],
+            templates: TemplateList::new(vec![String::from("IFoo"), String::from("IBar")]),
             components: ComponentList::new(vec![Box::new(MyComponent {
                 foo: 123,
                 bar: Some(Name {

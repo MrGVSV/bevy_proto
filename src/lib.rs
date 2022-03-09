@@ -10,6 +10,7 @@ mod components;
 mod errors;
 mod prototypical;
 mod serde;
+mod templates;
 
 pub mod prelude {
     pub use bevy_proto_derive::*;
@@ -18,4 +19,5 @@ pub mod prelude {
     pub use super::data::*;
     pub use super::plugin::*;
     pub use super::prototype::{Prototype, Prototypical};
+    pub use super::templates::TemplateList;
 }
