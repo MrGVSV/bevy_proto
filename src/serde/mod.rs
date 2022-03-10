@@ -7,6 +7,7 @@ pub use ser::{ComponentListSerializer, PrototypeSerializer};
 #[cfg(test)]
 pub(crate) mod tests {
     use super::{PrototypeDeserializer, PrototypeSerializer};
+    use crate::config::ProtoConfig;
     use crate::prelude::{
         ComponentList, ProtoComponent, Prototype, ReflectProtoComponent, TemplateList,
     };
@@ -29,7 +30,7 @@ pub(crate) mod tests {
         x: String,
     }
 
-    fn setup() -> (Prototype, TypeRegistryArc) {
+    fn setup() -> (Prototype, ProtoConfig, TypeRegistryArc) {
         let prototype = Prototype {
             name: String::from("Foo"),
             templates: TemplateList::new(vec![String::from("IFoo"), String::from("IBar")]),
@@ -49,7 +50,10 @@ pub(crate) mod tests {
         registry.write().register::<Name>();
         registry.write().register::<Option<Name>>();
 
-        (prototype, registry)
+        let mut config = ProtoConfig::default();
+        config.whitelist::<MyComponent>();
+
+        (prototype, config, registry)
     }
 
     fn serialize(proto: &Prototype, registry: &TypeRegistry) -> serde_yaml::Result<String> {
@@ -57,8 +61,12 @@ pub(crate) mod tests {
         serde_yaml::to_string(&serializer)
     }
 
-    fn deserialize(data: &str, registry: &TypeRegistry) -> Result<Prototype, Error> {
-        let deserializer = PrototypeDeserializer::new(&registry);
+    fn deserialize(
+        data: &str,
+        config: &ProtoConfig,
+        registry: &TypeRegistry,
+    ) -> Result<Prototype, Error> {
+        let deserializer = PrototypeDeserializer::new(&config, &registry);
         let de = serde_yaml::Deserializer::from_str(&data);
         deserializer.deserialize(de)
     }
@@ -82,7 +90,7 @@ components:
 
     #[test]
     fn should_serialize() -> anyhow::Result<()> {
-        let (proto, registry) = setup();
+        let (proto, _, registry) = setup();
         let expected = DATA;
         let output = serialize(&proto, &registry)?;
         assert_eq!(expected, output);
@@ -91,9 +99,9 @@ components:
 
     #[test]
     fn should_deserialize() -> anyhow::Result<()> {
-        let (expected, registry) = setup();
+        let (expected, config, registry) = setup();
 
-        let output = deserialize(DATA, &registry)?;
+        let output = deserialize(DATA, &config, &registry)?;
         assert_eq!(expected, output);
 
         Ok(())

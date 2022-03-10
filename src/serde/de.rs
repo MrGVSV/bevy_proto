@@ -1,4 +1,5 @@
 use crate::components::ComponentList;
+use crate::config::ProtoConfig;
 use crate::prelude::{Prototype, TemplateList};
 use bevy::reflect::{serde::ReflectDeserializer, TypeRegistry};
 use serde::de::value::SeqAccessDeserializer;
@@ -8,12 +9,13 @@ use std::fmt::Formatter;
 
 /// A deserializer for [`Prototype`] data
 pub struct PrototypeDeserializer<'a> {
+    config: &'a ProtoConfig,
     registry: &'a TypeRegistry,
 }
 
 impl<'a> PrototypeDeserializer<'a> {
-    pub fn new(registry: &'a TypeRegistry) -> Self {
-        Self { registry }
+    pub fn new(config: &'a ProtoConfig, registry: &'a TypeRegistry) -> Self {
+        Self { config, registry }
     }
 }
 
@@ -25,12 +27,14 @@ impl<'a, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a> {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_map(ProtoVisitor {
+            config: self.config,
             registry: self.registry,
         })
     }
 }
 
 struct ProtoVisitor<'a> {
+    config: &'a ProtoConfig,
     registry: &'a TypeRegistry,
 }
 
@@ -56,8 +60,10 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
                     templates = Some(map.next_value_seed(TemplateListDeserializer)?)
                 }
                 "components" => {
-                    components =
-                        Some(map.next_value_seed(ComponentListDeserializer::new(self.registry))?)
+                    components = Some(map.next_value_seed(ComponentListDeserializer::new(
+                        self.config,
+                        self.registry,
+                    ))?)
                 }
                 invalid => return Err(A::Error::custom(format!("Invalid entry: {}", invalid))),
             }
@@ -76,12 +82,13 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
 /// This can be used in your own custom [`Prototypical`](crate::Prototypical) struct to
 /// easily deserialize a list of components.
 pub struct ComponentListDeserializer<'a> {
+    config: &'a ProtoConfig,
     registry: &'a TypeRegistry,
 }
 
 impl<'a> ComponentListDeserializer<'a> {
-    pub fn new(registry: &'a TypeRegistry) -> Self {
-        Self { registry }
+    pub fn new(config: &'a ProtoConfig, registry: &'a TypeRegistry) -> Self {
+        Self { config, registry }
     }
 }
 
@@ -93,12 +100,14 @@ impl<'a, 'de> DeserializeSeed<'de> for ComponentListDeserializer<'a> {
         D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_seq(ComponentListVisitor {
+            config: self.config,
             registry: self.registry,
         })
     }
 }
 
 struct ComponentListVisitor<'a> {
+    config: &'a ProtoConfig,
     registry: &'a TypeRegistry,
 }
 
@@ -118,7 +127,7 @@ impl<'a, 'de> Visitor<'de> for ComponentListVisitor<'a> {
         while let Some(value) = seq.next_element_seed(ReflectDeserializer::new(&registry))? {
             list.push(value);
         }
-        ComponentList::from_reflected(&list, &self.registry).map_err(V::Error::custom)
+        ComponentList::from_reflected(&list, &self.config, &self.registry).map_err(V::Error::custom)
     }
 }
 

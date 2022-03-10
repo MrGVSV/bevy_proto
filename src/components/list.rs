@@ -1,9 +1,10 @@
 use super::ProtoComponent;
 use crate::components::ReflectProtoComponent;
+use crate::config::ProtoConfig;
 use crate::errors::ProtoError;
 use bevy::prelude::Reflect;
 use bevy::reflect::TypeRegistryArc as TypeRegistry;
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::fmt::{Debug, Formatter};
 use std::slice::Iter;
 
@@ -21,6 +22,7 @@ impl ComponentList {
 
     pub fn from_reflected(
         list: &[Box<dyn Reflect>],
+        config: &ProtoConfig,
         registry: &TypeRegistry,
     ) -> anyhow::Result<Self> {
         let registry = registry.read();
@@ -34,9 +36,12 @@ impl ComponentList {
                     name: name.to_string(),
                 }
             })?;
+            let id = registration.type_id();
+
+            // --- Check if Allowed --- //
+            config.assert_allowed(id, name.borrow())?;
 
             // --- Get ProtoComponent Data --- //
-            let id = registration.type_id();
             let proto_reflect = registry
                 .get_type_data::<ReflectProtoComponent>(id)
                 .ok_or_else(|| ProtoError::MissingReflection {

@@ -8,4 +8,8 @@ pub enum ProtoError {
     MissingReflection { name: String },
     #[error("could not reflect {name}")]
     BadReflection { name: String },
+    #[error("{name} is not whitelisted")]
+    NotWhitelisted { name: String },
+    #[error("{name} is blacklisted")]
+    Blacklisted { name: String },
 }

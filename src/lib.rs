@@ -7,6 +7,7 @@ pub mod prototype;
 mod utils;
 mod command;
 mod components;
+mod config;
 mod errors;
 mod prototypical;
 mod serde;
