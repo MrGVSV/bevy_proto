@@ -341,7 +341,7 @@ pub struct ProtoCommands<'w, 's, 'a, 'p> {
 
 impl<'w, 's, 'a, 'p> ProtoCommands<'w, 's, 'a, 'p> {
     /// Get raw access to [`EntityCommands`]
-    pub fn raw_commands(&'p mut self) -> &'p mut EntityCommands<'w, 's, 'a> {
+    pub fn raw_commands(&mut self) -> &mut EntityCommands<'w, 's, 'a> {
         &mut self.commands
     }
     /// Get the associated prototype

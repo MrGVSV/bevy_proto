@@ -326,8 +326,9 @@ impl ProtoComponent for Creature {
         let texture: Handle<Image> = proto_commands
             .get_handle(self, &self.texture_path)
             .expect("Expected Image handle to have been created");
+        let entity_commands = proto_commands.raw_commands();
 
-        proto_commands.raw_commands().insert_bundle(SpriteBundle {
+        entity_commands.insert_bundle(SpriteBundle {
             texture,
             ..Default::default()
         });
