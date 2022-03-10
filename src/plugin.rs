@@ -1,3 +1,4 @@
+//! Contains [`ProtoPlugin`].
 use bevy::app::{App, Plugin};
 
 use crate::{
@@ -5,24 +6,25 @@ use crate::{
     prototype::{Prototype, Prototypical},
 };
 
+/// Inserts resources for loading prototypes.
 #[derive(Default)]
 pub struct ProtoPlugin {
+    /// Optional plugin configuration.
     pub options: Option<ProtoDataOptions>,
 }
 
 impl ProtoPlugin {
-    /// Specify the directory containing the prototype files
+    /// Creates a [`ProtoPlugin`], using the given path to find prototype files.
+    /// See also: [`with_dir_recursive`][`ProtoPlugin::with_dir_recursive`].
     ///
     /// # Arguments
     ///
-    /// * `dir`: The directory path, relative to the project root
-    ///
-    /// returns: ProtoPlugin
+    /// * `dir`: The directory path, relative to the project root.
     ///
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::ProtoPlugin;
+    /// use bevy_proto::plugin::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dir("assets/config");
     /// ```
@@ -37,18 +39,17 @@ impl ProtoPlugin {
         }
     }
 
-    /// Same as [with_dir] but recursively loads prototype files.
+    /// Creates a [`ProtoPlugin`], using the given path to recursively find prototype files.
+    /// See also: [`with_dir`][`ProtoPlugin::with_dir`].
     ///
     /// # Arguments
     ///
-    /// * `dir`: The directory path, relative to the project root
-    ///
-    /// returns: ProtoPlugin
+    /// * `dir`: The directory path, relative to the project root.
     ///
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::ProtoPlugin;
+    /// use bevy_proto::plugin::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dir_recursive("assets/config");
     /// ```
@@ -63,18 +64,16 @@ impl ProtoPlugin {
         }
     }
 
-    /// Specify a set of directories containing the prototype files
+    /// Creates a [`ProtoPlugin`], using the given vec of paths to find prototype files.
     ///
     /// # Arguments
     ///
-    /// * `dirs`: The directory paths, relative to the project root
-    ///
-    /// returns: ProtoPlugin
+    /// * `dirs`: The directory paths, relative to the project root.
     ///
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::ProtoPlugin;
+    /// use bevy_proto::plugin::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dirs(vec![
     ///   String::from("assets/config"),
@@ -92,18 +91,16 @@ impl ProtoPlugin {
         }
     }
 
-    /// Same as [with_dirs] but recursively loads prototype files.
+    /// Creates a [`ProtoPlugin`], using the given vec of dirs to recursively find prototype files.
     ///
     /// # Arguments
     ///
     /// * `dirs`: The directory paths, relative to the project root
     ///
-    /// returns: ProtoPlugin
-    ///
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::ProtoPlugin;
+    /// use bevy_proto::plugin::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dirs(vec![
     ///   String::from("assets/config"),
@@ -143,7 +140,7 @@ impl Plugin for ProtoPlugin {
 }
 
 #[derive(Clone)]
-struct DefaultProtoDeserializer;
+pub(crate) struct DefaultProtoDeserializer;
 
 impl ProtoDeserializer for DefaultProtoDeserializer {
     fn deserialize(&self, data: &str) -> Option<Box<dyn Prototypical>> {

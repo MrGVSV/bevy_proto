@@ -1,3 +1,4 @@
+//! Provides resource and deserialization for prototype data.
 use std::any::{Any, TypeId};
 use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
@@ -12,6 +13,7 @@ use dyn_clone::DynClone;
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
+use crate::prelude::DefaultProtoDeserializer;
 use crate::{components::ProtoComponent, prototype::Prototypical, utils::handle_cycle};
 
 /// A String newtype for a handle's asset path
@@ -45,6 +47,7 @@ pub struct ProtoData {
 }
 
 impl ProtoData {
+    /// Creates a new, empty instance of [`ProtoData`].
     pub fn empty() -> Self {
         Self {
             handles: HashMap::default(),
@@ -78,13 +81,13 @@ impl ProtoData {
     ///
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_proto::{HandlePath, ProtoData, Prototype, PrototypeDataContainer};
+    /// use bevy_proto::prelude::*;
+    /// use serde::{Deserialize, Serialize};
     ///
+    /// #[derive(Clone, Deserialize, Serialize, Component, ProtoComponent)]
     /// struct MyComponent {
     ///     texture_path: HandlePath
-    /// }
-    ///
-    /// // impl ProtoComponent for MyComponent { ... }
+    /// }    
     ///
     /// fn some_loader(asset_server: Res<AssetServer>, mut data: ResMut<ProtoData>) {
     ///     let comp = MyComponent {
@@ -93,10 +96,10 @@ impl ProtoData {
     ///     let proto = Prototype {
     ///         name: String::from("My Prototype"),
     ///         templates: Vec::default(),
-    ///         components: vec![Box::new(comp)]
+    ///         components: vec![Box::new(comp.clone())]
     ///     };
     ///
-    ///     let handle: Handle<Image> =  asset_server.load(comp.texture_path.0.as_str());
+    ///     let handle: Handle<Image> = asset_server.load(comp.texture_path.0.as_str());
     ///
     ///     data.insert_handle(&proto, &comp, &comp.texture_path, handle);
     /// }
@@ -338,7 +341,7 @@ pub struct ProtoCommands<'w, 's, 'a, 'p> {
 
 impl<'w, 's, 'a, 'p> ProtoCommands<'w, 's, 'a, 'p> {
     /// Get raw access to [`EntityCommands`]
-    pub fn raw_commands(&'p mut self) -> &'p mut EntityCommands<'w, 's, 'a> {
+    pub fn raw_commands(&mut self) -> &mut EntityCommands<'w, 's, 'a> {
         &mut self.commands
     }
     /// Get the associated prototype
@@ -423,6 +426,7 @@ impl<'w, 's, 'a, 'p> DerefMut for ProtoCommands<'w, 's, 'a, 'p> {
     }
 }
 
+/// Defines a method for deserializing a prototype file input.
 pub trait ProtoDeserializer: DynClone {
     /// Deserializes file input (as a string) into a [`Prototypical`] object
     ///
@@ -436,7 +440,7 @@ pub trait ProtoDeserializer: DynClone {
     ///
     /// ```
     /// // The default implementation:
-    /// use bevy_proto::{Prototype, Prototypical};
+    /// use bevy_proto::prototype::{Prototype, Prototypical};
     /// fn example_deserialize(data: &str) -> Option<Box<dyn Prototypical>> {
     ///     if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
     ///         Some(Box::new(value))
@@ -450,20 +454,19 @@ pub trait ProtoDeserializer: DynClone {
 
 dyn_clone::clone_trait_object!(ProtoDeserializer);
 
-/// Options for controlling how prototype data is handled
+/// Options for controlling how prototype data is handled.
 #[derive(Clone)]
 pub struct ProtoDataOptions {
-    /// Directories containing prototype data
+    /// Directories containing prototype data.
     pub directories: Vec<String>,
-    /// Whether to resursively load extension files from the specified top-level directories.
+    /// Whether to load files recursively from the specified top-level directories.
     ///
     /// # Examples
     ///
-    /// Example that recursively loads all yaml files from the assets/prototypes directory.
-    ///
     /// ```
-    /// use bevy_proto::ProtoDataOptions;
+    /// use bevy_proto::data::ProtoDataOptions;
     ///
+    /// // Recursively loads all yaml files from the "assets/prototypes" directory.
     /// let opts = ProtoDataOptions {
     ///     directories: vec![String::from("assets/prototypes")],
     ///     recursive_loading: true,
@@ -472,9 +475,9 @@ pub struct ProtoDataOptions {
     /// };
     /// ```
     pub recursive_loading: bool,
-    /// A custom deserializer for prototypes
+    /// A custom deserializer for prototypes.
     pub deserializer: Box<dyn ProtoDeserializer + Send + Sync>,
-    /// A collection of extensions to filter the directories by. These do __not__
+    /// An optional collection of file extensions to filter prototypes. These do __not__
     /// have a dot ('.') prepended to them.
     ///
     /// A value of None allows all files to be read.
@@ -482,7 +485,7 @@ pub struct ProtoDataOptions {
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::ProtoDataOptions;
+    /// use bevy_proto::data::ProtoDataOptions;
     ///
     /// let opts = ProtoDataOptions {
     ///     // Only allow .yaml or .json files
@@ -491,4 +494,15 @@ pub struct ProtoDataOptions {
     /// };
     /// ```
     pub extensions: Option<Vec<&'static str>>,
+}
+
+impl Default for ProtoDataOptions {
+    fn default() -> Self {
+        Self {
+            directories: Default::default(),
+            recursive_loading: Default::default(),
+            deserializer: Box::new(DefaultProtoDeserializer),
+            extensions: Default::default(),
+        }
+    }
 }
