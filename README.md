@@ -64,7 +64,8 @@ bevy_proto = "0.3"
 Then add it to your app like so:
 
 ```rust
-use bevy_proto::ProtoPlugin;
+use bevy::prelude::*;
+use bevy_proto::plugin::ProtoPlugin;
 
 fn main() {
     App::new()
@@ -72,10 +73,7 @@ fn main() {
         // add dependent plugins, resources, etc. here
         // ...
         // Add this plugin after any other plugins/resources needed for prototype preparation
-        .add_plugin(ProtoPlugin::default())
-        // other plugins, resources, not needed by ProtoPlugin
-        // ...
-        .run();
+        .add_plugin(ProtoPlugin::default());
 }
 ```
 
@@ -104,7 +102,9 @@ First, create a struct that implements `ProtoComponent`. This can be done one of
 For simple components, `ProtoComponent` may be derived:
 
 ```rust
-use bevy_proto::ProtoComponent;
+use serde::{Deserialize, Serialize};
+use bevy::prelude::*;
+use bevy_proto::prelude::*;
 
 #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
 struct Movement {
@@ -123,12 +123,12 @@ struct Inventory (
 Otherwise, you can define them manually (the two attributes are required with this method):
 
 ```rust
-use bevy_proto::{ProtoComponent, ProtoCommands};
-use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
+use bevy::ecs::system::EntityCommands;
+use bevy_proto::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)] // Required
+#[derive(Serialize, Deserialize, Component)] // Required
 struct Inventory(Option<Vec<String>>);
 
 #[typetag::serde] // Required
@@ -229,6 +229,9 @@ To spawn a prototype, add a system that has access to:
 Then write something like the following:
 
 ```rust
+use bevy::prelude::*;
+use bevy_proto::prelude::*;
+
 fn spawn_adventurer(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
     let proto = data.get_prototype("Adventurer").expect("Prototype doesn't exist!");
 
@@ -241,11 +244,24 @@ The `spawn(...)` method returns the `EntityCommands` used to create the entity. 
 components, bundles, etc.:
 
 ```rust
-let adventurer: Entity = proto
-    .spawn( & mut commands, & data, & asset_server)
-	  .insert(Friendly)
-	  .insert(Named("Bob".to_string()))
-	  .id();
+use bevy::prelude::*;
+use bevy_proto::prelude::*;
+
+#[derive(Component)]
+struct Friendly;
+
+#[derive(Component)]
+struct Named(String);
+
+fn spawn_adventurer(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
+  let proto = data.get_prototype("Adventurer").expect("Prototype doesn't exist!");
+
+  let adventurer: Entity = proto
+      .spawn(&mut commands, &data, &asset_server)
+      .insert(Friendly)
+      .insert(Named("Bob".to_string()))
+      .id();
+}
 ```
 
 ### Using Assets
@@ -259,21 +275,27 @@ when no longer needed.
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use bevy_proto::{HandlePath, ProtoComponent, ProtoCommands};
+use bevy_proto::prelude::*;
+
+#[derive(Component)]
+struct Renderable {
+    pub texture_path: Handle<Image>
+}
 
 #[derive(Serialize, Deserialize)]
-struct Renderable {
+struct Creature {
     pub texture_path: HandlePath
 }
 
 #[typetag::serde]
 impl ProtoComponent for Creature {
     // Required
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
         let handle: Handle<Image> = asset_server.load(self.texture_path.as_str());
+        let entity_commands = proto_commands.raw_commands();
 
-        entity.insert(SomeTexture {
-            texture_handle: handle
+        entity_commands.insert(Renderable {
+            texture_path: handle
         });
     }
 }
@@ -286,23 +308,28 @@ be disposed of manually when no longer needed. Setting up an asset is done via t
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use bevy_proto::{HandlePath, ProtoComponent, ProtoCommands, Prototypical};
+use bevy_proto::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 struct Renderable {
+    pub texture_path: HandlePath
+}
+#[derive(Serialize, Deserialize)]
+struct Creature {
     pub texture_path: HandlePath
 }
 
 #[typetag::serde]
 impl ProtoComponent for Creature {
     // Required
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
-        let material: Handle<ColorMaterial> = commands
+    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+        let texture: Handle<Image> = proto_commands
             .get_handle(self, &self.texture_path)
-            .expect("Expected ColorMaterial handle to have been created");
+            .expect("Expected Image handle to have been created");
+        let entity_commands = proto_commands.raw_commands();
 
-        entity.insert_bundle(SpriteBundle {
-            material,
+        entity_commands.insert_bundle(SpriteBundle {
+            texture,
             ..Default::default()
         });
     }
@@ -310,7 +337,7 @@ impl ProtoComponent for Creature {
     fn prepare(
         &self,
         world: &mut World,
-        prototype: &Box<dyn Prototypical>,
+        prototype: &dyn Prototypical,
         data: &mut ProtoData
     ) {
         // === Load Handles === //
@@ -328,6 +355,9 @@ impl ProtoComponent for Creature {
 The default Prototype object looks like this:
 
 ```rust
+use bevy_proto::prelude::*;
+use serde::{Deserialize, Serialize};
+
 #[derive(Serialize, Deserialize)]
 pub struct Prototype {
     /// The name of this prototype
@@ -342,7 +372,28 @@ pub struct Prototype {
 However, you can use your own Prototype object. Any struct that implements `Prototypical` can be used in place of the default Prototype. Then you just have to supply your own deserializer to the `ProtoPlugin` object.
 
 ```rust
-use bevy_proto::{ProtoDataOptions, ProtoDeserializer, ProtoPlugin, Prototypical};
+use serde::{Deserialize, Serialize};
+use bevy::prelude::*;
+use bevy::ecs::system::EntityCommands;
+use bevy_proto::prelude::*;
+
+#[derive(Serialize, Deserialize)]
+struct CustomPrototype;
+impl Prototypical for CustomPrototype {
+  fn name(&self) -> &str {
+    "CustomPrototype"
+  }
+  fn iter_components(&self) -> std::slice::Iter<'_, std::boxed::Box<(dyn ProtoComponent + 'static)>> { 
+    todo!() 
+  }
+  fn create_commands<'w, 's, 'a, 'p>(
+    &'p self, 
+    entity_commands: EntityCommands<'w, 's, 'a>, 
+    proto_data: &'p Res<'_, ProtoData>
+  ) -> ProtoCommands<'w, 's, 'a, 'p> { 
+    todo!() 
+  }
+}
 
 #[derive(Clone)]
 struct CustomProtoDeserializer;
@@ -359,11 +410,11 @@ impl ProtoDeserializer for CustomProtoDeserializer {
 }
 
 fn main() {
-    App::build()
+    App::new()
         .add_plugins(DefaultPlugins)
         // ...
         .add_plugin(ProtoPlugin {
-            options: ProtoDataOptions {
+            options: Some(ProtoDataOptions {
                 // Specify your custom deserializer
                 deserializer: Box::new(CustomProtoDeserializer),
 
@@ -373,11 +424,8 @@ fn main() {
                 recursive_loading: false,
                 // You can also update the allowed extensions within those directories
                 extensions: Some(vec!["yaml", "json"]),
-            }
-        })
-        // other plugins, resources, not needed by ProtoPlugin
-        // ...
-        .run();
+            })
+        });
 }
 ```
 
@@ -408,8 +456,23 @@ breakdown of the top current/potential issues:
   holds onto the handle. This can be prevented by hosting the asset on a separate component and manually creating the handles when spawning that Prototype:
 
   ```rust
-  // Attach fictional OtherComponent with asset "my_asset" which should unload when despawned
-  prototype.spawn(...).insert(OtherComponent(my_asset));
+  use bevy::prelude::*;
+  use bevy_proto::prelude::*;
+
+  #[derive(Component)]
+  struct OtherComponent(Handle<Image>);
+
+  fn attach<T: Prototypical>(
+    prototype: T, 
+    my_asset: Handle<Image>,
+    commands: &mut Commands,
+    data: &Res<ProtoData>,
+    asset_server: &Res<AssetServer>,
+  ) {
+    // Attach fictional OtherComponent with asset "my_asset" which should unload when despawned
+    prototype.spawn(commands, data, asset_server).insert(OtherComponent(my_asset));
+  }
+
   ```
 
 With all of that said, this package is meant to speed up development and make changes to entity archetypes easier for

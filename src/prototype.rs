@@ -1,3 +1,4 @@
+//! Provides the core abstractions [`Prototypical`] and [`Prototype`] for implementing prototypical structs.
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{AssetServer, Res};
@@ -18,22 +19,20 @@ pub trait Prototypical: 'static + Send + Sync {
     /// This should be unique amongst all prototypes in the world
     fn name(&self) -> &str;
 
-    /// The list of parent templates (if any)
+    /// The names of the parent templates (if any).
     fn templates(&self) -> Option<&TemplateList> {
         None
     }
 
-    /// Returns an iterator of [`ProtoComponent`] objects
+    /// Returns an iterator of [`ProtoComponent`] trait objects.
     fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>>;
 
-    /// Creates the [`ProtoCommands`] object used for modifying the given entity
+    /// Creates [`ProtoCommands`] used to modify the given entity.
     ///
     /// # Arguments
     ///
     /// * `entity`: The entity commands
     /// * `data`: The prototype data in this world
-    ///
-    /// returns: ProtoCommands
     ///
     fn create_commands<'w, 's, 'a, 'p>(
         &'p self,
@@ -41,15 +40,13 @@ pub trait Prototypical: 'static + Send + Sync {
         data: &'p Res<ProtoData>,
     ) -> ProtoCommands<'w, 's, 'a, 'p>;
 
-    /// Spawns an entity with this prototype's component structure
+    /// Spawns an entity with this prototype's component structure.
     ///
     /// # Arguments
     ///
     /// * `commands`: The world `Commands`
     /// * `data`: The prototype data in this world
     /// * `asset_server`: The asset server
-    ///
-    /// returns: EntityCommands
     ///
     /// # Examples
     ///
@@ -83,7 +80,7 @@ pub trait Prototypical: 'static + Send + Sync {
         self.insert(entity, data, asset_server)
     }
 
-    /// Inserts this prototype's component structure to the given entity
+    /// Inserts this prototype's component structure to the given entity.
     ///
     /// __Note:__ This _will_ override existing components of the same type.
     ///
@@ -93,15 +90,13 @@ pub trait Prototypical: 'static + Send + Sync {
     /// * `data`: The prototype data in this world
     /// * `asset_server`: The asset server
     ///
-    /// returns: EntityCommands
-    ///
     /// # Examples
     ///
     /// ```
     /// use bevy::prelude::*;
     /// use bevy_proto::prelude::{ProtoData, Prototype, Prototypical};
     ///
-    /// #[derive(Component, Default)]
+    /// #[derive(Component)]
     /// struct Player(pub Entity);
     ///
     /// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>, player: Query<&Player>) {
@@ -194,17 +189,17 @@ fn spawn_internal<'a>(
     }
 }
 
-/// The default prototype object, providing the basics for the prototype system
+/// The default prototype object, providing the basics for the prototype system.
 #[derive(Debug, PartialEq)]
 pub struct Prototype {
-    /// The name of this prototype
+    /// The name of this prototype.
     pub name: String,
-    /// The names of this prototype's templates (if any)
+    /// The names of this prototype's templates (if any).
     ///
     /// See [`TemplateListDeserializer`](crate::serde::TemplateListDeserializer) to
     /// find out how these names are deserialized.
     pub templates: TemplateList,
-    /// The components belonging to this prototype
+    /// The components belonging to this prototype.
     pub components: ComponentList,
 }
 
