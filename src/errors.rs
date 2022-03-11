@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -12,4 +13,8 @@ pub enum ProtoError {
     NotWhitelisted { name: String },
     #[error("{name} is blacklisted")]
     Blacklisted { name: String },
+    #[error("missing deserializer")]
+    MissingDeserializer,
+    #[error("unknown extension: {ext:?}")]
+    UnknownExtension { ext: OsString },
 }

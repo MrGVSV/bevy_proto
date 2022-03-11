@@ -2,6 +2,7 @@
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{AssetServer, Res};
+use bevy::reflect::TypeUuid;
 use indexmap::IndexSet;
 use std::fmt::Debug;
 use std::slice::Iter;
@@ -190,7 +191,8 @@ fn spawn_internal<'a>(
 }
 
 /// The default prototype object, providing the basics for the prototype system.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, TypeUuid)]
+#[uuid = "64d16515-97e9-4762-a275-a80e1b6b5c27"]
 pub struct Prototype {
     /// The name of this prototype.
     pub name: String,

@@ -2,6 +2,7 @@ use std::any::TypeId;
 use std::ffi::OsStr;
 use std::ops::{Deref, DerefMut};
 
+use crate::{components::ProtoComponent, prototype::Prototypical, utils::handle_cycle};
 use bevy::asset::{Asset, HandleUntyped};
 use bevy::ecs::prelude::World;
 use bevy::ecs::system::EntityCommands;
@@ -11,9 +12,6 @@ use bevy::utils::HashMap;
 use dyn_clone::DynClone;
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
-
-use crate::prelude::DefaultProtoDeserializer;
-use crate::{components::ProtoComponent, prototype::Prototypical, utils::handle_cycle};
 
 /// A String newtype for a handle's asset path
 #[derive(Serialize, Deserialize, Clone, Hash, Eq, PartialEq, Debug)]
@@ -505,5 +503,19 @@ impl Default for ProtoDataOptions {
             deserializer: Box::new(DefaultProtoDeserializer),
             extensions: Default::default(),
         }
+    }
+}
+
+#[derive(Clone)]
+pub(crate) struct DefaultProtoDeserializer;
+
+impl ProtoDeserializer for DefaultProtoDeserializer {
+    fn deserialize(&self, _data: &str) -> Option<Box<dyn Prototypical>> {
+        // if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
+        // 	Some(Box::new(value))
+        // } else {
+        // 	None
+        // }
+        None
     }
 }

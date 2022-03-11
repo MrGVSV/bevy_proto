@@ -83,6 +83,7 @@ mod command;
 mod components;
 mod config;
 mod errors;
+mod loader;
 mod prototypical;
 mod serde;
 mod templates;
@@ -92,11 +93,19 @@ pub mod prelude {
 
     pub use super::components::*;
     pub use super::data::*;
+    pub use super::errors::ProtoError;
     pub use super::plugin::*;
     pub use super::prototype::{Prototype, Prototypical};
     pub use super::templates::TemplateList;
     pub use bevy_proto_derive::*;
 }
+
+#[cfg(any(
+    all(feature = "yaml", any(feature = "json", feature = "ron")),
+    all(feature = "json", any(feature = "yaml", feature = "ron")),
+    all(feature = "ron", any(feature = "yaml", feature = "json")),
+))]
+compile_error!("features `yaml`, `json`, and `ron` cannot be enabled at the same time");
 
 #[cfg(doctest)]
 mod test_readme {

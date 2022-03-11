@@ -1,10 +1,33 @@
-use crate::errors::ProtoError;
+use crate::prelude::{ProtoError, Prototypical};
 use bevy::utils::HashSet;
+use parking_lot::{RwLock, RwLockReadGuard};
 use std::any::{Any, TypeId};
+use std::sync::Arc;
+
+pub type RegistrationCallback =
+    Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>;
 
 #[derive(Default)]
 pub struct ProtoConfig {
     filter: ProtoFilter,
+    on_register: Option<RegistrationCallback>,
+}
+
+#[derive(Clone, Default)]
+pub(crate) struct ProtoConfigArc {
+    internal: Arc<RwLock<ProtoConfig>>,
+}
+
+impl ProtoConfigArc {
+    pub fn new(config: ProtoConfig) -> Self {
+        Self {
+            internal: Arc::new(RwLock::new(config)),
+        }
+    }
+    /// Takes a read lock on the underlying [`ProtoConfig`].
+    pub fn read(&self) -> RwLockReadGuard<'_, ProtoConfig> {
+        self.internal.read()
+    }
 }
 
 /// A filter that dictates if some data can be deserialized into a usable
@@ -91,6 +114,28 @@ impl ProtoConfig {
                     Ok(())
                 }
             }
+        }
+    }
+
+    /// Register a callback for when a prototype is loaded and ready to be inserted as an asset.
+    ///
+    /// This callback should return `Ok(())` if the prototype should be allowed to be added
+    /// as an asset, otherwise it will be discarded.
+    ///
+    /// Note: This is called as soon as the prototype is loaded, this means that templates
+    /// may or may not be loaded by that point.
+    pub fn on_register(&mut self, on_register: Option<RegistrationCallback>) {
+        self.on_register = on_register;
+    }
+
+    pub(crate) fn call_on_register(
+        &self,
+        proto: &mut dyn Prototypical,
+    ) -> Result<(), anyhow::Error> {
+        if let Some(ref on_register) = self.on_register {
+            on_register(proto)
+        } else {
+            Ok(())
         }
     }
 }

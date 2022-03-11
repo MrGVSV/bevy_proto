@@ -1,7 +1,11 @@
 mod de;
+pub(crate) mod extensions;
+mod proto;
 mod ser;
 
-pub use de::{ComponentListDeserializer, PrototypeDeserializer, TemplateListDeserializer};
+pub use de::{
+    ComponentListDeserializer, ProtoDeserializable, PrototypeDeserializer, TemplateListDeserializer,
+};
 pub use ser::{ComponentListSerializer, PrototypeSerializer};
 
 #[cfg(test)]
@@ -11,11 +15,16 @@ pub(crate) mod tests {
     use crate::prelude::{
         ComponentList, ProtoComponent, Prototype, ReflectProtoComponent, TemplateList,
     };
+    use crate::serde::extensions::YAML_EXT;
+    use crate::serde::ProtoDeserializable;
     use bevy::prelude::{Component, Reflect};
     use bevy::reflect::{FromReflect, TypeRegistry, TypeRegistryArc};
     use serde::de::DeserializeSeed;
     use serde::{Deserialize, Serialize};
     use serde_yaml::Error;
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+    use std::path::Path;
 
     #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
     #[reflect(ProtoComponent)]
@@ -105,5 +114,41 @@ components:
         assert_eq!(expected, output);
 
         Ok(())
+    }
+
+    #[test]
+    fn should_deserialize_asset() -> anyhow::Result<()> {
+        let (expected, config, registry) = setup();
+        let bytes = DATA.as_bytes();
+        let yaml_path = Path::new("foo").join(YAML_EXT);
+
+        let output = Prototype::deserialize(bytes, yaml_path.as_path(), &config, &registry)?;
+        assert_eq!(expected, output);
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic(expected = "unknown extension: \"\"")]
+    fn should_not_deserialize_unknown_ext() {
+        let (expected, config, registry) = setup();
+        let bytes = DATA.as_bytes();
+        let invalid_path = Path::new("foo").join(".bar");
+
+        let output =
+            Prototype::deserialize(bytes, invalid_path.as_path(), &config, &registry).unwrap();
+        assert_eq!(expected, output);
+    }
+
+    #[test]
+    #[should_panic(expected = "unsupported filepath: \"�/prototype.yaml\"")]
+    fn should_not_deserialize_unsupported_path() {
+        let (expected, config, registry) = setup();
+        let bytes = DATA.as_bytes();
+        let invalid_path = Path::new(OsStr::from_bytes(&[0xff])).join(YAML_EXT);
+
+        let output =
+            Prototype::deserialize(bytes, invalid_path.as_path(), &config, &registry).unwrap();
+        assert_eq!(expected, output);
     }
 }
