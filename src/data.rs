@@ -440,7 +440,7 @@ pub trait ProtoDeserializer: DynClone {
     ///
     /// ```
     /// // The default implementation:
-    /// use bevy_proto::prototype::{Prototype, Prototypical};
+    /// use bevy_proto::{Prototype, Prototypical};
     /// fn example_deserialize(data: &str) -> Option<Box<dyn Prototypical>> {
     ///     if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
     ///         Some(Box::new(value))

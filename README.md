@@ -65,7 +65,7 @@ Then add it to your app like so:
 
 ```rust
 use bevy::prelude::*;
-use bevy_proto::plugin::ProtoPlugin;
+use bevy_proto::ProtoPlugin;
 
 fn main() {
     App::new()
