@@ -13,7 +13,7 @@ use dyn_clone::DynClone;
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
-use crate::prelude::DefaultProtoDeserializer;
+use crate::plugin::DefaultProtoDeserializer;
 use crate::{components::ProtoComponent, prototype::Prototypical, utils::handle_cycle};
 
 /// A String newtype for a handle's asset path

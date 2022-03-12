@@ -74,19 +74,23 @@
 //!
 extern crate bevy_proto_derive;
 
-pub mod components;
+mod components;
+pub use components::ProtoComponent;
+mod plugin;
+pub use plugin::ProtoPlugin;
+mod prototype;
+pub use prototype::{deserialize_templates_list, Prototype, Prototypical};
+
 pub mod data;
-pub mod plugin;
-pub mod prototype;
 #[macro_use]
 mod utils;
 
 pub mod prelude {
     //! Includes all public types and the macro to derive [`ProtoComponent`](super::components::ProtoComponent).
 
-    pub use super::components::*;
+    pub use super::components::ProtoComponent;
     pub use super::data::*;
-    pub use super::plugin::*;
+    pub use super::plugin::ProtoPlugin;
     pub use super::prototype::{Prototype, Prototypical};
     pub use bevy_proto_derive::*;
 }
