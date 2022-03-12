@@ -75,6 +75,7 @@
 extern crate bevy_proto_derive;
 
 mod components;
+pub use bevy_proto_derive::ProtoComponent;
 pub use components::ProtoComponent;
 mod plugin;
 pub use plugin::ProtoPlugin;

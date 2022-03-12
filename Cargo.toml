@@ -1,6 +1,6 @@
 [package]
 name = "bevy_proto"
-version = "0.3.1"
+version = "0.3.0"
 edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Create config files for entities in Bevy"
