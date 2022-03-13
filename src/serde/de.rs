@@ -1,12 +1,14 @@
 use crate::components::ComponentList;
 use crate::config::ProtoConfig;
+use crate::deps::DependencyMap;
 use crate::prelude::{Prototype, TemplateList};
+use crate::serde::extensions::get_default_extension;
 use bevy::reflect::{serde::ReflectDeserializer, TypeRegistry, TypeRegistryArc};
 use serde::de::value::SeqAccessDeserializer;
 use serde::de::{DeserializeSeed, Error, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 use std::fmt::Formatter;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub trait ProtoDeserializable: Sized {
     fn deserialize(
@@ -19,13 +21,15 @@ pub trait ProtoDeserializable: Sized {
 
 /// A deserializer for [`Prototype`] data
 pub struct PrototypeDeserializer<'a> {
+    path: &'a Path,
     config: &'a ProtoConfig,
     type_registry: &'a TypeRegistry,
 }
 
 impl<'a> PrototypeDeserializer<'a> {
-    pub fn new(config: &'a ProtoConfig, type_registry: &'a TypeRegistry) -> Self {
+    pub fn new(path: &'a Path, config: &'a ProtoConfig, type_registry: &'a TypeRegistry) -> Self {
         Self {
+            path,
             config,
             type_registry,
         }
@@ -40,6 +44,7 @@ impl<'a, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a> {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_map(ProtoVisitor {
+            path: self.path,
             config: self.config,
             type_registry: self.type_registry,
         })
@@ -47,6 +52,7 @@ impl<'a, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a> {
 }
 
 struct ProtoVisitor<'a> {
+    path: &'a Path,
     config: &'a ProtoConfig,
     type_registry: &'a TypeRegistry,
 }
@@ -70,7 +76,7 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
             match key.as_str() {
                 "name" => name = Some(map.next_value()?),
                 "template" | "templates" => {
-                    templates = Some(map.next_value_seed(TemplateListDeserializer)?)
+                    templates = Some(map.next_value_seed(TemplateListDeserializer::new(self.path))?)
                 }
                 "components" => {
                     components = Some(map.next_value_seed(ComponentListDeserializer::new(
@@ -86,6 +92,7 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
             name: name.ok_or_else(|| A::Error::custom("Missing `name` property"))?,
             templates: templates.unwrap_or_default(),
             components: components.unwrap_or_default(),
+            dependencies: DependencyMap::default(),
         })
     }
 }
@@ -173,26 +180,36 @@ impl<'a, 'de> Visitor<'de> for ComponentListVisitor<'a> {
 ///
 /// > This also applies to other serialization formats: templates can be defined as either
 /// > lists or comma-separated strings
-pub struct TemplateListDeserializer;
+pub struct TemplateListDeserializer<'a> {
+    path: &'a Path,
+}
 
-impl<'de> DeserializeSeed<'de> for TemplateListDeserializer {
+impl<'a> TemplateListDeserializer<'a> {
+    pub fn new(path: &'a Path) -> Self {
+        Self { path }
+    }
+}
+
+impl<'a, 'de> DeserializeSeed<'de> for TemplateListDeserializer<'a> {
     type Value = TemplateList;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_seq(TemplateListVisitor)
+        deserializer.deserialize_seq(TemplateListVisitor { path: self.path })
     }
 }
 
-struct TemplateListVisitor;
+struct TemplateListVisitor<'a> {
+    path: &'a Path,
+}
 
-impl<'de> Visitor<'de> for TemplateListVisitor {
+impl<'a, 'de> Visitor<'de> for TemplateListVisitor<'a> {
     type Value = TemplateList;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("string or vec")
+        formatter.write_str("comma-separated string or sequence")
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
@@ -201,15 +218,30 @@ impl<'de> Visitor<'de> for TemplateListVisitor {
     {
         // Split string by commas
         // Allowing for: "A, B, C" to become [A, B, C]
-        let list = v.split(',').map(|s| s.trim().to_string()).collect();
-        Ok(TemplateList::with_paths(list))
+        let list = relative_to_absolute(self.path, v.split(','));
+        Ok(TemplateList::new(list))
     }
 
     fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
     where
         A: SeqAccess<'de>,
     {
-        let list = Deserialize::deserialize(SeqAccessDeserializer::new(seq))?;
-        Ok(TemplateList::with_paths(list))
+        let list: Vec<String> = Deserialize::deserialize(SeqAccessDeserializer::new(seq))?;
+        let list = relative_to_absolute(self.path, list.iter());
+        Ok(TemplateList::new(list))
     }
+}
+
+fn relative_to_absolute<S: Into<String>, I: Iterator<Item = S>>(
+    path: &Path,
+    relative_paths: I,
+) -> Vec<PathBuf> {
+    let parent = path.parent().map(|p| p.to_path_buf()).unwrap_or_default();
+    let ext = path
+        .to_str()
+        .and_then(|s| get_default_extension(s))
+        .unwrap_or_default();
+    relative_paths
+        .map(|s| parent.join(s.into().trim()).with_extension(ext))
+        .collect()
 }

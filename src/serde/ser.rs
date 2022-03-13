@@ -1,6 +1,5 @@
 use crate::components::ComponentList;
-use crate::prelude::Prototype;
-use bevy::log::warn;
+use crate::prelude::{Prototype, TemplateList};
 use bevy::reflect::serde::ReflectSerializer;
 use bevy::reflect::TypeRegistry;
 use serde::ser::{SerializeMap, SerializeSeq};
@@ -26,10 +25,17 @@ impl<'a> Serialize for PrototypeSerializer<'a> {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_map(Some(2))?;
+        let mut total = 2;
+
+        if !self.prototype.templates.is_empty() {
+            total += 1;
+        }
+
+        let mut state = serializer.serialize_map(Some(total))?;
         state.serialize_entry("name", &self.prototype.name)?;
         if !self.prototype.templates.is_empty() {
-            warn!("Attempting to serialize a prototype with templates is not supported. Templates will be excluded.")
+            let temp_list = TemplateListSerializer::new(&self.prototype.templates);
+            state.serialize_entry("templates", &temp_list);
         }
         let comp_list = &self.prototype.components;
         let comp_serializer = ComponentListSerializer::new(&comp_list, self.registry);
@@ -66,5 +72,28 @@ impl<'a> Serialize for ComponentListSerializer<'a> {
             state.serialize_element(&ReflectSerializer::new(reflected_value, &registry))?;
         }
         state.end()
+    }
+}
+
+pub struct TemplateListSerializer<'a> {
+    list: &'a TemplateList,
+}
+
+impl<'a> TemplateListSerializer<'a> {
+    pub fn new(list: &'a TemplateList) -> Self {
+        Self { list }
+    }
+}
+
+impl<'a> Serialize for TemplateListSerializer<'a> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.list.len()))?;
+        for template in self.list.iter_defined_order() {
+            seq.serialize_element(template)?;
+        }
+        seq.end()
     }
 }

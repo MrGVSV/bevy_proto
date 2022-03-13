@@ -84,6 +84,11 @@ pub trait ProtoComponent: Reflect + Send + Sync + 'static {
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
+
+    // TODO: Make this take an object that calls load_context.get_handle()
+    // fn preload_assets(&self) -> Vec<HandleUntyped> {
+    //
+    // }
 }
 
 #[derive(Clone)]

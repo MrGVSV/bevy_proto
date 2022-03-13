@@ -82,6 +82,7 @@ mod utils;
 mod command;
 mod components;
 mod config;
+mod deps;
 mod errors;
 mod loader;
 mod manager;
@@ -94,6 +95,7 @@ pub mod prelude {
 
     pub use super::components::*;
     pub use super::data::*;
+    pub use super::deps::DependencyMap;
     pub use super::errors::ProtoError;
     pub use super::manager::ProtoManager;
     pub use super::plugin::*;

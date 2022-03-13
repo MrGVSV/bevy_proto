@@ -9,7 +9,7 @@ pub use de::{
 pub use ser::{ComponentListSerializer, PrototypeSerializer};
 
 #[cfg(test)]
-pub(crate) mod tests {
+mod tests {
     use super::{PrototypeDeserializer, PrototypeSerializer};
     use crate::config::ProtoConfig;
     use crate::prelude::{
@@ -40,16 +40,19 @@ pub(crate) mod tests {
     }
 
     fn setup() -> (Prototype, ProtoConfig, TypeRegistryArc) {
-        let templates = TemplateList::default();
         let prototype = Prototype {
             name: String::from("Foo"),
-            templates: TemplateList::with_paths(vec![String::from("IFoo"), String::from("IBar")]),
+            templates: TemplateList::new(vec![
+                "assets/prototypes/IFoo.prototype.yaml",
+                "assets/prototypes/IBar.prototype.yaml",
+            ]),
             components: ComponentList::new(vec![Box::new(MyComponent {
                 foo: 123,
                 bar: Some(Name {
                     x: String::from("hello"),
                 }),
             })]),
+            dependencies: Default::default(),
         };
 
         let registry = TypeRegistry::default();
@@ -73,15 +76,18 @@ pub(crate) mod tests {
 
     fn deserialize(
         data: &str,
+        path: &Path,
         config: &ProtoConfig,
         registry: &TypeRegistry,
     ) -> Result<Prototype, Error> {
-        let deserializer = PrototypeDeserializer::new(&config, &registry);
+        let deserializer = PrototypeDeserializer::new(path, &config, &registry);
         let de = serde_yaml::Deserializer::from_str(&data);
         deserializer.deserialize(de)
     }
 
-    const DATA: &str = r#"---
+    const PATH: &str = "assets/prototypes/foo.prototype.yaml";
+
+    const INPUT: &str = r#"---
 name: Foo
 templates:
   - IFoo
@@ -97,11 +103,27 @@ components:
         value:
           x: hello
 "#;
+    const OUTPUT: &str = r#"---
+name: Foo
+templates:
+  - assets/prototypes/IFoo.prototype.yaml
+  - assets/prototypes/IBar.prototype.yaml
+components:
+  - type: "bevy_proto::serde::tests::MyComponent"
+    struct:
+      foo:
+        type: usize
+        value: 123
+      bar:
+        type: "core::option::Option<bevy_proto::serde::tests::Name>"
+        value:
+          x: hello
+"#;
 
     #[test]
     fn should_serialize() -> anyhow::Result<()> {
         let (proto, _, registry) = setup();
-        let expected = DATA;
+        let expected = OUTPUT;
         let output = serialize(&proto, &registry)?;
         assert_eq!(expected, output);
         Ok(())
@@ -111,7 +133,7 @@ components:
     fn should_deserialize() -> anyhow::Result<()> {
         let (expected, config, registry) = setup();
 
-        let output = deserialize(DATA, &config, &registry)?;
+        let output = deserialize(INPUT, &Path::new(PATH), &config, &registry)?;
         assert_eq!(expected, output);
 
         Ok(())
@@ -120,10 +142,10 @@ components:
     #[test]
     fn should_deserialize_asset() -> anyhow::Result<()> {
         let (expected, config, registry) = setup();
-        let bytes = DATA.as_bytes();
-        let yaml_path = Path::new("foo").join(YAML_EXT);
+        let bytes = INPUT.as_bytes();
+        let yaml_path = Path::new(PATH);
 
-        let output = Prototype::deserialize(bytes, yaml_path.as_path(), &config, &registry)?;
+        let output = Prototype::deserialize(bytes, yaml_path, &config, &registry)?;
         assert_eq!(expected, output);
 
         Ok(())
@@ -133,7 +155,7 @@ components:
     #[should_panic(expected = "unknown extension: \"\"")]
     fn should_not_deserialize_unknown_ext() {
         let (expected, config, registry) = setup();
-        let bytes = DATA.as_bytes();
+        let bytes = INPUT.as_bytes();
         let invalid_path = Path::new("foo").join(".bar");
 
         let output =
@@ -145,7 +167,7 @@ components:
     #[should_panic(expected = "unsupported filepath: \"�/prototype.yaml\"")]
     fn should_not_deserialize_unsupported_path() {
         let (expected, config, registry) = setup();
-        let bytes = DATA.as_bytes();
+        let bytes = INPUT.as_bytes();
         let invalid_path = Path::new(OsStr::from_bytes(&[0xff])).join(YAML_EXT);
 
         let output =

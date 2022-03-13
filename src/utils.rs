@@ -1,5 +1,6 @@
 use crate::prelude::Prototypical;
 use bevy::asset::{Asset, Assets};
+use bevy::log::warn;
 use indexmap::IndexSet;
 use std::ops::Add;
 
@@ -107,17 +108,21 @@ pub(crate) fn for_each_template<'a, T: Prototypical + Asset>(
 
         if let Some(templates) = proto.templates() {
             for template in templates.iter_inheritance_order() {
-                if let Some(template) = assets.get(template.id) {
-                    let name = template.name();
-                    if traversed.contains(name) {
-                        // ! --- Found Circular Dependency --- ! //
-                        handle_cycle!(name, traversed);
+                if let Some(template) = proto.dependencies().get_template(template) {
+                    if let Some(template) = assets.get(template.id) {
+                        let name = template.name();
+                        if traversed.contains(name) {
+                            // ! --- Found Circular Dependency --- ! //
+                            handle_cycle!(name, traversed);
 
-                        continue;
+                            continue;
+                        }
+
+                        func(template);
+                        next(template, assets, traversed, func);
                     }
-
-                    func(template);
-                    next(template, assets, traversed, func);
+                } else {
+                    warn!("Could not find template with path: {}", template.display());
                 }
             }
         }

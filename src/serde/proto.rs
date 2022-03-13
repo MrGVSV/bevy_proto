@@ -19,29 +19,29 @@ impl ProtoDeserializable for Prototype {
             .ok_or_else(|| ProtoError::UnknownExtension {
                 ext: Default::default(),
             })?;
-        let path = path
+        let path_str = path
             .to_str()
             .ok_or_else(|| anyhow!("unsupported filepath: \"{}\"", path.display()))?;
 
-        if path.ends_with(extensions::YAML_EXT) {
+        if path_str.ends_with(extensions::YAML_EXT) {
             #[cfg(feature = "yaml")]
             {
                 let de = serde_yaml::Deserializer::from_slice(bytes);
-                let proto_de = PrototypeDeserializer::new(config, type_registry);
+                let proto_de = PrototypeDeserializer::new(path, config, type_registry);
                 return Ok(proto_de.deserialize(de)?);
             }
-        } else if path.ends_with(extensions::JSON_EXT) {
+        } else if path_str.ends_with(extensions::JSON_EXT) {
             #[cfg(feature = "json")]
             {
                 let de = serde_json::Deserializer::from_slice(bytes);
-                let proto_de = PrototypeDeserializer::new(config, type_registry);
+                let proto_de = PrototypeDeserializer::new(path, config, type_registry);
                 return Ok(proto_de.deserialize(de)?);
             }
-        } else if path.ends_with(extensions::RON_EXT) {
+        } else if path_str.ends_with(extensions::RON_EXT) {
             #[cfg(feature = "ron")]
             {
                 let de = serde_ron::Deserializer::from_bytes(bytes)?;
-                let proto_de = PrototypeDeserializer::new(config, type_registry);
+                let proto_de = PrototypeDeserializer::new(path, config, type_registry);
                 return Ok(proto_de.deserialize(de)?);
             }
         }

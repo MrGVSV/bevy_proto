@@ -53,21 +53,19 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
             config.call_on_register(&mut proto)?;
 
             let templates = if let Some(templates) = proto.templates() {
-                load_templates(load_context, self.extensions(), templates)
+                templates
+                    .iter_defined_order()
+                    .map(|template| AssetPath::new(template.to_owned(), None))
+                    .collect::<Vec<_>>()
             } else {
                 Vec::new()
             };
 
-            if let Some(list) = proto.templates_mut() {
-                list.set_handles(
-                    templates
-                        .iter()
-                        .map(|template| {
-                            let handle: Handle<T> = load_context.get_handle(template.clone());
-                            handle.clone_untyped()
-                        })
-                        .collect::<Vec<_>>(),
-                )
+            let deps = proto.dependencies_mut();
+            for template in templates.iter() {
+                let handle: Handle<T> = load_context.get_handle(template.clone());
+                let handle = handle.clone_untyped();
+                deps.add_template(template.path(), handle);
             }
 
             let asset = LoadedAsset::new(proto).with_dependencies(templates);
@@ -96,7 +94,7 @@ fn load_templates<'a>(
 
     let parent = path.parent().unwrap_or_else(|| Path::new(""));
     templates
-        .iter_paths()
+        .iter_defined_order()
         .map(|template| {
             let template_path = parent.join(template);
             if let Some(ext) = ext {

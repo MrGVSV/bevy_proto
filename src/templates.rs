@@ -1,10 +1,10 @@
-use bevy::asset::HandleUntyped;
 use std::iter::Rev;
+use std::path::PathBuf;
 use std::slice::Iter;
 
 /// A list of templates a [prototypical] struct will inherit from.
 ///
-/// A _template_ is just the name of another prototype. This template will be applied
+/// A _template_ is just the asset path of another prototype. This template will be applied
 /// along with the actual prototype. In this way, prototypes can "inherit" from
 /// other prototypes, reducing duplication and improving configuration.
 ///
@@ -19,55 +19,33 @@ use std::slice::Iter;
 /// [prototypical]: crate::prelude::Prototypical
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct TemplateList {
-    paths: Vec<String>,
-    handles: Vec<HandleUntyped>,
+    asset_paths: Vec<PathBuf>,
 }
 
 impl TemplateList {
-    pub fn new(paths: Vec<String>, handles: Vec<HandleUntyped>) -> Self {
-        Self { paths, handles }
-    }
-
-    pub fn with_paths(paths: Vec<String>) -> Self {
+    pub fn new<P: Into<PathBuf>, I: IntoIterator<Item = P>>(paths: I) -> Self {
         Self {
-            paths,
-            handles: Vec::new(),
+            asset_paths: paths.into_iter().map(|p| p.into()).collect(),
         }
     }
 
-    pub fn set_paths(&mut self, paths: Vec<String>) {
-        self.paths = paths;
-    }
-
-    pub fn set_handles(&mut self, handles: Vec<HandleUntyped>) {
-        self.handles = handles;
-    }
-
-    pub fn push_handle<H: Into<HandleUntyped>>(&mut self, handle: H) {
-        self.handles.push(handle.into());
-    }
-
-    pub fn iter_paths(&self) -> Iter<'_, String> {
-        self.paths.iter()
-    }
-
     /// Gets an iterator over the templates in their defined order
-    pub fn iter_defined_order(&self) -> Iter<'_, HandleUntyped> {
-        self.handles.iter()
+    pub fn iter_defined_order(&self) -> Iter<'_, PathBuf> {
+        self.asset_paths.iter()
     }
 
     /// Gets an iterator over the templates in order of inheritance
-    pub fn iter_inheritance_order(&self) -> Rev<Iter<'_, HandleUntyped>> {
-        self.handles.iter().rev()
+    pub fn iter_inheritance_order(&self) -> Rev<Iter<'_, PathBuf>> {
+        self.asset_paths.iter().rev()
     }
 
     /// Returns true if this list is empty
     pub fn is_empty(&self) -> bool {
-        self.handles.is_empty()
+        self.asset_paths.is_empty()
     }
 
     /// Returns the length of the list
     pub fn len(&self) -> usize {
-        self.handles.len()
+        self.asset_paths.len()
     }
 }
