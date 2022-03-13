@@ -13,7 +13,7 @@ use dyn_clone::DynClone;
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
-use crate::prelude::DefaultProtoDeserializer;
+use crate::plugin::DefaultProtoDeserializer;
 use crate::{components::ProtoComponent, prototype::Prototypical, utils::handle_cycle};
 
 /// A String newtype for a handle's asset path
@@ -440,7 +440,7 @@ pub trait ProtoDeserializer: DynClone {
     ///
     /// ```
     /// // The default implementation:
-    /// use bevy_proto::prototype::{Prototype, Prototypical};
+    /// use bevy_proto::{Prototype, Prototypical};
     /// fn example_deserialize(data: &str) -> Option<Box<dyn Prototypical>> {
     ///     if let Ok(value) = serde_yaml::from_str::<Prototype>(data) {
     ///         Some(Box::new(value))

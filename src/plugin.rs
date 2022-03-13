@@ -24,7 +24,7 @@ impl ProtoPlugin {
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::plugin::ProtoPlugin;
+    /// use bevy_proto::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dir("assets/config");
     /// ```
@@ -49,7 +49,7 @@ impl ProtoPlugin {
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::plugin::ProtoPlugin;
+    /// use bevy_proto::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dir_recursive("assets/config");
     /// ```
@@ -73,7 +73,7 @@ impl ProtoPlugin {
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::plugin::ProtoPlugin;
+    /// use bevy_proto::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dirs(vec![
     ///   String::from("assets/config"),
@@ -100,7 +100,7 @@ impl ProtoPlugin {
     /// # Examples
     ///
     /// ```
-    /// use bevy_proto::plugin::ProtoPlugin;
+    /// use bevy_proto::ProtoPlugin;
     ///
     /// let plugin = ProtoPlugin::with_dirs(vec![
     ///   String::from("assets/config"),
