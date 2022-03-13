@@ -1,3 +1,5 @@
+use crate::prelude::Prototypical;
+use bevy::asset::{Asset, Assets};
 use indexmap::IndexSet;
 use std::ops::Add;
 
@@ -81,3 +83,45 @@ macro_rules! handle_cycle {
 }
 
 pub(crate) use handle_cycle;
+
+/// Performs some analysis on the current set of loaded prototypical assets.
+pub(crate) fn analyze_deps<'a, T: Prototypical + Asset>(proto: &'a T, assets: &'a Assets<T>) {
+    for_each_template(proto, assets, &mut |_| {});
+}
+
+/// Utility function for iterating over a prototype's templates (if any) and performing some action.
+///
+/// The templates are iterated over in their _inherited_ order.
+pub(crate) fn for_each_template<'a, T: Prototypical + Asset>(
+    proto: &'a T,
+    assets: &'a Assets<T>,
+    func: &mut dyn FnMut(&'a T),
+) {
+    fn next<'a, T: Prototypical + Asset>(
+        proto: &'a T,
+        assets: &'a Assets<T>,
+        traversed: &mut IndexSet<&'a str>,
+        func: &mut dyn FnMut(&'a T),
+    ) {
+        traversed.insert(proto.name());
+
+        if let Some(templates) = proto.templates() {
+            for template in templates.iter_inheritance_order() {
+                if let Some(template) = assets.get(template.id) {
+                    let name = template.name();
+                    if traversed.contains(name) {
+                        // ! --- Found Circular Dependency --- ! //
+                        handle_cycle!(name, traversed);
+
+                        continue;
+                    }
+
+                    func(template);
+                    next(template, assets, traversed, func);
+                }
+            }
+        }
+    }
+
+    next(proto, assets, &mut IndexSet::new(), func);
+}

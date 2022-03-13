@@ -1,3 +1,4 @@
+use bevy::asset::HandleUntyped;
 use std::iter::Rev;
 use std::slice::Iter;
 
@@ -18,31 +19,55 @@ use std::slice::Iter;
 /// [prototypical]: crate::prelude::Prototypical
 #[derive(Default, Debug, Clone, PartialEq)]
 pub struct TemplateList {
-    items: Vec<String>,
+    paths: Vec<String>,
+    handles: Vec<HandleUntyped>,
 }
 
 impl TemplateList {
-    pub fn new(items: Vec<String>) -> Self {
-        TemplateList { items }
+    pub fn new(paths: Vec<String>, handles: Vec<HandleUntyped>) -> Self {
+        Self { paths, handles }
+    }
+
+    pub fn with_paths(paths: Vec<String>) -> Self {
+        Self {
+            paths,
+            handles: Vec::new(),
+        }
+    }
+
+    pub fn set_paths(&mut self, paths: Vec<String>) {
+        self.paths = paths;
+    }
+
+    pub fn set_handles(&mut self, handles: Vec<HandleUntyped>) {
+        self.handles = handles;
+    }
+
+    pub fn push_handle<H: Into<HandleUntyped>>(&mut self, handle: H) {
+        self.handles.push(handle.into());
+    }
+
+    pub fn iter_paths(&self) -> Iter<'_, String> {
+        self.paths.iter()
     }
 
     /// Gets an iterator over the templates in their defined order
-    pub fn iter_defined_order(&self) -> Iter<'_, String> {
-        self.items.iter()
+    pub fn iter_defined_order(&self) -> Iter<'_, HandleUntyped> {
+        self.handles.iter()
     }
 
     /// Gets an iterator over the templates in order of inheritance
-    pub fn iter_inheritance_order(&self) -> Rev<Iter<'_, String>> {
-        self.items.iter().rev()
+    pub fn iter_inheritance_order(&self) -> Rev<Iter<'_, HandleUntyped>> {
+        self.handles.iter().rev()
     }
 
     /// Returns true if this list is empty
     pub fn is_empty(&self) -> bool {
-        self.items.is_empty()
+        self.handles.is_empty()
     }
 
     /// Returns the length of the list
     pub fn len(&self) -> usize {
-        self.items.len()
+        self.handles.len()
     }
 }

@@ -1,6 +1,5 @@
-use crate::prelude::{ProtoCommands, ProtoData};
-use crate::prototype::Prototypical;
-use bevy::prelude::{AssetServer, Reflect, Res, World};
+use bevy::ecs::world::EntityMut;
+use bevy::prelude::Reflect;
 use bevy::reflect::{FromReflect, FromType};
 
 /// Specifies how a type inserts components into an entity.
@@ -73,15 +72,17 @@ use bevy::reflect::{FromReflect, FromType};
 ///
 ///  This trait allows components to be used within [`Prototypical`](crate::prototype::Prototypical) structs.
 pub trait ProtoComponent: Reflect + Send + Sync + 'static {
-    // fn apply(&self, entity: EntityMut);
-    /// Defines how this struct inserts components and/or bundles into an entity.
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>);
-    /// Defines how this struct creates and inserts asset handles for later use.
-    #[allow(unused_variables)]
-    fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {}
+    /// Applies this component to the given entity.
+    ///
+    /// This includes inserting or removing components and/or bundles.
+    fn apply(&self, entity: &mut EntityMut);
+    /// Returns the reflected trait object for this component.
     fn as_reflect(&self) -> &dyn Reflect;
-    fn name(&self) -> &str {
-        self.as_reflect().type_name()
+    /// The [type name] of this component
+    ///
+    /// [type name]: std::any::type_name
+    fn name(&self) -> &'static str {
+        std::any::type_name::<Self>()
     }
 }
 

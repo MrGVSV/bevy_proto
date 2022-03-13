@@ -1,0 +1,10 @@
+# TODO: Remove me
+---
+name: "Test 1"
+components:
+  - type: foo::Person
+    value:
+      name: "Inigo Montoya"
+  - type: foo::Ordered
+    value:
+      order: 1

@@ -40,9 +40,10 @@ pub(crate) mod tests {
     }
 
     fn setup() -> (Prototype, ProtoConfig, TypeRegistryArc) {
+        let templates = TemplateList::default();
         let prototype = Prototype {
             name: String::from("Foo"),
-            templates: TemplateList::new(vec![String::from("IFoo"), String::from("IBar")]),
+            templates: TemplateList::with_paths(vec![String::from("IFoo"), String::from("IBar")]),
             components: ComponentList::new(vec![Box::new(MyComponent {
                 foo: 123,
                 bar: Some(Name {

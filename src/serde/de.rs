@@ -202,7 +202,7 @@ impl<'de> Visitor<'de> for TemplateListVisitor {
         // Split string by commas
         // Allowing for: "A, B, C" to become [A, B, C]
         let list = v.split(',').map(|s| s.trim().to_string()).collect();
-        Ok(TemplateList::new(list))
+        Ok(TemplateList::with_paths(list))
     }
 
     fn visit_seq<A>(self, seq: A) -> Result<Self::Value, A::Error>
@@ -210,6 +210,6 @@ impl<'de> Visitor<'de> for TemplateListVisitor {
         A: SeqAccess<'de>,
     {
         let list = Deserialize::deserialize(SeqAccessDeserializer::new(seq))?;
-        Ok(TemplateList::new(list))
+        Ok(TemplateList::with_paths(list))
     }
 }

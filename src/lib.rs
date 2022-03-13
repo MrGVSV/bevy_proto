@@ -84,6 +84,7 @@ mod components;
 mod config;
 mod errors;
 mod loader;
+mod manager;
 mod prototypical;
 mod serde;
 mod templates;
@@ -94,8 +95,10 @@ pub mod prelude {
     pub use super::components::*;
     pub use super::data::*;
     pub use super::errors::ProtoError;
+    pub use super::manager::ProtoManager;
     pub use super::plugin::*;
-    pub use super::prototype::{Prototype, Prototypical};
+    pub use super::prototype::Prototype;
+    pub use super::prototypical::Prototypical;
     pub use super::templates::TemplateList;
     pub use bevy_proto_derive::*;
 }

@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
+use std::path::Path;
 
 use anyhow::Error;
-use bevy::asset::{Asset, AssetLoader, AssetPath, BoxedFuture, LoadContext, LoadedAsset};
+use bevy::asset::{Asset, AssetLoader, AssetPath, BoxedFuture, Handle, LoadContext, LoadedAsset};
 use bevy::prelude::{FromWorld, World};
 use bevy::reflect::TypeRegistryArc;
 
@@ -52,10 +53,22 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
             config.call_on_register(&mut proto)?;
 
             let templates = if let Some(templates) = proto.templates() {
-                load_templates(load_context, templates)
+                load_templates(load_context, self.extensions(), templates)
             } else {
                 Vec::new()
             };
+
+            if let Some(list) = proto.templates_mut() {
+                list.set_handles(
+                    templates
+                        .iter()
+                        .map(|template| {
+                            let handle: Handle<T> = load_context.get_handle(template.clone());
+                            handle.clone_untyped()
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            }
 
             let asset = LoadedAsset::new(proto).with_dependencies(templates);
             load_context.set_default_asset(asset);
@@ -70,19 +83,27 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
 
 fn load_templates<'a>(
     load_context: &'a LoadContext,
+    extensions: &[&str],
     templates: &'a TemplateList,
 ) -> Vec<AssetPath<'static>> {
     let path = load_context.path();
-    let ext = path.extension();
+    let path_str = path.to_str().unwrap_or_default();
+
+    let ext = extensions
+        .iter()
+        .find(|ext| path_str.ends_with(**ext))
+        .map(|ext| *ext);
+
+    let parent = path.parent().unwrap_or_else(|| Path::new(""));
     templates
-        .iter_inheritance_order()
+        .iter_paths()
         .map(|template| {
-            let template_path = path.join(template);
+            let template_path = parent.join(template);
             if let Some(ext) = ext {
                 if template_path.extension().is_some() {
                     AssetPath::new(template_path, None)
                 } else {
-                    AssetPath::new(template_path.join(ext), None)
+                    AssetPath::new(template_path.with_extension(ext), None)
                 }
             } else {
                 AssetPath::new(template_path, None)
