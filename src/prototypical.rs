@@ -4,7 +4,7 @@ use crate::prelude::{ProtoComponent, TemplateList};
 use bevy::asset::Asset;
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Commands, Entity};
-use std::slice::Iter;
+use std::slice::{Iter, IterMut};
 
 /// Allows access to a prototype's name and components so that it can be spawned in
 pub trait Prototypical: 'static + Send + Sync {
@@ -26,7 +26,10 @@ pub trait Prototypical: 'static + Send + Sync {
     fn dependencies_mut(&mut self) -> &mut DependencyMap;
 
     /// Returns an iterator of [`ProtoComponent`] trait objects.
-    fn iter_components(&self) -> Iter<'_, Box<dyn ProtoComponent>>;
+    fn components(&self) -> Iter<'_, Box<dyn ProtoComponent>>;
+
+    /// Returns a mutable iterator of [`ProtoComponent`] trait objects.
+    fn components_mut(&mut self) -> IterMut<'_, Box<dyn ProtoComponent>>;
 
     /// Spawns an entity with this prototype's component structure.
     ///

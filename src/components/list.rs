@@ -6,7 +6,7 @@ use bevy::prelude::Reflect;
 use bevy::reflect::TypeRegistryArc as TypeRegistry;
 use std::borrow::{Borrow, Cow};
 use std::fmt::{Debug, Formatter};
-use std::slice::Iter;
+use std::slice::{Iter, IterMut};
 
 /// A list of [`ProtoComponent`] objects that can be used to create
 /// real components dynamically
@@ -62,6 +62,10 @@ impl ComponentList {
 
     pub fn iter(&self) -> Iter<'_, Box<dyn ProtoComponent>> {
         self.items.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<'_, Box<dyn ProtoComponent>> {
+        self.items.iter_mut()
     }
 
     pub fn len(&self) -> usize {

@@ -1,3 +1,4 @@
+use crate::loader::AssetPreloader;
 use bevy::ecs::world::EntityMut;
 use bevy::prelude::Reflect;
 use bevy::reflect::{FromReflect, FromType};
@@ -84,11 +85,8 @@ pub trait ProtoComponent: Reflect + Send + Sync + 'static {
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
-
-    // TODO: Make this take an object that calls load_context.get_handle()
-    // fn preload_assets(&self) -> Vec<HandleUntyped> {
-    //
-    // }
+    #[allow(unused_variables)]
+    fn preload_assets(&mut self, preloader: &mut AssetPreloader) {}
 }
 
 #[derive(Clone)]

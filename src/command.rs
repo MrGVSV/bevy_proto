@@ -78,7 +78,7 @@ fn apply_proto<T: Prototypical + Asset>(proto: &T, assets: &Assets<T>, entity: &
         apply_proto(template, assets, entity);
     });
 
-    for component in proto.iter_components() {
+    for component in proto.components() {
         component.apply(entity);
     }
 }

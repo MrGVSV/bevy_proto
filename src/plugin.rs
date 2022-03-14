@@ -5,9 +5,7 @@ use crate::manager;
 use crate::manager::ProtoManager;
 use bevy::app::{App, Plugin};
 use bevy::asset::{AddAsset, Asset};
-use bevy::prelude::{
-    ExclusiveSystemDescriptorCoercion, ParallelSystemDescriptorCoercion, SystemLabel,
-};
+use bevy::prelude::{ParallelSystemDescriptorCoercion, SystemLabel};
 use std::marker::PhantomData;
 
 use crate::prelude::{Prototype, Prototypical};

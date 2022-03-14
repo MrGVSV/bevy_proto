@@ -103,6 +103,7 @@ pub mod prelude {
     pub use super::data::*;
     pub use super::deps::DependencyMap;
     pub use super::errors::ProtoError;
+    pub use super::loader::AssetPreloader;
     pub use super::manager::ProtoManager;
     pub use super::plugin::ProtoPlugin;
     pub use super::prototype::Prototype;
