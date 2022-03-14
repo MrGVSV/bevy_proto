@@ -27,9 +27,9 @@ impl Deref for HandlePath {
         &self.0
     }
 }
-impl Into<HandleId> for &HandlePath {
-    fn into(self) -> HandleId {
-        let slice: &str = &self.0;
+impl From<&HandlePath> for HandleId {
+    fn from(p: &HandlePath) -> Self {
+        let slice: &str = &p.0;
         slice.into()
     }
 }
