@@ -75,7 +75,6 @@ impl ProtoData {
     ///
     /// * `protoytpe`: The Prototype this handle belongs to
     /// * `component`: The ProtoComponent this handle belongs to
-    /// * `path`: The handle's path
     /// * `handle`: The handle
     ///
     /// returns: ()
