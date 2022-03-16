@@ -83,11 +83,9 @@ struct SpriteBundleDef {
 
 #[typetag::serde]
 impl ProtoComponent for SpriteBundleDef {
-    fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
         // === Get Prepared Assets === //
-        let texture: Handle<Image> = commands
-            .get_handle(self, &self.texture_path)
-            .expect("Expected Image handle to have been created");
+        let texture: Handle<Image> = asset_server.get_handle(&self.texture_path);
 
         // === Generate Bundle === //
         let my_bundle = SpriteBundle {
@@ -102,9 +100,9 @@ impl ProtoComponent for SpriteBundleDef {
     fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {
         // === Load Handles === //
         let asset_server = world.get_resource::<AssetServer>().unwrap();
-        let texture: Handle<Image> = asset_server.load(self.texture_path.as_str());
+        let handle: Handle<Image> = asset_server.load(self.texture_path.as_str());
 
         // === Save Handles === //
-        data.insert_handle(prototype, self, &self.texture_path, texture);
+        data.insert_handle(prototype, self, handle);
     }
 }
