@@ -9,5 +9,7 @@ components:
         type: "bevy_proto::handle::HandlePath<bevy_render::texture::image::Image>"
         value: textures/sprite.png
   - type: foo::Ordered
-    value:
-      order: 1
+    struct:
+      order:
+        type: i32
+        value: 1

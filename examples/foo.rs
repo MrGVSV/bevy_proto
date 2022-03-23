@@ -10,16 +10,16 @@ use std::fmt::Debug;
 
 use bevy_proto::prelude::*;
 
-#[derive(Reflect, FromReflect, ProtoComponent, Component, Clone, Deserialize, Serialize)]
-#[reflect(ProtoComponent, Deserialize, Serialize)]
+#[derive(Reflect, FromReflect, ProtoComponent, Component, Clone)]
+#[reflect(ProtoComponent)]
 struct Person {
     pub name: String,
     #[proto_comp(preload(type = "Image", dest = "image"))]
     pub image: HandlePath<Image>,
 }
 
-#[derive(Reflect, FromReflect, Component, Copy, Clone, Deserialize, Serialize)]
-#[reflect(ProtoComponent, Deserialize, Serialize)]
+#[derive(Reflect, FromReflect, Component, Copy, Clone)]
+#[reflect(ProtoComponent)]
 struct Ordered {
     pub order: i32,
 }

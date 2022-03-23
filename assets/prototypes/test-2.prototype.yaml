@@ -4,5 +4,7 @@ name: "Test 2"
 templates: ["test-1"]
 components:
   - type: foo::Ordered
-    value:
-      order: 2
+    struct:
+      order:
+        type: i32
+        value: 2
