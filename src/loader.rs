@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::path::Path;
 
 use anyhow::Error;
 use bevy::asset::{
@@ -11,7 +10,7 @@ use bevy::reflect::TypeRegistryArc;
 use bevy::utils::HashSet;
 
 use crate::config::ProtoConfigArc;
-use crate::prelude::{Prototype, Prototypical, TemplateList};
+use crate::prelude::{Prototype, Prototypical};
 use crate::serde::extensions;
 use crate::serde::ProtoDeserializable;
 

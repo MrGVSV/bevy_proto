@@ -81,7 +81,6 @@ pub use plugin::ProtoPlugin;
 pub use prototype::Prototype;
 pub use prototypical::Prototypical;
 
-pub mod data;
 #[macro_use]
 mod utils;
 mod command;
@@ -102,7 +101,6 @@ pub mod prelude {
     //! Includes all public types and the macro to derive [`ProtoComponent`](super::components::ProtoComponent).
 
     pub use super::components::{ComponentList, ProtoComponent, ReflectProtoComponent};
-    pub use super::data::*;
     pub use super::deps::DependencyMap;
     pub use super::errors::ProtoError;
     pub use super::handle::{HandlePath, StoreHandle};

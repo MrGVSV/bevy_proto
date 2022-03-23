@@ -35,7 +35,7 @@ impl<'a> Serialize for PrototypeSerializer<'a> {
         state.serialize_entry("name", &self.prototype.name)?;
         if !self.prototype.templates.is_empty() {
             let temp_list = TemplateListSerializer::new(&self.prototype.templates);
-            state.serialize_entry("templates", &temp_list);
+            state.serialize_entry("templates", &temp_list)?;
         }
         let comp_list = &self.prototype.components;
         let comp_serializer = ComponentListSerializer::new(&comp_list, self.registry);
