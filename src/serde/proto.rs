@@ -33,16 +33,16 @@ impl ProtoDeserializable for Prototype {
         } else if path_str.ends_with(extensions::JSON_EXT) {
             #[cfg(feature = "json")]
             {
-                let de = serde_json::Deserializer::from_slice(bytes);
+                let mut de = serde_json::Deserializer::from_slice(bytes);
                 let proto_de = PrototypeDeserializer::new(path, config, type_registry);
-                return Ok(proto_de.deserialize(de)?);
+                return Ok(proto_de.deserialize(&mut de)?);
             }
         } else if path_str.ends_with(extensions::RON_EXT) {
             #[cfg(feature = "ron")]
             {
-                let de = serde_ron::Deserializer::from_bytes(bytes)?;
+                let mut de = serde_ron::Deserializer::from_bytes(bytes)?;
                 let proto_de = PrototypeDeserializer::new(path, config, type_registry);
-                return Ok(proto_de.deserialize(de)?);
+                return Ok(proto_de.deserialize(&mut de)?);
             }
         }
         return Err(anyhow!(ProtoError::UnknownExtension {

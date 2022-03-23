@@ -79,16 +79,25 @@ pub trait ProtoComponent: Reflect + Send + Sync + 'static {
     fn apply(&self, entity: &mut EntityMut);
     /// Returns the reflected trait object for this component.
     fn as_reflect(&self) -> &dyn Reflect;
-    /// The [type name] of this component
+    /// The [type name] of this component.
     ///
     /// [type name]: std::any::type_name
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
+    /// Set assets for preloading when this component is first loaded.
+    ///
+    /// This is automatically called once per [prototypical] object during its asset loading phase.
+    ///
+    /// [prototypical]: crate::prelude::Prototypical
     #[allow(unused_variables)]
     fn preload_assets(&mut self, preloader: &mut AssetPreloader) {}
 }
 
+/// A component used to convert a reflected object into a valid [`ProtoComponent`] trait object.
+///
+/// This is specifically meant to convert dynamic objects like `DynamicStruct`, which can't
+/// be downcast normally.
 #[derive(Clone)]
 pub struct ReflectProtoComponent {
     get_boxed: fn(&dyn Reflect) -> Option<Box<dyn ProtoComponent>>,

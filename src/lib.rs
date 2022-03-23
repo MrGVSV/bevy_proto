@@ -73,6 +73,7 @@
 //! ```
 //!
 extern crate bevy_proto_derive;
+extern crate self as bevy_proto;
 
 pub use bevy_proto_derive::ProtoComponent;
 pub use components::ProtoComponent;
@@ -88,6 +89,7 @@ mod components;
 mod config;
 mod deps;
 mod errors;
+mod handle;
 mod loader;
 mod manager;
 mod plugin;
@@ -103,6 +105,7 @@ pub mod prelude {
     pub use super::data::*;
     pub use super::deps::DependencyMap;
     pub use super::errors::ProtoError;
+    pub use super::handle::{HandlePath, StoreHandle};
     pub use super::loader::AssetPreloader;
     pub use super::manager::ProtoManager;
     pub use super::plugin::ProtoPlugin;

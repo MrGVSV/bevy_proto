@@ -13,11 +13,11 @@ mod tests {
     use super::{PrototypeDeserializer, PrototypeSerializer};
     use crate::config::ProtoConfig;
     use crate::prelude::{
-        ComponentList, ProtoComponent, Prototype, ReflectProtoComponent, TemplateList,
+        ComponentList, HandlePath, ProtoComponent, Prototype, ReflectProtoComponent, TemplateList,
     };
     use crate::serde::extensions::YAML_EXT;
     use crate::serde::ProtoDeserializable;
-    use bevy::prelude::{Component, Reflect};
+    use bevy::prelude::{Component, Image, Reflect};
     use bevy::reflect::{FromReflect, TypeRegistry, TypeRegistryArc};
     use serde::de::DeserializeSeed;
     use serde::{Deserialize, Serialize};
@@ -31,6 +31,7 @@ mod tests {
     pub struct MyComponent {
         foo: usize,
         bar: Option<Name>,
+        image: HandlePath<Image>,
     }
 
     // `Serialize + Deserialize` required since it's stored as an `Option<Name>` in `MyComponent`
@@ -51,6 +52,7 @@ mod tests {
                 bar: Some(Name {
                     x: String::from("hello"),
                 }),
+                image: HandlePath::new("textures/sprite.png"),
             })]),
             dependencies: Default::default(),
         };
@@ -62,6 +64,7 @@ mod tests {
         registry.write().register::<MyComponent>();
         registry.write().register::<Name>();
         registry.write().register::<Option<Name>>();
+        registry.write().register::<HandlePath<Image>>();
 
         let mut config = ProtoConfig::default();
         config.whitelist::<MyComponent>();
@@ -102,6 +105,9 @@ components:
         type: "core::option::Option<bevy_proto::serde::tests::Name>"
         value:
           x: hello
+      image:
+        type: "bevy_proto::handle::HandlePath<bevy_render::texture::image::Image>"
+        value: textures/sprite.png
 "#;
     const OUTPUT: &str = r#"---
 name: Foo
@@ -118,6 +124,9 @@ components:
         type: "core::option::Option<bevy_proto::serde::tests::Name>"
         value:
           x: hello
+      image:
+        type: "bevy_proto::handle::HandlePath<bevy_render::texture::image::Image>"
+        value: textures/sprite.png
 "#;
 
     #[test]

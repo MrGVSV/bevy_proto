@@ -14,6 +14,8 @@ use bevy_proto::prelude::*;
 #[reflect(ProtoComponent, Deserialize, Serialize)]
 struct Person {
     pub name: String,
+    #[proto_comp(preload(type = "Image", dest = "image"))]
+    pub image: HandlePath<Image>,
 }
 
 #[derive(Reflect, FromReflect, Component, Copy, Clone, Deserialize, Serialize)]
@@ -32,7 +34,7 @@ impl ProtoComponent for Ordered {
     }
 
     fn preload_assets(&mut self, preloader: &mut AssetPreloader) {
-        let _: Handle<Image> = preloader.preload("textures/sprite.png");
+        // let _: Handle<Image> = preloader.preload("textures/sprite.png");
     }
 }
 
@@ -91,6 +93,12 @@ fn list_protos(assets: Res<Assets<Prototype>>) {
     }
 }
 
+fn list_images(assets: Res<Assets<Image>>) {
+    for (p, o) in assets.iter() {
+        println!("Image: {:?}: {:?}", p, o);
+    }
+}
+
 pub(crate) fn print_asset<T: Asset + Debug>(
     mut reader: EventReader<AssetEvent<T>>,
     assets: Res<Assets<T>>,
@@ -116,6 +124,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .register_type::<Person>()
         .register_type::<Ordered>()
+        .register_type::<HandlePath<Image>>()
         // This plugin should come AFTER any others that it might rely on
         // In this case, we need access to what's added by [`DefaultPlugins`]
         // so we place this line after that one
@@ -127,6 +136,8 @@ fn main() {
         .add_system(test)
         .add_system(print_objects)
         .add_system(print_asset::<Image>)
+        .add_system(print_asset::<Prototype>)
+        // .add_system(list_images)
         // .add_system(list_protos)
         .run();
 }
