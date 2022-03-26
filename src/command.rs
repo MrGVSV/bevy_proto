@@ -1,6 +1,7 @@
+use crate::errors::ProtoSpawnError;
 use crate::manager::ProtoManager;
 use crate::prelude::Prototypical;
-use crate::utils::for_each_template;
+use crate::templates::apply_templates;
 use bevy::asset::{Asset, Assets, HandleId};
 use bevy::ecs::system::Command;
 use bevy::ecs::world::EntityMut;
@@ -65,8 +66,8 @@ fn apply<T: Prototypical + Asset>(id: &ProtoId, entity: Entity, world: &mut Worl
             }
         } else {
             panic!(
-                "Prototype with handle `{:?}` has not been loaded",
-                handle
+                "{}",
+                ProtoSpawnError::NotLoaded{ handle }
             );
         }
     });
@@ -74,11 +75,10 @@ fn apply<T: Prototypical + Asset>(id: &ProtoId, entity: Entity, world: &mut Worl
 
 /// Applies components in a bottom-up fashion: from deepest template to the prototype itself
 fn apply_proto<T: Prototypical + Asset>(proto: &T, assets: &Assets<T>, entity: &mut EntityMut) {
-    for_each_template(proto, assets, &mut |template| {
-        apply_proto(template, assets, entity);
-    });
-
-    for component in proto.components() {
-        component.apply(entity);
-    }
+    apply_templates(proto, assets, &mut |template| {
+        for component in template.components() {
+            component.apply(entity);
+        }
+    })
+    .ok();
 }

@@ -1,3 +1,4 @@
+use bevy::asset::HandleId;
 use std::ffi::OsString;
 use thiserror::Error;
 
@@ -17,4 +18,13 @@ pub enum ProtoError {
     MissingDeserializer,
     #[error("unknown extension: {ext:?}")]
     UnknownExtension { ext: OsString },
+}
+
+#[non_exhaustive]
+#[derive(Error, Debug)]
+pub enum ProtoSpawnError {
+    #[error("Found a circular dependency in the following prototypes: {tree}. {msg}")]
+    CircularDependency { tree: String, msg: String },
+    #[error("Prototype is not currently loaded: {handle:?}")]
+    NotLoaded { handle: HandleId },
 }

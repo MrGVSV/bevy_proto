@@ -1,5 +1,6 @@
 use crate::command::ProtoCommand;
 use crate::prelude::Prototypical;
+use crate::utils::analyze_deps;
 use bevy::asset::{Asset, AssetEvent, AssetServer, Assets, HandleId, LoadState};
 use bevy::prelude::{Commands, EventReader, Handle, Res, ResMut};
 use bevy::utils::hashbrown::hash_map::Iter;
@@ -138,7 +139,11 @@ pub(crate) fn update_tracked<T: Prototypical + Asset>(
             AssetEvent::Created { ref handle } => {
                 if let Some(proto) = assets.get(handle) {
                     manager.add_name(proto.name(), handle.clone_weak());
+
+                    #[cfg(feature = "analysis")]
+                    analyze_deps(proto, &assets);
                 }
+                // TODO: Add "prune" feature to allow the removal of duplicates from lower priority templates
             }
             AssetEvent::Modified { ref handle } => {
                 if let Some(proto) = assets.get(handle) {

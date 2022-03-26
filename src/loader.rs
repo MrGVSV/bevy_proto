@@ -50,10 +50,10 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, anyhow::Result<(), Error>> {
         Box::pin(async move {
+            // === Deserialize === //
             let config = &self.config.read();
             let registry = &self.registry;
             let mut proto = T::deserialize(bytes, load_context.path(), config, registry)?;
-            config.call_on_register(&mut proto)?;
 
             let mut preloader = AssetPreloader::new(&load_context);
             for component in proto.components_mut() {
@@ -69,6 +69,7 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
                 Vec::new()
             };
 
+            // === Dependencies === //
             let proto_deps = proto.dependencies_mut();
             for template in templates.iter() {
                 let handle: Handle<T> = load_context.get_handle(template.clone());
@@ -85,6 +86,8 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
                 asset_deps.push(path);
             }
 
+            // === Finish === //
+            config.call_on_register(&mut proto)?;
             let asset = LoadedAsset::new(proto).with_dependencies(asset_deps);
             load_context.set_default_asset(asset);
             Ok(())
