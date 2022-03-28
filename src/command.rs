@@ -37,7 +37,7 @@ fn apply<T: Prototypical + Asset>(id: ProtoId, entity: Entity, world: &mut World
             .resource::<NameToHandle>()
             .read()
             .get(name)
-            .ok_or_else(|| ProtoSpawnError::MissingHandle { name: name.clone() })
+            .ok_or_else(|| ProtoSpawnError::NotLoaded { id: id.clone() })
             .unwrap(),
     };
     world.resource_scope(|world, assets: Mut<Assets<T>>| {
