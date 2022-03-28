@@ -1,7 +1,7 @@
 use super::ProtoComponent;
 use crate::components::ReflectProtoComponent;
 use crate::config::ProtoConfig;
-use crate::errors::ProtoError;
+use crate::errors::ProtoLoadError;
 use bevy::prelude::Reflect;
 use bevy::reflect::TypeRegistryArc as TypeRegistry;
 use std::borrow::{Borrow, Cow};
@@ -32,7 +32,7 @@ impl ComponentList {
 
             // --- Get Registration --- //
             let registration = registry.get_with_name(item.type_name()).ok_or_else(|| {
-                ProtoError::NotRegistered {
+                ProtoLoadError::NotRegistered {
                     name: name.to_string(),
                 }
             })?;
@@ -44,13 +44,13 @@ impl ComponentList {
             // --- Get ProtoComponent Data --- //
             let proto_reflect = registry
                 .get_type_data::<ReflectProtoComponent>(id)
-                .ok_or_else(|| ProtoError::MissingReflection {
+                .ok_or_else(|| ProtoLoadError::MissingReflection {
                     name: name.to_string(),
                 })?;
 
             // --- Add Component --- //
             let proto_comp = proto_reflect.get_component(item.as_ref()).ok_or_else(|| {
-                ProtoError::BadReflection {
+                ProtoLoadError::BadReflection {
                     name: name.to_string(),
                 }
             })?;

@@ -1,4 +1,4 @@
-use crate::prelude::{ProtoError, Prototypical};
+use crate::prelude::{ProtoLoadError, Prototypical};
 use bevy::utils::HashSet;
 use parking_lot::{RwLock, RwLockReadGuard};
 use std::any::{Any, TypeId};
@@ -92,22 +92,22 @@ impl ProtoConfig {
 
     /// Checks if the given [`TypeId`] is allowed by the config.
     ///
-    /// Returns `Ok(())` if allowed, otherwise returns `Err(ProtoError)`.
-    pub fn assert_allowed(&self, type_id: TypeId, type_name: &str) -> Result<(), ProtoError> {
+    /// Returns `Ok(())` if allowed, otherwise returns `Err(ProtoLoadError)`.
+    pub fn assert_allowed(&self, type_id: TypeId, type_name: &str) -> Result<(), ProtoLoadError> {
         match &self.filter {
             ProtoFilter::All => Ok(()),
             ProtoFilter::Whitelist(list) => {
                 if list.contains(&type_id) {
                     Ok(())
                 } else {
-                    Err(ProtoError::NotWhitelisted {
+                    Err(ProtoLoadError::NotWhitelisted {
                         name: type_name.into(),
                     })
                 }
             }
             ProtoFilter::Blacklist(list) => {
                 if list.contains(&type_id) {
-                    Err(ProtoError::Blacklisted {
+                    Err(ProtoLoadError::Blacklisted {
                         name: type_name.into(),
                     })
                 } else {

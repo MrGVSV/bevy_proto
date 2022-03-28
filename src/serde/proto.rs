@@ -1,5 +1,5 @@
 use crate::config::ProtoConfig;
-use crate::errors::ProtoError;
+use crate::errors::ProtoLoadError;
 use crate::prelude::Prototype;
 use crate::serde::{extensions, ProtoDeserializable, PrototypeDeserializer};
 use anyhow::{anyhow, Error};
@@ -16,7 +16,7 @@ impl ProtoDeserializable for Prototype {
     ) -> Result<Self, Error> {
         let ext = path
             .extension()
-            .ok_or_else(|| ProtoError::UnknownExtension {
+            .ok_or_else(|| ProtoLoadError::UnknownExtension {
                 ext: Default::default(),
             })?;
         let path_str = path
@@ -45,7 +45,7 @@ impl ProtoDeserializable for Prototype {
                 return Ok(proto_de.deserialize(&mut de)?);
             }
         }
-        return Err(anyhow!(ProtoError::UnknownExtension {
+        return Err(anyhow!(ProtoLoadError::UnknownExtension {
             ext: ext.to_os_string(),
         }));
     }

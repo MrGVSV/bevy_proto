@@ -102,7 +102,7 @@ pub mod prelude {
 
     pub use super::components::{ComponentList, ProtoComponent, ReflectProtoComponent};
     pub use super::deps::DependencyMap;
-    pub use super::errors::ProtoError;
+    pub use super::errors::ProtoLoadError;
     pub use super::handle::{HandlePath, StoreHandle};
     pub use super::loader::AssetPreloader;
     pub use super::manager::ProtoManager;
