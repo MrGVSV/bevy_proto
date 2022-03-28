@@ -6,23 +6,27 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Commands, Entity};
 use std::slice::{Iter, IterMut};
 
-/// Allows access to a prototype's name and components so that it can be spawned in
+/// Allows access to a prototype's name and components so that it can be spawned into the World.
 pub trait Prototypical: 'static + Send + Sync {
-    /// The name of the prototype
+    /// The name of the prototype.
     ///
-    /// This should be unique amongst all prototypes in the world
+    /// This should be unique amongst all prototypes in the world.
     fn name(&self) -> &str;
 
+    /// Returns a reference to the [`TemplateList`] associated with this prototype, if any.
     fn templates(&self) -> Option<&TemplateList> {
         None
     }
 
+    /// Returns a mutable reference to the [`TemplateList`] associated with this prototype, if any.
     fn templates_mut(&mut self) -> Option<&mut TemplateList> {
         None
     }
 
+    /// Returns a reference to the [`DependencyMap`] associated with this prototype.
     fn dependencies(&self) -> &DependencyMap;
 
+    /// Returns a mutable reference to the [`DependencyMap`] associated with this prototype.
     fn dependencies_mut(&mut self) -> &mut DependencyMap;
 
     /// Returns an iterator of [`ProtoComponent`] trait objects.
@@ -41,23 +45,14 @@ pub trait Prototypical: 'static + Send + Sync {
     ///
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_proto::prelude::{Prototype, Prototypical};
+    /// use bevy_proto::prelude::{ProtoManager, Prototype, Prototypical};
     ///
-    /// fn setup_system(mut commands: Commands) {
-    ///     let proto: Prototype = serde_yaml::from_str(r#"
-    ///     name: My Prototype
-    ///     components:
-    ///       - type: SomeMarkerComponent
-    ///       - type: SomeComponent
-    ///         value:
-    ///           - speed: 10.0
-    ///     "#).unwrap();
-    ///
+    /// fn spawn_system(mut commands: Commands, manager: ProtoManager) {
+    ///   if let Some(proto) = manager.get("My Prototype") {
     ///     let entity = proto.spawn(&mut commands).id();
-    ///
     ///     // ...
+    ///   }
     /// }
-    ///
     /// ```
     fn spawn<'a, 'p, 'w, 's>(
         &'p self,
@@ -83,21 +78,13 @@ pub trait Prototypical: 'static + Send + Sync {
     ///
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_proto::prelude::{Prototype, Prototypical};
+    /// use bevy_proto::prelude::{ProtoManager, Prototype, Prototypical};
     ///
     /// #[derive(Component)]
     /// struct Player(pub Entity);
     ///
-    /// fn setup_system(mut commands: Commands, player: Query<&Player>) {
-    ///     let proto: Prototype = serde_yaml::from_str(r#"
-    ///     name: My Prototype
-    ///     components:
-    ///       - type: SomeMarkerComponent
-    ///       - type: SomeComponent
-    ///         value:
-    ///           - speed: 10.0
-    ///     "#).unwrap();
-    ///
+    /// fn update_system(mut commands: Commands, player: Query<&Player>, manager: ProtoManager) {
+    ///   if let Some(proto) = manager.get("My Prototype") {
     ///     // Get the player entity
     ///     let entity = player.single().0;
     ///
@@ -105,8 +92,8 @@ pub trait Prototypical: 'static + Send + Sync {
     ///     let entity = proto.insert(entity, &mut commands).id();
     ///
     ///     // ...
+    ///   }
     /// }
-    ///
     /// ```
     fn insert<'a, 'p, 'w, 's>(
         &'p self,
