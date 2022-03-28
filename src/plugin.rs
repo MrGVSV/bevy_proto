@@ -4,7 +4,6 @@ use crate::loader::ProtoAssetLoader;
 use crate::manager::ProtoManagerPlugin;
 use bevy::app::{App, Plugin};
 use bevy::asset::{AddAsset, Asset};
-use bevy::prelude::SystemLabel;
 use std::marker::PhantomData;
 
 use crate::prelude::{Prototype, Prototypical};
