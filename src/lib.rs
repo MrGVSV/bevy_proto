@@ -101,6 +101,7 @@ pub mod prelude {
     //! Includes all public types and the macro to derive [`ProtoComponent`](super::components::ProtoComponent).
 
     pub use super::components::{ComponentList, ProtoComponent, ReflectProtoComponent};
+    pub use super::config::{ProtoConfig, ProtoFilter};
     pub use super::deps::DependencyMap;
     pub use super::errors::ProtoLoadError;
     pub use super::handle::{HandlePath, StoreHandle};

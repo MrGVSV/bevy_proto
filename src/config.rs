@@ -4,13 +4,12 @@ use parking_lot::{RwLock, RwLockReadGuard};
 use std::any::{Any, TypeId};
 use std::sync::Arc;
 
-pub type RegistrationCallback =
-    Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>;
-
+/// Config used to control how prototypes are processed.
 #[derive(Default)]
 pub struct ProtoConfig {
     filter: ProtoFilter,
-    on_register: Option<RegistrationCallback>,
+    on_register:
+        Option<Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>>,
 }
 
 #[derive(Clone, Default)]
@@ -124,7 +123,12 @@ impl ProtoConfig {
     ///
     /// Note: This is called as soon as the prototype is loaded, this means that templates
     /// may or may not be loaded by that point.
-    pub fn on_register(&mut self, on_register: Option<RegistrationCallback>) {
+    pub fn on_register(
+        &mut self,
+        on_register: Option<
+            Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>,
+        >,
+    ) {
         self.on_register = on_register;
     }
 
