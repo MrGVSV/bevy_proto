@@ -18,10 +18,13 @@ use std::slice::Iter;
 /// Templates are listed in reverse order of inheritance, where templates that are
 /// listed last may be overridden by templates listed first. For example, a list
 /// of templates like `["IFoo", "IBar", "IBaz"]` means that [prototypical] information
-/// generated under `"IBaz"` may be overridden by `"IBar"` or `"IFoo"`.
+/// generated under `"IBaz"` may be overridden by `"IBar"` or `"IFoo"`. The reason for this
+/// is to position more specific or relevant templates first so that it's more visible at a glance.
 ///
-/// The reason for this is to position more specific or relevant templates first
-/// so that it's more visible at a glance.
+/// By default, template paths take on the extension of the prototype itself unless given a dedicated
+/// extension. This means that a prototype with the filepath `prototypes/Foo.prototype.yaml` will add
+/// `.prototype.yaml` to its templates. So the templates `["Bar", "../Baz.json"]` are expanded to
+/// `["./Bar.prototype.yaml", "./../Baz.json"]`.
 ///
 /// [prototypical]: crate::prelude::Prototypical
 #[derive(Default, Debug, Clone, PartialEq)]
@@ -30,29 +33,33 @@ pub struct TemplateList {
 }
 
 impl TemplateList {
-    /// Create a new [`TemplateList`]
+    /// Create a new [`TemplateList`].
     pub fn new<P: Into<PathBuf>, I: IntoIterator<Item = P>>(paths: I) -> Self {
         Self {
             asset_paths: paths.into_iter().map(|p| p.into()).collect(),
         }
     }
 
-    /// Gets an iterator over the templates in their defined order
+    /// Gets an iterator over the templates in their defined order.
+    ///
+    /// This is not recursive.
     pub fn iter_defined_order(&self) -> Iter<'_, PathBuf> {
         self.asset_paths.iter()
     }
 
-    /// Gets an iterator over the templates in order of inheritance
+    /// Gets an iterator over the templates in order of inheritance.
+    ///
+    /// This is not recursive.
     pub fn iter_inheritance_order(&self) -> Rev<Iter<'_, PathBuf>> {
         self.asset_paths.iter().rev()
     }
 
-    /// Returns true if this list is empty
+    /// Returns true if this list is empty.
     pub fn is_empty(&self) -> bool {
         self.asset_paths.is_empty()
     }
 
-    /// Returns the length of the list
+    /// Returns the length of the list.
     pub fn len(&self) -> usize {
         self.asset_paths.len()
     }
