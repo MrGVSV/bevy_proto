@@ -10,7 +10,20 @@ use serde::{Deserialize, Deserializer};
 use std::fmt::Formatter;
 use std::path::{Path, PathBuf};
 
+/// Trait used to control how a [prototype] is deserialized.
+///
+/// [prototype]: crate::Prototypical
 pub trait ProtoDeserializable: Sized {
+    /// Deserialize this [prototype].
+    ///
+    /// # Arguments
+    ///
+    /// * `bytes`: The raw bytes of the prototype file
+    /// * `path`: The path to the prototype file
+    /// * `config`: The current [`ProtoConfig`]
+    /// * `type_registry`: Bevy's type registry
+    ///
+    /// [prototype]: crate::Prototypical
     fn deserialize(
         bytes: &[u8],
         path: &Path,
@@ -19,7 +32,7 @@ pub trait ProtoDeserializable: Sized {
     ) -> Result<Self, anyhow::Error>;
 }
 
-/// A deserializer for [`Prototype`] data
+/// A deserializer for [`Prototype`] data.
 pub struct PrototypeDeserializer<'a> {
     path: &'a Path,
     config: &'a ProtoConfig,
@@ -27,6 +40,7 @@ pub struct PrototypeDeserializer<'a> {
 }
 
 impl<'a> PrototypeDeserializer<'a> {
+    /// Create a new deserializer for [`Prototype`] data.
     pub fn new(path: &'a Path, config: &'a ProtoConfig, type_registry: &'a TypeRegistry) -> Self {
         Self {
             path,
@@ -97,7 +111,7 @@ impl<'a, 'de> Visitor<'de> for ProtoVisitor<'a> {
     }
 }
 
-/// A custom deserializer for [`ComponentList`] data
+/// A custom deserializer for [`ComponentList`] data.
 ///
 /// This can be used in your own custom [`Prototypical`](crate::Prototypical) struct to
 /// easily deserialize a list of components.
@@ -107,6 +121,7 @@ pub struct ComponentListDeserializer<'a> {
 }
 
 impl<'a> ComponentListDeserializer<'a> {
+    /// Create a new deserializer for [`ComponentList`] data.
     pub fn new(config: &'a ProtoConfig, type_registry: &'a TypeRegistry) -> Self {
         Self {
             config,
@@ -155,7 +170,7 @@ impl<'a, 'de> Visitor<'de> for ComponentListVisitor<'a> {
     }
 }
 
-/// A custom deserializer for [`TemplateList`] data
+/// A custom deserializer for [`TemplateList`] data.
 ///
 /// This can be used in your own custom [`Prototypical`](crate::Prototypical) struct to
 /// easily deserialize a list of templates.
@@ -185,6 +200,7 @@ pub struct TemplateListDeserializer<'a> {
 }
 
 impl<'a> TemplateListDeserializer<'a> {
+    /// Create a new deserializer for deserializer for [`TemplateList`] data.
     pub fn new(path: &'a Path) -> Self {
         Self { path }
     }

@@ -94,7 +94,7 @@ mod manager;
 mod plugin;
 mod prototype;
 mod prototypical;
-mod serde;
+pub mod serde;
 mod templates;
 
 pub mod prelude {

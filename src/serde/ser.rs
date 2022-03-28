@@ -5,13 +5,14 @@ use bevy::reflect::TypeRegistry;
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Serialize, Serializer};
 
-/// A serializer for [`Prototype`] data
+/// A serializer for [`Prototype`] data.
 pub struct PrototypeSerializer<'a> {
     prototype: &'a Prototype,
     registry: &'a TypeRegistry,
 }
 
 impl<'a> PrototypeSerializer<'a> {
+    /// Create a new serializer for [`Prototype`] data.
     pub fn new(prototype: &'a Prototype, registry: &'a TypeRegistry) -> Self {
         Self {
             prototype,
@@ -45,7 +46,7 @@ impl<'a> Serialize for PrototypeSerializer<'a> {
     }
 }
 
-/// A custom serializer for [`ComponentList`] data
+/// A custom serializer for [`ComponentList`] data.
 ///
 /// This can be used in your own custom [`Prototypical`](crate::Prototypical) struct to
 /// easily serialize a list of components.
@@ -55,6 +56,7 @@ pub struct ComponentListSerializer<'a> {
 }
 
 impl<'a> ComponentListSerializer<'a> {
+    /// Create a new serializer for [`ComponentList`] data.
     pub fn new(list: &'a ComponentList, registry: &'a TypeRegistry) -> Self {
         Self { list, registry }
     }
@@ -75,11 +77,13 @@ impl<'a> Serialize for ComponentListSerializer<'a> {
     }
 }
 
+/// A custom serializer for [`TemplateList`] data.
 pub struct TemplateListSerializer<'a> {
     list: &'a TemplateList,
 }
 
 impl<'a> TemplateListSerializer<'a> {
+    /// Create a new serializer for [`TemplateList`] data.
     pub fn new(list: &'a TemplateList) -> Self {
         Self { list }
     }

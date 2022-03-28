@@ -1,3 +1,6 @@
+//! Contains types for serializing and deserializing [prototypes].
+//!
+//! [prototypes]: crate::Prototypical
 mod de;
 pub(crate) mod extensions;
 mod proto;
@@ -6,7 +9,7 @@ mod ser;
 pub use de::{
     ComponentListDeserializer, ProtoDeserializable, PrototypeDeserializer, TemplateListDeserializer,
 };
-pub use ser::{ComponentListSerializer, PrototypeSerializer};
+pub use ser::{ComponentListSerializer, PrototypeSerializer, TemplateListSerializer};
 
 #[cfg(test)]
 mod tests {
