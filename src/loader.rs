@@ -10,6 +10,7 @@ use bevy::reflect::TypeRegistryArc;
 use bevy::utils::HashSet;
 
 use crate::config::ProtoConfigArc;
+use crate::manager::{HandleToName, NameToHandle};
 use crate::prelude::{Prototype, Prototypical};
 use crate::serde::extensions;
 use crate::serde::ProtoDeserializable;
@@ -18,13 +19,17 @@ pub(crate) struct ProtoAssetLoader<T: Prototypical + ProtoDeserializable + Asset
     pub config: ProtoConfigArc,
     pub registry: TypeRegistryArc,
     pub extensions: Vec<&'static str>,
+    pub name_to_handle: NameToHandle,
+    pub handle_to_name: HandleToName,
     pub phantom: PhantomData<T>,
 }
 
 impl<T: Prototypical + ProtoDeserializable + Asset> FromWorld for ProtoAssetLoader<T> {
     fn from_world(world: &mut World) -> Self {
-        let registry = world.resource::<TypeRegistryArc>();
-        let config = world.resource::<ProtoConfigArc>();
+        let registry = world.resource::<TypeRegistryArc>().clone();
+        let config = world.resource::<ProtoConfigArc>().clone();
+        let name_to_handle = world.resource::<NameToHandle>().clone();
+        let handle_to_name = world.resource::<HandleToName>().clone();
 
         let mut exts = Vec::new();
         #[cfg(feature = "yaml")]
@@ -35,8 +40,10 @@ impl<T: Prototypical + ProtoDeserializable + Asset> FromWorld for ProtoAssetLoad
         exts.push(extensions::RON_EXT);
 
         Self {
-            registry: registry.clone(),
-            config: config.clone(),
+            registry,
+            config,
+            name_to_handle,
+            handle_to_name,
             extensions: exts,
             phantom: PhantomData::default(),
         }
@@ -87,6 +94,14 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
             }
 
             // === Finish === //
+            let path = AssetPath::new_ref(load_context.path(), None);
+            let handle: Handle<T> = load_context.get_handle(path);
+            self.name_to_handle
+                .write()
+                .insert(proto.name().to_string(), handle.id);
+            self.handle_to_name
+                .write()
+                .insert(handle.id, proto.name().to_string());
             config.call_on_register(&mut proto)?;
             let asset = LoadedAsset::new(proto).with_dependencies(asset_deps);
             load_context.set_default_asset(asset);

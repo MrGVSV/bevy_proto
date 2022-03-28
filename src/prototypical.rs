@@ -116,7 +116,7 @@ pub trait Prototypical: 'static + Send + Sync {
     where
         Self: Asset + Sized,
     {
-        commands.add(ProtoCommand::<Self>::from_name(entity, self.name()));
+        commands.add(ProtoCommand::<Self>::new(entity, self.name()));
         commands.entity(entity)
     }
 }

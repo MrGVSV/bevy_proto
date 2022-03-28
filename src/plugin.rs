@@ -1,11 +1,10 @@
 //! Contains [`ProtoPlugin`].
 use crate::config::{ProtoConfig, ProtoConfigArc};
 use crate::loader::ProtoAssetLoader;
-use crate::manager;
-use crate::manager::ProtoManager;
+use crate::manager::ProtoManagerPlugin;
 use bevy::app::{App, Plugin};
 use bevy::asset::{AddAsset, Asset};
-use bevy::prelude::{ParallelSystemDescriptorCoercion, SystemLabel};
+use bevy::prelude::SystemLabel;
 use std::marker::PhantomData;
 
 use crate::prelude::{Prototype, Prototypical};
@@ -38,16 +37,9 @@ impl<T: Prototypical + ProtoDeserializable + Asset> ProtoPlugin<T> {
 
 impl<T: Prototypical + ProtoDeserializable + Asset> Plugin for ProtoPlugin<T> {
     fn build(&self, app: &mut App) {
-        app.insert_resource(self.config.clone())
+        app.add_plugin(ProtoManagerPlugin::<T>::default())
+            .insert_resource(self.config.clone())
             .init_asset_loader::<ProtoAssetLoader>()
-            .add_asset::<T>()
-            .init_resource::<ProtoManager<T>>()
-            .add_system(manager::update_tracked::<T>.label(ProtoLabel::UpdateTracked))
-            .add_system(manager::spawn_proto::<T>.after(ProtoLabel::UpdateTracked));
+            .add_asset::<T>();
     }
-}
-
-#[derive(SystemLabel, Copy, Clone, Eq, PartialEq, Hash, Debug)]
-enum ProtoLabel {
-    UpdateTracked,
 }

@@ -1,11 +1,10 @@
 #![allow(unused_doc_comments)]
 //! TODO: Remove file
 
-use bevy::asset::{Asset, LoadState};
+use bevy::asset::Asset;
 use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
 use bevy::reflect::FromReflect;
-use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 use bevy_proto::prelude::*;
@@ -42,42 +41,18 @@ struct MyProto {
     handle: Handle<Prototype>,
 }
 
-fn load(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut manager: ResMut<ProtoManager<Prototype>>,
-) {
+fn load(mut commands: Commands, asset_server: Res<AssetServer>) {
     let handle: Handle<Prototype> = asset_server.load("prototypes/test-2.prototype.yaml");
-    manager.spawn(handle.clone());
     commands.insert_resource(MyProto { handle })
 }
 
-fn test(
-    mut commands: Commands,
-    assets: Res<Assets<Prototype>>,
-    res: Option<Res<MyProto>>,
-    mut flag: Local<bool>,
-    mut flag1: Local<bool>,
-    asset_server: Res<AssetServer>,
-) {
-    if let Some(res) = &res {
-        if asset_server.get_load_state(res.handle.id) == LoadState::Loaded {
-            // println!("Loaded!, {}", assets.get(res.handle.id).is_some());
-        }
-    }
-
-    if *flag1 {
+fn test(mut flag: Local<bool>, mut manager: ProtoManager) {
+    if *flag {
         return;
     }
-    if let Some(res) = res {
-        if let Some(proto) = assets.get(res.handle.id) {
-            if !*flag {
-                *flag = true;
-                return;
-            }
-            proto.spawn(&mut commands);
-            *flag1 = true;
-        }
+    if manager.is_loaded("Test 2") {
+        manager.spawn("Test 2");
+        *flag = true;
     }
 }
 

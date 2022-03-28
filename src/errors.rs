@@ -1,4 +1,4 @@
-use bevy::asset::HandleId;
+use crate::manager::ProtoId;
 use std::ffi::OsString;
 use thiserror::Error;
 
@@ -25,6 +25,6 @@ pub enum ProtoError {
 pub enum ProtoSpawnError {
     #[error("Found a circular dependency in the following prototypes: {tree}. {msg}")]
     CircularDependency { tree: String, msg: String },
-    #[error("Prototype is not currently loaded: {handle:?}")]
-    NotLoaded { handle: HandleId },
+    #[error("Prototype is not currently loaded: {id:?}")]
+    NotLoaded { id: ProtoId },
 }

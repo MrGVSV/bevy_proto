@@ -1,17 +1,12 @@
 use crate::errors::ProtoSpawnError;
-use crate::manager::ProtoManager;
+use crate::manager::{NameToHandle, ProtoId};
 use crate::prelude::Prototypical;
 use crate::templates::apply_templates;
-use bevy::asset::{Asset, Assets, HandleId};
+use bevy::asset::{Asset, Assets};
 use bevy::ecs::system::Command;
 use bevy::ecs::world::EntityMut;
 use bevy::prelude::{Entity, Mut, World};
 use std::marker::PhantomData;
-
-enum ProtoId {
-    Handle(HandleId),
-    Name(String),
-}
 
 pub(crate) struct ProtoCommand<T: Prototypical + Asset> {
     entity: Entity,
@@ -20,18 +15,10 @@ pub(crate) struct ProtoCommand<T: Prototypical + Asset> {
 }
 
 impl<T: Prototypical + Asset> ProtoCommand<T> {
-    pub fn from_handle<H: Into<HandleId>>(entity: Entity, handle: H) -> Self {
+    pub fn new<I: Into<ProtoId>>(entity: Entity, id: I) -> Self {
         Self {
             entity,
-            id: ProtoId::Handle(handle.into()),
-            phantom: PhantomData::default(),
-        }
-    }
-
-    pub fn from_name<S: Into<String>>(entity: Entity, name: S) -> Self {
-        Self {
-            entity,
-            id: ProtoId::Name(name.into()),
+            id: id.into(),
             phantom: PhantomData::default(),
         }
     }
@@ -47,12 +34,13 @@ fn apply<T: Prototypical + Asset>(id: &ProtoId, entity: Entity, world: &mut Worl
     let handle = match id {
         ProtoId::Handle(handle) => *handle,
         ProtoId::Name(name) => {
-            let manager = world.resource::<ProtoManager<T>>();
-            manager
-                .get_handle(name)
+            let name_to_handle = world.resource::<NameToHandle>();
+            *name_to_handle
+                .read()
+                .get(name)
                 .ok_or_else(|| format!("Could not find handle for prototype named `{}`.\n\
                 This typically occurs when trying to load a prototype before the corresponding ProtoManager has had a chance to track it.\n\
-                Try waiting a frame or two before applying the prototype, or use its handle directly.", name)).unwrap().id
+                Try waiting a frame or two before applying the prototype, or use its handle directly.", name)).unwrap()
         }
     };
     world.resource_scope(|world, assets: Mut<Assets<T>>| {
@@ -67,7 +55,7 @@ fn apply<T: Prototypical + Asset>(id: &ProtoId, entity: Entity, world: &mut Worl
         } else {
             panic!(
                 "{}",
-                ProtoSpawnError::NotLoaded{ handle }
+                ProtoSpawnError::NotLoaded{ id: id.clone() }
             );
         }
     });
