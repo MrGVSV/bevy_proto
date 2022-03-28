@@ -1,19 +1,32 @@
 use crate::Prototypical;
 use bevy::asset::{Asset, Handle, HandleId, HandleUntyped};
 
+/// An identifier for [prototypical] assets.
+///
+/// [prototypical]: crate::Prototypical
 #[derive(Debug, Clone)]
 pub enum ProtoId {
-    Handle(HandleId),
+    /// The name of this prototype.
     Name(String),
+    /// The handle that points to this prototype.
+    Handle(HandleId),
 }
 
+/// An identifier for [prototypical] assets.
+///
+/// Unlike, [`ProtoId`], this type uses a `&str` and a lifetime to avoid unnecessary allocations.
+///
+/// [prototypical]: crate::Prototypical
 #[derive(Debug, Copy, Clone)]
 pub enum ProtoIdRef<'a> {
+    /// The name of this prototype.
     Name(&'a str),
+    /// The handle that points to this prototype.
     Handle(HandleId),
 }
 
 impl ProtoId {
+    /// Convert this [`ProtoId`] to a [`ProtoIdRef`].
     pub fn as_ref(&self) -> ProtoIdRef {
         match self {
             Self::Name(name) => ProtoIdRef::Name(name),
@@ -23,6 +36,7 @@ impl ProtoId {
 }
 
 impl<'a> ProtoIdRef<'a> {
+    /// Convert this [`ProtoIdRef`] to an owned [`ProtoId`].
     pub fn to_owned(&self) -> ProtoId {
         match self {
             Self::Name(name) => ProtoId::Name(name.to_string()),

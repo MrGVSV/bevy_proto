@@ -52,7 +52,7 @@ impl<'w, 's, T: Prototypical + Asset> ProtoManager<'w, 's, T> {
         self.prototypes.contains(handle)
     }
 
-    /// Spawns the [prototypical] asset with the given name or handle
+    /// Spawns the [prototypical] asset with the given name or handle.
     ///
     /// [prototypical]: crate::Prototypical
     pub fn spawn<'a, I: Into<ProtoIdRef<'a>>>(&'a mut self, id: I) -> EntityCommands<'w, 's, 'a> {
