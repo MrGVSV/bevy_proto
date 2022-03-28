@@ -26,38 +26,30 @@ impl<T: Prototypical + Asset> ProtoCommand<T> {
 
 impl<T: Prototypical + Asset> Command for ProtoCommand<T> {
     fn write(self, world: &mut World) {
-        apply::<T>(&self.id, self.entity, world);
+        apply::<T>(self.id, self.entity, world);
     }
 }
 
-fn apply<T: Prototypical + Asset>(id: &ProtoId, entity: Entity, world: &mut World) {
+fn apply<T: Prototypical + Asset>(id: ProtoId, entity: Entity, world: &mut World) {
     let handle = match id {
-        ProtoId::Handle(handle) => *handle,
-        ProtoId::Name(name) => {
-            let name_to_handle = world.resource::<NameToHandle>();
-            *name_to_handle
-                .read()
-                .get(name)
-                .ok_or_else(|| format!("Could not find handle for prototype named `{}`.\n\
-                This typically occurs when trying to load a prototype before the corresponding ProtoManager has had a chance to track it.\n\
-                Try waiting a frame or two before applying the prototype, or use its handle directly.", name)).unwrap()
-        }
+        ProtoId::Handle(handle) => handle,
+        ProtoId::Name(ref name) => *world
+            .resource::<NameToHandle>()
+            .read()
+            .get(name)
+            .ok_or_else(|| ProtoSpawnError::MissingHandle { name: name.clone() })
+            .unwrap(),
     };
     world.resource_scope(|world, assets: Mut<Assets<T>>| {
-        if let Some(proto) = assets.get(handle) {
-            if let Some(ref mut entity) = world.get_entity_mut(entity) {
-                apply_proto(proto, &assets, entity);
-            } else {
-                panic!("Could not get access to entity {:?} because it doesn't exist in this World.\n\
-                        If this command was added to a newly spawned entity, ensure that you have not despawned that entity within the same stage.\n\
-                        This may have occurred due to system order ambiguity, or if the spawning system has multiple command buffers", entity);
-            }
-        } else {
-            panic!(
-                "{}",
-                ProtoSpawnError::NotLoaded{ id: id.clone() }
-            );
-        }
+        let proto = assets
+            .get(handle)
+            .ok_or_else(|| ProtoSpawnError::NotLoaded { id: id.clone() })
+            .unwrap();
+        let entity = &mut world
+            .get_entity_mut(entity)
+            .ok_or_else(|| ProtoSpawnError::InvalidEntity { entity })
+            .unwrap();
+        apply_proto(proto, &assets, entity);
     });
 }
 

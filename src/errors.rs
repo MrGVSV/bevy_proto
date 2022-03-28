@@ -1,4 +1,5 @@
 use crate::manager::ProtoId;
+use bevy::prelude::Entity;
 use std::ffi::OsString;
 use thiserror::Error;
 
@@ -27,4 +28,8 @@ pub enum ProtoSpawnError {
     CircularDependency { tree: String, msg: String },
     #[error("Prototype is not currently loaded: {id:?}")]
     NotLoaded { id: ProtoId },
+    #[error("Could not find a handle for prototype named: {name}")]
+    MissingHandle { name: String },
+    #[error("The given entity does not exist in the world: {entity:?}. Was it despawned?")]
+    InvalidEntity { entity: Entity },
 }
