@@ -9,17 +9,20 @@ use std::fmt::{Debug, Formatter};
 use std::slice::{Iter, IterMut};
 
 /// A list of [`ProtoComponent`] objects that can be used to create
-/// real components dynamically
+/// real components dynamically.
 #[derive(Default)]
 pub struct ComponentList {
     pub(crate) items: Vec<Box<dyn ProtoComponent>>,
 }
 
 impl ComponentList {
+    /// Create a new [`ComponentList`] with the given collection of [`ProtoComponent`]
+    /// trait objects.
     pub fn new(items: Vec<Box<dyn ProtoComponent>>) -> Self {
         Self { items }
     }
 
+    /// Attempts to convert a list of reflected types to a valid [`ComponentList`].
     pub fn from_reflected(
         list: &[Box<dyn Reflect>],
         config: &ProtoConfig,
@@ -60,14 +63,17 @@ impl ComponentList {
         Ok(Self { items })
     }
 
+    /// Returns an iterator over the components in this list.
     pub fn iter(&self) -> Iter<'_, Box<dyn ProtoComponent>> {
         self.items.iter()
     }
 
+    /// Returns a mutable iterator over the components in this list.
     pub fn iter_mut(&mut self) -> IterMut<'_, Box<dyn ProtoComponent>> {
         self.items.iter_mut()
     }
 
+    /// The number of components contained in this list.
     pub fn len(&self) -> usize {
         self.items.len()
     }
