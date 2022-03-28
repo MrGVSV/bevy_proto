@@ -105,7 +105,7 @@ pub mod prelude {
     pub use super::errors::ProtoLoadError;
     pub use super::handle::{HandlePath, StoreHandle};
     pub use super::loader::AssetPreloader;
-    pub use super::manager::ProtoManager;
+    pub use super::manager::{ProtoId, ProtoIdRef, ProtoManager};
     pub use super::plugin::ProtoPlugin;
     pub use super::prototype::Prototype;
     pub use super::prototypical::Prototypical;
