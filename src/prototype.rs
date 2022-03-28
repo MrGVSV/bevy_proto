@@ -13,10 +13,13 @@ use crate::prelude::{Prototypical, TemplateList};
 pub struct Prototype {
     /// The name of this prototype.
     pub(crate) name: String,
-    /// The relative paths of this prototype's templates (if any).
+    /// The list of template prototypes to inherit from, if any.
     ///
-    /// See [`TemplateListDeserializer`](crate::serde::TemplateListDeserializer) to
-    /// find out how these names are deserialized.
+    /// These are listed as relative paths to this prototype's file. See [`TemplateList`]
+    /// for more details.
+    ///
+    /// Additionally, to find out how these names are deserialized, check out
+    /// [`TemplateListDeserializer`](crate::serde::TemplateListDeserializer).
     pub(crate) templates: TemplateList,
     /// The map of assets this prototype depends on.
     pub(crate) dependencies: DependencyMap,
@@ -48,6 +51,7 @@ impl Prototypical for Prototype {
     fn components(&self) -> Iter<'_, Box<dyn ProtoComponent>> {
         self.components.iter()
     }
+
     fn components_mut(&mut self) -> IterMut<'_, Box<dyn ProtoComponent>> {
         self.components.iter_mut()
     }
