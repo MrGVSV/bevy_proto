@@ -1,0 +1,8 @@
+---
+name: Healthy
+components:
+  - type: "templates::Health"
+    struct:
+      max:
+        type: u16
+        value: 30

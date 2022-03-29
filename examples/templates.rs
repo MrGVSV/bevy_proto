@@ -14,41 +14,59 @@
 #![allow(unused_doc_comments)]
 
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use bevy::reflect::FromReflect;
+use serde::Deserialize;
 
 use bevy_proto::prelude::*;
 
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+#[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+#[reflect(ProtoComponent)]
 struct NPC;
 
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+#[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+#[reflect(ProtoComponent)]
 struct Occupation(OccupationType);
 
-#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
+#[derive(Reflect, FromReflect, Component, ProtoComponent, Deserialize, Clone, Debug)]
+#[reflect_value(ProtoComponent, Deserialize)]
 enum OccupationType {
     Unemployed,
     Miner,
     Shopkeeper,
 }
 
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+#[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+#[reflect(ProtoComponent)]
 struct Health {
     max: u16,
 }
 
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+#[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+#[reflect(ProtoComponent)]
 struct Named(String);
 
+/// Load the prototypes
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    let handles = asset_server.load_folder("prototypes/templates").unwrap();
+    manager.add_multiple_untyped(handles);
+}
+
 /// Spawn in the NPC
-fn spawn_npc(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-    let proto = data.get_prototype("Alice").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Bob").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Urist").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Mystery").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
+fn spawn_npc(mut manager: ProtoManager, mut has_ran: Local<bool>) {
+    if *has_ran {
+        return;
+    }
+
+    if !manager.all_loaded() {
+        return;
+    }
+
+    manager.spawn("Alice");
+    manager.spawn("Bob");
+    manager.spawn("Urist");
+    manager.spawn("Mystery");
+
+    *has_ran = true;
 }
 
 /// Handle the NPC spawning
@@ -69,8 +87,15 @@ fn on_spawn(query: Query<(&Health, &Occupation, Option<&Named>), Added<NPC>>) {
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::with_dir("assets/prototypes/templates"))
-        .add_startup_system(spawn_npc)
+        .add_plugin(ProtoPlugin::<Prototype>::default())
+        // !!! Make sure you register your types !!! //
+        .register_type::<NPC>()
+        .register_type::<Occupation>()
+        .register_type::<OccupationType>()
+        .register_type::<Health>()
+        .register_type::<Named>()
+        .add_startup_system(load_prototypes)
+        .add_system(spawn_npc)
         .add_system(on_spawn)
         .run();
 }
