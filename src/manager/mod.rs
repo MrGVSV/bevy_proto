@@ -1,5 +1,5 @@
 pub use id::{ProtoId, ProtoIdRef};
-pub(crate) use maps::{HandleToName, NameToHandle};
+pub(crate) use maps::{HandleToName, NameToHandle, ProtoHandles};
 pub(crate) use plugin::ProtoManagerPlugin;
 pub use proto_manager::ProtoManager;
 
@@ -16,7 +16,7 @@ mod plugin {
 
     use crate::Prototypical;
 
-    use super::{tracking, HandleToName, NameToHandle};
+    use super::{tracking, HandleToName, NameToHandle, ProtoHandles};
 
     pub(crate) struct ProtoManagerPlugin<T: Prototypical + Asset> {
         phantom: PhantomData<T>,
@@ -34,6 +34,7 @@ mod plugin {
         fn build(&self, app: &mut App) {
             app.init_resource::<HandleToName>()
                 .init_resource::<NameToHandle>()
+                .init_resource::<ProtoHandles<T>>()
                 .add_system(tracking::track_prototypes::<T>);
         }
     }
