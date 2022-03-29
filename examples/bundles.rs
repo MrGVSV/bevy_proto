@@ -30,7 +30,7 @@ impl ProtoComponent for SpriteBundleDef {
         // we can go ahead and say that this prototype _depends_ on that asset.
         // This will make sure that it is loaded alongside our prototype and will
         // remain loaded at least as long as the prototype.
-        preloader.preload_dependency(&self.texture_path);
+        let _: Handle<Image> = preloader.preload_dependency(&self.texture_path);
     }
 
     fn as_reflect(&self) -> &dyn Reflect {

@@ -166,14 +166,14 @@ impl<'a, 'ctx> AssetPreloader<'a, 'ctx> {
     /// To just get a strong handle without loading the asset, use the [`get_handle`]
     /// method.
     ///
-    /// [prototypical]: crate::prelude::Prototypical
+    /// [prototypical]: crate::prelude::Prototypica
     /// [`preload`]: Self::preload
     /// [`get_handle`]: Self::get_handle
-    pub fn preload_dependency<I: Into<AssetPath<'static>>, T: Asset>(
+    pub fn preload_dependency<'p, I: Into<AssetPath<'p>>, T: Asset>(
         &mut self,
         path: I,
     ) -> Handle<T> {
-        let path = path.into();
+        let path = path.into().to_owned();
         self.preload_paths.push(path.clone());
         let handle: Handle<T> = self.load_context.get_handle(path);
         self.dependency_handles.insert(handle.clone_untyped());
