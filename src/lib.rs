@@ -114,13 +114,6 @@ pub mod prelude {
     pub use bevy_proto_derive::*;
 }
 
-#[cfg(any(
-    all(feature = "yaml", any(feature = "json", feature = "ron")),
-    all(feature = "json", any(feature = "yaml", feature = "ron")),
-    all(feature = "ron", any(feature = "yaml", feature = "json")),
-))]
-compile_error!("features `yaml`, `json`, and `ron` cannot be enabled at the same time");
-
 #[cfg(doctest)]
 mod test_readme {
     macro_rules! external_doc_test {
