@@ -1,5 +1,5 @@
 ---
 name: "Silly"
 components:
-  - type: Mood
+  - type: attributes::Mood
     value: Silly

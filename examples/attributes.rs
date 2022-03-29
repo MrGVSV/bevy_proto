@@ -1,6 +1,8 @@
+use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
+use bevy::reflect::FromReflect;
 use bevy_proto::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 /// Not every `ProtoComponent` needs to itself be a `Component` (or vice-versa)
 ///
@@ -17,10 +19,11 @@ struct Emoji(String);
 ///
 /// If our `ProtoComponent` implements `From<T>` for the "ActualComponent", we can use the
 /// `#[proto_comp(into = "ActualComponent")]` attribute. This attribute essentially just clones
-/// our `ProtoComponent` had turns it into our "ActualComponent".
+/// our `ProtoComponent` and turns it into our "ActualComponent".
 ///
-/// Note: We still do need to derive/impl `Clone`, `Serialize`, and `Deserialize` traits.
-#[derive(Clone, Serialize, Deserialize, ProtoComponent)]
+/// Note: We still do need to derive/impl the `Reflect`, `FromReflect`, and `Clone` traits.
+#[derive(Reflect, FromReflect, ProtoComponent, Clone)]
+#[reflect(ProtoComponent)]
 #[proto_comp(into = "Emoji")]
 struct EmojiDef {
     emoji: String,
@@ -43,17 +46,17 @@ trait AsEmoji {
 
 /// We can create a function that takes any `ProtoComponent` that implements `AsEmoji` and inserts
 /// an `Emoji` component.
-fn create_emoji<T: AsEmoji + ProtoComponent>(
-    component: &T,
-    commands: &mut ProtoCommands,
-    _asset_server: &Res<AssetServer>,
-) {
-    commands.insert(component.as_emoji());
+fn create_emoji<T: AsEmoji + ProtoComponent>(component: &T, entity: &mut EntityMut) {
+    entity.insert(component.as_emoji());
 }
 
 /// Then we can use the `#[proto_comp(with = "my_function")]` attribute. This works exactly
 /// like [`ProtoComponent::insert_self`], but allows you to use an extracted version of that function.
-#[derive(Clone, Serialize, Deserialize, ProtoComponent)]
+///
+/// Note: Enums are still not fully supported and require that you reflect them as a value type. This
+/// is why we use `#[reflect_value(ProtoComponent, Deserialize)]`.
+#[derive(Reflect, FromReflect, ProtoComponent, Deserialize, Copy, Clone)]
+#[reflect_value(ProtoComponent, Deserialize)]
 #[proto_comp(with = "create_emoji")]
 enum Mood {
     Normal,
@@ -70,7 +73,8 @@ impl AsEmoji for Mood {
 
 /// Notice that we only had to define the function once even though we're using it across multiple
 /// `ProtoComponent` structs.
-#[derive(Clone, Serialize, Deserialize, ProtoComponent)]
+#[derive(Reflect, FromReflect, ProtoComponent, Deserialize, Copy, Clone)]
+#[reflect_value(ProtoComponent, Deserialize)]
 #[proto_comp(with = "create_emoji")]
 enum Face {
     Normal,
@@ -85,18 +89,29 @@ impl AsEmoji for Face {
     }
 }
 
-fn spawn_emojis(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-    let proto = data.get_prototype("Happy").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Sad").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Silly").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Angry").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    let handles = asset_server.load_folder("prototypes/attributes").unwrap();
+    manager.add_multiple_untyped(handles);
 }
 
-fn print_emojies(query: Query<&Emoji, Added<Emoji>>) {
+fn spawn_emojis(mut manager: ProtoManager, mut has_ran: Local<bool>) {
+    if *has_ran {
+        return;
+    }
+
+    if !manager.all_loaded() {
+        return;
+    }
+
+    manager.spawn("Happy");
+    manager.spawn("Sad");
+    manager.spawn("Silly");
+    manager.spawn("Angry");
+
+    *has_ran = true;
+}
+
+fn print_emojis(query: Query<&Emoji, Added<Emoji>>) {
     for emoji in query.iter() {
         println!("{}", emoji.0);
     }
@@ -105,8 +120,13 @@ fn print_emojies(query: Query<&Emoji, Added<Emoji>>) {
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::default())
-        .add_startup_system(spawn_emojis)
-        .add_system(print_emojies)
+        .add_plugin(ProtoPlugin::<Prototype>::default())
+        // !!! Make sure you register your types !!! //
+        .register_type::<EmojiDef>()
+        .register_type::<Mood>()
+        .register_type::<Face>()
+        .add_startup_system(load_prototypes)
+        .add_system(spawn_emojis)
+        .add_system(print_emojis)
         .run();
 }
