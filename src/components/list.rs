@@ -2,6 +2,7 @@ use super::ProtoComponent;
 use crate::components::ReflectProtoComponent;
 use crate::config::ProtoConfig;
 use crate::errors::ProtoLoadError;
+use bevy::log::warn;
 use bevy::prelude::Reflect;
 use bevy::reflect::TypeRegistryArc as TypeRegistry;
 use std::borrow::{Borrow, Cow};
@@ -42,7 +43,10 @@ impl ComponentList {
             let id = registration.type_id();
 
             // --- Check if Allowed --- //
-            config.assert_allowed(id, name.borrow())?;
+            if let Err(err) = config.assert_allowed(id, name.borrow()) {
+                warn!("{}", err);
+                continue;
+            }
 
             // --- Get ProtoComponent Data --- //
             let proto_reflect = registry
