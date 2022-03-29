@@ -213,7 +213,7 @@ impl<'a, 'de> DeserializeSeed<'de> for TemplateListDeserializer<'a> {
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_seq(TemplateListVisitor { path: self.path })
+        deserializer.deserialize_any(TemplateListVisitor { path: self.path })
     }
 }
 
