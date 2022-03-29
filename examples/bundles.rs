@@ -1,70 +1,67 @@
 #![allow(unused_doc_comments)]
 
+use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use bevy::reflect::FromReflect;
 
 use bevy_proto::prelude::*;
 
-#[derive(Serialize, Deserialize, Component)]
+#[derive(Reflect, FromReflect, Component)]
+#[reflect(ProtoComponent)]
 struct SpriteBundleDef {
-    pub texture_path: HandlePath,
+    pub texture_path: String,
 }
 
-#[typetag::serde]
 impl ProtoComponent for SpriteBundleDef {
-    fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
-        // === Get Prepared Assets === //
-        let texture: Handle<Image> = commands
-            .get_handle(self, &self.texture_path)
-            .expect("Expected Image handle to have been created");
+    fn apply(&self, entity: &mut EntityMut) {
+        // Access the `AssetServer` and load our texture
+        let asset_server = entity.world().resource::<AssetServer>();
+        let texture = asset_server.load(&self.texture_path);
 
-        // === Generate Bundle === //
-        let my_bundle = SpriteBundle {
+        entity.insert_bundle(SpriteBundle {
             texture,
             ..Default::default()
-        };
-
-        // === Insert Generated Bundle === //
-        commands.insert_bundle(my_bundle);
+        });
     }
 
-    /// Here, we prepare any assets that this bundle/component might need that require additional setup.
-    /// Since we want to load a texture AND add it to the ColorMaterial asset store, we need to
-    /// do so in this prepare method.
-    ///
-    /// Please keep in mind the ordering here. Rust's borrow checker still applies here: we can't have
-    /// both a mutable and immutable access to world at the same time. Therefore, you will need to break
-    /// your world access into chunks, getting whatever handles or data you need along the way
-    fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {
-        // === Load Handles === //
-        let asset_server = world.get_resource::<AssetServer>().unwrap();
-        let texture: Handle<Image> = asset_server.load(self.texture_path.as_str());
+    /// This is optional, but we can preload assets we know we'll need
+    fn preload_assets(&mut self, preloader: &mut AssetPreloader) {
+        // Since we know we'll always need the image pointed to by `texture_path`,
+        // we can go ahead and say that this prototype _depends_ on that asset.
+        // This will make sure that it is loaded alongside our prototype and will
+        // remain loaded at least as long as the prototype.
+        preloader.preload_dependency(&self.texture_path);
+    }
 
-        // === Save Handles === //
-        data.insert_handle(prototype, self, &self.texture_path, texture);
+    fn as_reflect(&self) -> &dyn Reflect {
+        self
     }
 }
 
-fn spawn_sprite(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    let handle = asset_server.load("prototypes/bundles/sprite_test.prototype.yaml");
+    manager.add(handle);
+}
 
-    /// Here, we attempt to get our prototype by name.
-    /// We'll raise an exception if it's not found, just so we can fail fast.
-    /// In reality, you'll likely want to handle this prototype not existing.
-    let proto = data.get_prototype("Sprite Test").expect("Should exist!");
+fn spawn_sprite(mut commands: Commands, manager: ProtoManager, mut has_ran: Local<bool>) {
+    if *has_ran {
+        return;
+    }
 
-    // Spawn in the prototype!
-    proto.spawn(&mut commands, &data, &asset_server);
+    if let Some(proto) = manager.get("Sprite Test") {
+        commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+        proto.spawn(&mut commands);
+        *has_ran = true;
+    }
 }
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        // This plugin should come AFTER any others that it might rely on
-        // In this case, we need access to what's added by [`DefaultPlugins`]
-        // so we place this line after that one
-        .add_plugin(ProtoPlugin::default())
-        // Add our spawner system (this one only runs once at startup)
-        .add_startup_system(spawn_sprite)
+        .add_plugin(ProtoPlugin::<Prototype>::default())
+        // !!! Make sure you register your types !!! //
+        .register_type::<SpriteBundleDef>()
+        .add_startup_system(load_prototype)
+        .add_system(spawn_sprite)
         .run();
 }
