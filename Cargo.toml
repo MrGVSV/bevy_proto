@@ -41,6 +41,7 @@ ron = ["serde_ron"]
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
+required-features = ["json"]
 
 # TODO: Remove me
 [[example]]

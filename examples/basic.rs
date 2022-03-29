@@ -1,32 +1,33 @@
 #![allow(unused_doc_comments)]
 
+use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use bevy::reflect::FromReflect;
 
 use bevy_proto::prelude::*;
 
 /// This is the component we will use with our prototype
-/// It must impl/derive Serialize, Clone, and Deserialize from serde in order to compile
-#[derive(Clone, Serialize, Deserialize, Component)]
+/// It must impl/derive Reflect and FromReflect from Bevy in order to compile.
+/// You must also add `#[reflect(ProtoComponent)]` so Bevy's type registry
+/// knows this type implements `ProtoComponent`.
+#[derive(Reflect, FromReflect, Component, Clone)]
+#[reflect(ProtoComponent)]
 struct Person {
     pub name: String,
 }
 
-/// This is where we implement the [`ProtoComponent`] trait.
-///
-/// Note that we must apply the `#[typetag::serde]` attribute
-#[typetag::serde]
+/// This is where we manually implement the [`ProtoComponent`] trait.
 impl ProtoComponent for Person {
-    fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
-        /// Here, we create the component we're going to insert.
-        /// This can really be any valid Bevy component type, but we'll
-        /// use `Person` since it's so simple
-        let component = Self {
-            name: self.name.clone(),
-        };
+    fn apply(&self, entity: &mut EntityMut) {
+        // Here, we're given mutable access to an entity.
+        // We can do anything we want with it really, but for simplicity we'll
+        // just insert the `Person` component.
+        entity.insert(self.clone());
+    }
 
-        // Attach the component(s) to the entity
-        commands.insert(component);
+    fn as_reflect(&self) -> &dyn Reflect {
+        // This method allows the internal loader to read this component as a reflected value
+        self
     }
 }
 
@@ -35,45 +36,78 @@ impl ProtoComponent for Person {
 ///
 /// The [`Person`] component defined above could have simply been written as:
 /// ```
-/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
+/// #[derive(Reflect, FromReflect, ProtoComponent, Component, Clone)]
+/// #[reflect(ProtoComponent)]
 /// struct Person {
 ///     pub name: String,
 /// }
 /// ```
-#[derive(Copy, Clone, Serialize, Deserialize, ProtoComponent, Component)]
+///
+/// Note: If you're deriving `ProtoComponent`, you must also derive/impl `Clone`
+/// since it's used internally to insert the component.
+#[derive(Copy, Clone, Reflect, FromReflect, ProtoComponent, Component)]
+#[reflect(ProtoComponent)]
 struct Ordered {
     pub order: i32,
 }
 
+/// Load the prototypes.
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    // We can load a prototype by simply using the `AssetServer`
+    let handle: Handle<Prototype> = asset_server.load("prototypes/basic/Person_01.prototype.yaml");
+
+    // Since assets require at least one strong handle to be stored in order to stay loaded,
+    // we'll need to hold on to the returned handle. Normally we do this by maintaining a
+    // resource to keep track of them. However, `ProtoManager` comes with a convenient
+    // method to do just that:
+    manager.add(handle);
+
+    // Alternatively, we could just load the entire folder
+    let handles = asset_server.load_folder("prototypes/basic").unwrap();
+    manager.add_multiple_untyped(handles);
+}
+
 /// Spawn in the person.
 ///
-/// This system also demonstrates the minimum requirements for using the prototype system
-fn spawn_person(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
+/// The `has_ran` parameter just ensures that we only spawn these prototypes once.
+fn spawn_person(mut commands: Commands, manager: ProtoManager, mut has_ran: Local<bool>) {
+    // Check we haven't already spawned our prototypes
+    if *has_ran {
+        return;
+    }
+
+    // Check that all of our stored handles are fully loaded
+    if !manager.all_loaded() {
+        return;
+    }
+
     /// Here, we attempt to get our prototype by name.
     /// We'll raise an exception if it's not found, just so we can fail fast.
     /// In reality, you'll likely want to handle this prototype not existing.
-    let proto = data.get_prototype("Person Test 1").expect("Should exist!");
+    if let Some(proto) = manager.get("Person Test 1") {
+        // Spawn in the prototype!
+        proto.spawn(&mut commands);
 
-    // Spawn in the prototype!
-    proto.spawn(&mut commands, &data, &asset_server);
+        // Spawn it again!
+        proto.spawn(&mut commands);
 
-    // Spawn it again!
-    proto.spawn(&mut commands, &data, &asset_server);
-
-    // Insert on an existing entity!
-    let entity = commands.spawn().id();
-    let entity_cmds = commands.entity(entity);
-    proto.insert(entity_cmds, &data, &asset_server);
+        // Insert on an existing entity!
+        let entity = commands.spawn().id();
+        proto.insert(entity, &mut commands);
+    }
 
     // Spawn in others!
     for i in 2..=3 {
-        data.get_prototype(format!("Person Test {}", i).as_str())
-            .unwrap()
-            .spawn(&mut commands, &data, &asset_server);
+        if let Some(proto) = manager.get(format!("Person Test {}", i).as_str()) {
+            proto.spawn(&mut commands);
+        }
     }
+
+    // Prevent future spawning
+    *has_ran = true;
 }
 
-/// A system to test our spawner. This makes each entity introduce itself when spawned in
+/// A system to test our spawner. This makes each entity introduce itself when first spawned in
 fn introduce(query: Query<(&Person, &Ordered), Added<Person>>) {
     for (person, ordered) in query.iter() {
         println!("{}. Hello! My name is {}", ordered.order, person.name);
@@ -83,12 +117,15 @@ fn introduce(query: Query<(&Person, &Ordered), Added<Person>>) {
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        // This plugin should come AFTER any others that it might rely on
-        // In this case, we need access to what's added by [`DefaultPlugins`]
-        // so we place this line after that one
-        .add_plugin(ProtoPlugin::default())
-        // Add our spawner system (this one only runs once at startup)
-        .add_startup_system(spawn_person)
+        // A `ProtoPlugin<T>` can be added for any custom prototypical type.
+        // This crate defines `Prototype` by default so we'll just use that.
+        .add_plugin(ProtoPlugin::<Prototype>::default())
+        // !!! Make sure you register your types !!! //
+        .register_type::<Person>()
+        .register_type::<Ordered>()
+        // Add our systems
+        .add_startup_system(load_prototypes)
+        .add_system(spawn_person)
         .add_system(introduce)
         .run();
 }

@@ -1,0 +1,11 @@
+---
+name: "Person Test 3"
+components:
+  - type: basic::Person
+    struct:
+      name: "Heisenberg"
+  - type: basic::Ordered
+    struct:
+      order:
+        type: i32
+        value: 3
