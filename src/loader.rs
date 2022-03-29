@@ -31,7 +31,7 @@ impl<T: Prototypical + ProtoDeserializable + Asset> FromWorld for ProtoAssetLoad
         let name_to_handle = world.resource::<NameToHandle>().clone();
         let handle_to_name = world.resource::<HandleToName>().clone();
 
-        let mut exts = Vec::new();
+        let mut exts = config.read().extensions().clone();
         #[cfg(feature = "yaml")]
         exts.push(extensions::YAML_EXT);
         #[cfg(feature = "json")]

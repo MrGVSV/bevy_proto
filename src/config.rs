@@ -8,6 +8,7 @@ use std::sync::Arc;
 #[derive(Default)]
 pub struct ProtoConfig {
     filter: ProtoFilter,
+    extensions: Vec<&'static str>,
     on_register:
         Option<Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>>,
 }
@@ -89,10 +90,27 @@ impl ProtoConfig {
         self
     }
 
+    /// The allowed extensions to be used by prototype files.
+    pub fn extensions(&self) -> &Vec<&'static str> {
+        &self.extensions
+    }
+
+    /// Sets the allowed extensions to be used by prototype files.
+    ///
+    /// Note: This does not apply to the default [`Prototype`](crate::Prototype) struct.
+    pub fn set_extensions(&mut self, extensions: Vec<&'static str>) -> &mut self {
+        self.extensions = extensions;
+        self
+    }
+
     /// Checks if the given [`TypeId`] is allowed by the config.
     ///
     /// Returns `Ok(())` if allowed, otherwise returns `Err(ProtoLoadError)`.
-    pub fn assert_allowed(&self, type_id: TypeId, type_name: &str) -> Result<(), ProtoLoadError> {
+    pub(crate) fn assert_allowed(
+        &self,
+        type_id: TypeId,
+        type_name: &str,
+    ) -> Result<(), ProtoLoadError> {
         match &self.filter {
             ProtoFilter::All => Ok(()),
             ProtoFilter::Whitelist(list) => {
