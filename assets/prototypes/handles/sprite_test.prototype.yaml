@@ -1,0 +1,8 @@
+---
+name: "Sprite Test"
+components:
+  - type: handles::SpriteBundleDef
+    struct:
+      texture:
+        type: "bevy_proto::handle::HandlePath<bevy_render::texture::image::Image>"
+        value: "textures/sprite.png"
