@@ -66,6 +66,11 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
                 let component: #ty = self.clone().into();
                 #entity_ident.insert(component);
             }),
+            ProtoCompAttr::IntoBundle(ty) => Some(quote! {
+                // Convert then insert
+                let bundle: #ty = self.clone().into();
+                #entity_ident.insert_bundle(bundle);
+            }),
             ProtoCompAttr::With(path) => Some(quote! {
                 // Call function to handle insertion
                 #path(self, #entity_ident);

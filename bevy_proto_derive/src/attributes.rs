@@ -11,9 +11,10 @@ use syn::{
 const PROTO_COMP: &str = "proto_comp";
 const WITH_IDENT: &str = "with";
 const INTO_IDENT: &str = "into";
+const INTO_BUNDLE_IDENT: &str = "into_bundle";
 const PRELOAD_IDENT: &str = "preload";
 
-const VALID_ATTRS: &[&str] = &[WITH_IDENT, INTO_IDENT];
+const VALID_ATTRS: &[&str] = &[WITH_IDENT, INTO_IDENT, INTO_BUNDLE_IDENT];
 const VALID_FIELD_ATTRS: &[&str] = &[PRELOAD_IDENT];
 
 mod keywords {
@@ -59,6 +60,43 @@ pub(crate) enum ProtoCompAttr {
     /// }
     /// ```
     Into(Type),
+    /// Captures the `#[proto_comp(into_bundle = "MyBundle")]` attribute.
+    ///
+    /// This is used to specify a separate Bundle that this marked struct will be cloned into.
+    ///
+    /// Generates the following code:
+    /// ```ignore
+    /// let bundle: MyBundle = self.clone().into();
+    /// commands.insert_bundle(component);
+    /// ```
+    /// # Example
+    ///
+    /// ```ignore
+    /// mod external {
+    ///   #[derive(Bundle)]
+    ///   struct SomeBundle {
+    ///     count: i32
+    ///   }
+    /// }
+    ///
+    /// // Don't forget to bring it into scope!
+    /// use external::SomeBundle;
+    ///
+    /// #[derive(ProtoComponent)]
+    /// #[into_bundle = "SomeBundle"]
+    /// struct MyComponent {
+    ///   foo: i32
+    /// }
+    ///
+    /// impl From<MyComponent> for SomeBundle {
+    ///   fn from(component: MyComponent) -> Self {
+    ///     SomeBundle {
+    ///       count: component.foo
+    ///     }
+    ///   }
+    /// }
+    /// ```
+    IntoBundle(Type),
     /// Captures the `#[proto_comp(with = "my_function")]` attribute.
     ///
     /// This is used to specify a custom function with which custom Components will be created and/or inserted.
@@ -130,6 +168,10 @@ impl Parse for ProtoCompAttr {
             let _: Token![=] = input.parse()?;
             let item: LitStr = input.parse()?;
             Ok(Self::Into(item.parse()?))
+        } else if path.is_ident(INTO_BUNDLE_IDENT) {
+            let _: Token![=] = input.parse()?;
+            let item: LitStr = input.parse()?;
+            Ok(Self::IntoBundle(item.parse()?))
         } else {
             Err(Error::new(
                 Span::call_site(),
