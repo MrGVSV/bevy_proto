@@ -94,6 +94,7 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
             }
 
             // === Finish === //
+            config.call_on_register(&mut proto)?;
             let path = AssetPath::new_ref(load_context.path(), None);
             let handle: Handle<T> = load_context.get_handle(path);
             self.name_to_handle
@@ -102,7 +103,6 @@ impl<T: Prototypical + ProtoDeserializable + Asset> AssetLoader for ProtoAssetLo
             self.handle_to_name
                 .write()
                 .insert(handle.id, proto.name().to_string());
-            config.call_on_register(&mut proto)?;
             let asset = LoadedAsset::new(proto).with_dependencies(asset_deps);
             load_context.set_default_asset(asset);
             Ok(())

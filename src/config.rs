@@ -1,16 +1,18 @@
 use crate::prelude::{ProtoLoadError, Prototypical};
+use crate::ProtoComponent;
 use bevy::utils::HashSet;
 use parking_lot::{RwLock, RwLockReadGuard};
 use std::any::{Any, TypeId};
 use std::sync::Arc;
 
 /// Config used to control how prototypes are processed.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ProtoConfig {
     filter: ProtoFilter,
     extensions: Vec<&'static str>,
     on_register:
-        Option<Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>>,
+        Option<Arc<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>>,
+    on_register_component: Option<Arc<dyn Fn(&mut dyn ProtoComponent) -> bool + Send + Sync>>,
 }
 
 #[derive(Clone, Default)]
@@ -32,8 +34,7 @@ impl ProtoConfigArc {
 
 /// A filter that dictates if some data can be deserialized into a usable
 /// [`ProtoComponent`] trait object.
-///
-/// [`ProtoComponent`]: crate::prelude::ProtoComponent;
+#[derive(Clone)]
 pub enum ProtoFilter {
     /// Allows all types.
     All,
@@ -98,7 +99,7 @@ impl ProtoConfig {
     /// Sets the allowed extensions to be used by prototype files.
     ///
     /// Note: This does not apply to the default [`Prototype`](crate::Prototype) struct.
-    pub fn set_extensions(&mut self, extensions: Vec<&'static str>) -> &mut self {
+    pub fn set_extensions(&mut self, extensions: Vec<&'static str>) -> &mut Self {
         self.extensions = extensions;
         self
     }
@@ -144,10 +145,21 @@ impl ProtoConfig {
     pub fn on_register(
         &mut self,
         on_register: Option<
-            Box<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>,
+            Arc<dyn Fn(&mut dyn Prototypical) -> Result<(), anyhow::Error> + Send + Sync>,
         >,
     ) {
         self.on_register = on_register;
+    }
+
+    /// Register a callback for when a [`ProtoComponent`] is loaded.
+    ///
+    /// This callback should return `true` if the prototype should be allowed to be added
+    /// to the prototype, otherwise it will be discarded.
+    pub fn on_register_component(
+        &mut self,
+        on_register: Option<Arc<dyn Fn(&mut dyn ProtoComponent) -> bool + Send + Sync>>,
+    ) {
+        self.on_register_component = on_register;
     }
 
     pub(crate) fn call_on_register(
@@ -158,6 +170,14 @@ impl ProtoConfig {
             on_register(proto)
         } else {
             Ok(())
+        }
+    }
+
+    pub(crate) fn call_on_register_component(&self, component: &mut dyn ProtoComponent) -> bool {
+        if let Some(ref on_register) = self.on_register_component {
+            on_register(component)
+        } else {
+            true
         }
     }
 }

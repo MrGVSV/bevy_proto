@@ -1,0 +1,7 @@
+---
+name: "Cool Prototype"
+components:
+  - type: config::ComponentA
+    struct: { }
+  - type: config::ComponentC
+    struct: { }

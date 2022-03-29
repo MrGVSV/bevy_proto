@@ -52,12 +52,15 @@ impl ComponentList {
                 })?;
 
             // --- Add Component --- //
-            let proto_comp = proto_reflect.get_component(item.as_ref()).ok_or_else(|| {
+            let mut proto_comp = proto_reflect.get_component(item.as_ref()).ok_or_else(|| {
                 ProtoLoadError::BadReflection {
                     name: name.to_string(),
                 }
             })?;
-            items.push(proto_comp);
+
+            if config.call_on_register_component(proto_comp.as_mut()) {
+                items.push(proto_comp);
+            }
         }
 
         Ok(Self { items })

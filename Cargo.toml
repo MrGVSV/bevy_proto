@@ -49,6 +49,10 @@ name = "foo"
 path = "examples/foo.rs"
 
 [[example]]
+name = "config"
+path = "examples/config.rs"
+
+[[example]]
 name = "bundles"
 path = "examples/bundles.rs"
 
