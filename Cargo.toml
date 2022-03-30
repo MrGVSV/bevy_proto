@@ -40,11 +40,6 @@ name = "basic"
 path = "examples/basic.rs"
 required-features = ["json"]
 
-# TODO: Remove me
-[[example]]
-name = "foo"
-path = "examples/foo.rs"
-
 [[example]]
 name = "config"
 path = "examples/config.rs"
@@ -68,6 +63,3 @@ path = "examples/templates.rs"
 [[example]]
 name = "bench"
 path = "examples/bench.rs"
-
-[profile.release]
-debug = true
