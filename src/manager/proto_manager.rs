@@ -1,4 +1,3 @@
-use crate::command::ProtoCommand;
 use crate::manager::{HandleToName, NameToHandle, ProtoHandles, ProtoIdRef};
 use crate::{Prototype, Prototypical};
 use bevy::asset::{Asset, AssetServer, Assets, Handle, HandleId, LoadState};
@@ -70,10 +69,23 @@ impl<'w, 's, T: Prototypical + Asset> ProtoManager<'w, 's, T> {
     /// Spawns the [prototypical] asset with the given name or handle.
     ///
     /// [prototypical]: crate::Prototypical
-    pub fn spawn<'a, I: Into<ProtoIdRef<'a>>>(&'a mut self, id: I) -> EntityCommands<'w, 's, 'a> {
-        let entity = self.commands.spawn().id();
-        self.commands.add(ProtoCommand::<T>::new(entity, id.into()));
-        self.commands.entity(entity)
+    pub fn spawn<'a, I: Into<ProtoIdRef<'a>>>(
+        &'a mut self,
+        id: I,
+    ) -> Option<EntityCommands<'w, 's, 'a>> {
+        // The reason we go about this unsafety instead of just manually adding the
+        // `ProtoCommand` is that the prototypical asset may have additional
+        // spawning logic in its `spawn` method.
+
+        // SAFE: Self exists and is properly aligned
+        unsafe {
+            let tmp = std::ptr::read(self);
+            if let Some(proto) = tmp.get(id) {
+                Some(proto.spawn(&mut self.commands))
+            } else {
+                None
+            }
+        }
     }
 
     /// Get a loaded [prototypical] asset.
