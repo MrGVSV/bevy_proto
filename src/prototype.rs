@@ -1,6 +1,5 @@
 //! Provides the core abstractions [`Prototypical`] and [`Prototype`] for implementing prototypical structs.
 use bevy::reflect::TypeUuid;
-use std::fmt::Debug;
 use std::slice::{Iter, IterMut};
 
 use crate::components::{ComponentList, ProtoComponent};

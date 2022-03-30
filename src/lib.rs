@@ -2,76 +2,104 @@
 //! Serializable entity configuration for the Bevy game engine.
 //!
 //! This crate provides several abstractions for specifying serializable entities and components:
-//! - The [`ProtoComponent`](components::ProtoComponent) trait provides methods to load components from assets.
-//! - The [`ProtoDeserializer`](data::ProtoDeserializer) trait describes component deserialization.
-//! - [`ProtoPlugin`](plugin::ProtoPlugin) provides configuration for asset loading.
+//! * A [`ProtoComponent`] trait that defines how to apply zero or more components/bundles to an entity
+//! * A [`Prototypical`] trait that defines how to store and apply these [`ProtoComponent`] objects
+//!   - Includes a general-purpose [`Prototype`] struct that implements [`Prototypical`] by default
+//! * [`ProtoPlugin`] for quickly inserting the functionality into Bevy apps
 //!
 //! # Examples
 //!
-//! Define a serialized prototype:
+//! Define a serialized prototype in Bevy Reflect format:
+//!
 //! ```yaml
-//! # assets/prototypes/simple-enemy.yaml
+//! # assets/prototypes/simple-enemy.prototype.yaml
 //! name: "Simple Enemy"
 //! components:
-//!     - type: Enemy
-//!     - type: Attack
-//!       value:
-//!         damage: 10
+//!   - type: my_crate::Enemy
+//!     struct: {}
+//!   - type: my_crate::Attack
+//!     struct:
+//!       damage:
+//!         type: i32
+//!         value: 10
 //! ```
 //!
-//! Implement `ProtoComponent` for the component types:
+//! Implement [`ProtoComponent`] for the component types:
+//!
 //! ```
 //! use bevy::prelude::*;
+//! use bevy::reflect::FromReflect;
 //! use bevy_proto::prelude::*;
-//! use serde::{Deserialize, Serialize};
 //!
-//! #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+//! #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+//! #[reflect(ProtoComponent)]
 //! struct Enemy;
 //!
-//! #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
+//! #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+//! #[reflect(ProtoComponent)]
 //! struct Attack {
-//!     damage: u16
+//!   damage: u16
 //! }
 //! ```
 //!
-//! Add the plugin:
+//! Add the plugin and register your types:
+//!
 //! ```
 //! use bevy::prelude::*;
+//! use bevy::reflect::FromReflect;
 //! use bevy_proto::prelude::*;
 //!
+//! # #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+//! # #[reflect(ProtoComponent)]
+//! # struct Enemy;
+//! #
+//! # #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+//! # #[reflect(ProtoComponent)]
+//! # struct Attack {
+//! #   damage: u16
+//! # }
+//! #
 //! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!   
-//!         .add_plugin(ProtoPlugin {
-//!             options: Some(ProtoDataOptions {
-//!                // You can also change the prototype directories here
-//!                directories: vec![String::from("assets/prototypes")],
-//!                // And specify whether you want the prototype files to be recursively loaded
-//!                recursive_loading: false,
-//!                // You can also update the allowed extensions within those directories
-//!                extensions: Some(vec!["yaml", "json"]),
-//!                ..ProtoDataOptions::default()
-//!            })
-//!         });
+//!   let app = App::new()
+//!     .add_plugins(DefaultPlugins)
+//!     .add_plugin(ProtoPlugin::<Prototype>::default())
+//!     .register_type::<Enemy>()
+//!     .register_type::<Attack>();
+//!   // ...
 //! }
 //! ```
 //!
-//! Finally, spawn a prototype with a system:
+//! Load your prototype:
 //!
 //! ```
 //! use bevy::prelude::*;
 //! use bevy_proto::prelude::*;
 //!
-//! fn spawn_enemy(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-//!     let proto = data.get_prototype("Simple Enemy").expect("Prototype doesn't exist!");
+//! fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+//!   let handle: Handle<Prototype> = asset_server.load("prototypes/simple-enemy.prototype.yaml");
+//!   manager.add(handle);
+//! }
+//! ```
 //!
-//!     // Spawns in our "Simple Enemy" Prototype
-//!     proto.spawn(&mut commands, &data, &asset_server);
+//! Finally, spawn the prototype:
+//!
+//! ```
+//! use bevy::prelude::*;
+//! use bevy_proto::prelude::*;
+//!
+//! fn spawn_enemy(mut commands: Commands, manager: ProtoManager) {
+//!   let proto = manager.get("Simple Enemy").expect("Prototype should exist!");
+//!
+//!   // Spawns in our "Simple Enemy" Prototype
+//!   proto.spawn(&mut commands);
 //! }
 //!
 //! ```
 //!
+//! [`ProtoComponent`]: components::ProtoComponent
+//! [`Prototypical`]: prototypical::Prototypical
+//! [`Prototype`]: prototype::Prototype
+//! [`ProtoPlugin`]: plugin::ProtoPlugin
 extern crate bevy_proto_derive;
 extern crate self as bevy_proto;
 

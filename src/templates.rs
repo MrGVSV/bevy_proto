@@ -217,7 +217,7 @@ pub(crate) fn apply_templates<'a, T: Prototypical + Asset>(
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
 /// use indexmap::IndexSet;
 ///
 /// let mut traversed = IndexSet::new();
