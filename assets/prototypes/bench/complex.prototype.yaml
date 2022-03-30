@@ -1,0 +1,17 @@
+---
+name: "Complex"
+templates: simple
+components:
+  - type: bench::Bar
+    struct:
+      x:
+        type: f32
+        value: 1.23
+  - type: bench::Foo
+    struct:
+      name:
+        type: "alloc::string::String"
+        value: "Goodbye!"
+      index:
+        type: usize
+        value: 123
