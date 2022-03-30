@@ -5,73 +5,99 @@ use bevy::reflect::{FromReflect, FromType};
 
 /// Specifies how a type inserts components into an entity.
 ///
-/// Types implementing [`ProtoComponent`] describe how to insert any number of components or bundles when spawning a prototype.
-/// Any type which is `Send + Sync + 'static` can implement [`ProtoComponent`].
+/// Types implementing [`ProtoComponent`] describe how to insert any number of components or
+/// bundles when spawning a prototype. Any type which is `Send + Sync + 'static` and which also
+/// implements Bevy's [`Reflect`] trait can implement [`ProtoComponent`].
 ///
-/// Notably, this means a [`ProtoComponent`] might not be a [`Component`][bevy::prelude::Component] itself.
-/// The [`ProtoComponent`] can be a kind of [data transfer object](https://en.wikipedia.org/wiki/Data_transfer_object) which
-/// describes inserting any arbitrary set of components or bundles.
+/// Notably, this means a [`ProtoComponent`] might not be a [`Component`] itself. The [`ProtoComponent`]
+/// can be a kind of [data transfer object] which _describes_ inserting any arbitrary set
+/// of components or bundles.
+///
+/// Implementations of [`apply`] can arbitrarily insert zero, one, or many components/bundles.
+///
+/// This trait allows components to be used within [`Prototypical`](crate::prototype::Prototypical) structs.
 ///
 /// # Examples
 ///
-/// To just insert a type which is a [`Component`][bevy::prelude::Component], [`ProtoComponent`] can be derived:
+/// To just insert a type which is a [`Component`], [`ProtoComponent`] can be derived:
 ///
 /// ```
-/// use serde::{Deserialize, Serialize};
 /// use bevy::prelude::*;
+/// use bevy::reflect::FromReflect;
+/// use serde::Deserialize;
 /// use bevy_proto::prelude::*;
 ///
-/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
+/// #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+/// #[reflect(ProtoComponent)]
 /// pub struct Movement {
 ///     speed: u16,
 /// }
 ///
 /// // Also works on tuple structs:
-/// #[derive(Clone, Serialize, Deserialize, Component, ProtoComponent)]
+/// #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone)]
+/// #[reflect(ProtoComponent)]
 /// struct Inventory(Option<Vec<String>>);
+///
+/// // And enums:
+/// #[derive(Reflect, FromReflect, Component, ProtoComponent, Clone, Deserialize)]
+/// #[reflect_value(ProtoComponent, Deserialize)]
+/// enum Action {
+///   Run,
+///   Walk,
+///   Jump,
+/// }
 /// ```
 ///
-/// The derived [`ProtoComponent`] implementation clones `Self` and inserts the cloned value into the entity.
-/// A deriving type must also be [`Clone`], [`serde::Deserialize`], [`serde::Serialize`], and [`Component`][bevy::ecs::component::Component].
+/// The derived [`ProtoComponent`] implementation clones `Self` and inserts the cloned value
+/// into the entity. A deriving type must also be [`Clone`], [`Reflect`], [`FromReflect`],
+/// and [`Component`].
 ///
 /// For other cases, [`ProtoComponent`] can be implemented manually:
 ///
 /// ```
-/// use serde::{Deserialize, Serialize};
+/// use bevy::ecs::world::EntityMut;
 /// use bevy::prelude::*;
-/// use bevy::ecs::system::EntityCommands;
+/// use bevy::reflect::FromReflect;
 /// use bevy_proto::prelude::*;
 ///
 /// // We'll implement `ProtoComponent` on this `Inventory` struct.
 /// // Our implementation will insert multiple different components.
-/// #[derive(Serialize, Deserialize)] // Required
+/// #[derive(Reflect, FromReflect)] // Required
+/// #[reflect(ProtoComponent)] // Required
 /// struct Inventory {
 ///     items: Items,
 ///     quest_items: QuestItems,
 /// }
 ///
 /// // This `Items` struct will be one of the component types we insert.
-/// #[derive(Clone, Serialize, Deserialize, Component)]
+/// #[derive(Reflect, FromReflect, Component, Clone)]
 /// struct Items(Vec<String>);
 ///
 /// // We will also insert this separate `QuestItems` struct.
-/// #[derive(Clone, Serialize, Deserialize, Component)]
+/// #[derive(Reflect, FromReflect, Component, Clone)]
 /// struct QuestItems(Vec<String>);
 ///
-/// #[typetag::serde] // Required
 /// impl ProtoComponent for Inventory {
-///     // The `Inventory` implementation of `insert_self` inserts two components:
+///     // The `Inventory` implementation of `apply` inserts two components:
 ///     // one for `Items`, and one for `QuestItems`.
-///     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
-///         commands.insert(self.items.clone());
-///         commands.insert(self.quest_items.clone());
+///     fn apply(&self, entity: &mut EntityMut) {
+///         entity.insert(self.items.clone());
+///         entity.insert(self.quest_items.clone());
+///     }
+///
+///     // This method is required for internal usage. Thankfully, we can just
+///     // return `self` in most cases.
+///     fn as_reflect(&self) -> &dyn Reflect {
+///         self
 ///     }
 /// }
 /// ```
 ///
-/// Implementations of insert_self can arbitrarily insert zero, one, or many components or bundles.
-///
-///  This trait allows components to be used within [`Prototypical`](crate::prototype::Prototypical) structs.
+/// [`Reflect`]: bevy::reflect::Reflect
+/// [`Component`]: bevy::prelude::Component
+/// [data transfer object]: https://en.wikipedia.org/wiki/Data_transfer_object
+/// [`FromReflect`]: bevy::reflect::FromReflect
+/// [`apply`]: ProtoComponent::apply
 pub trait ProtoComponent: Reflect + Send + Sync + 'static {
     /// Applies this component to the given entity.
     ///

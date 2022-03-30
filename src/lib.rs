@@ -76,7 +76,7 @@ extern crate bevy_proto_derive;
 extern crate self as bevy_proto;
 
 pub use bevy_proto_derive::ProtoComponent;
-pub use components::ProtoComponent;
+pub use components::{ProtoComponent, ReflectProtoComponent};
 pub use plugin::ProtoPlugin;
 pub use prototype::Prototype;
 pub use prototypical::Prototypical;
