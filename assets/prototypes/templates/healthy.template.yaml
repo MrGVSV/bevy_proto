@@ -1,6 +1,0 @@
----
-name: Healthy
-components:
-  - type: Health
-    value:
-      max: 30

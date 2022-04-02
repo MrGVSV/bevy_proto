@@ -1,5 +1,5 @@
 ---
 name: "Angry"
 components:
-  - type: Face
+  - type: attributes::Face
     value: Frowning

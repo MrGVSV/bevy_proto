@@ -1,0 +1,7 @@
+---
+name: "Lame Prototype"
+components:
+  - type: config::ComponentB
+    struct: { }
+  - type: config::ComponentC
+    struct: { }

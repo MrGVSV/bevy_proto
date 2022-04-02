@@ -1,0 +1,20 @@
+{
+  "name": "Person Test 2",
+  "components": [
+    {
+      "type": "basic::Person",
+      "struct": {
+        "name": "Slim Shady"
+      }
+    },
+    {
+      "type": "basic::Ordered",
+      "struct": {
+        "order": {
+          "type": "i32",
+          "value": 2
+        }
+      }
+    }
+  ]
+}

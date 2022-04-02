@@ -1,0 +1,17 @@
+---
+name: "NPC"
+components:
+  # As a template, inheritors will receive these components as they are defined here.
+  # Inheritors may choose to override these if they wish, but this serves as a default.
+  # This also explicitly forces inheritors to contain these components
+  - type: "templates::NPC"
+    struct: {}
+  - type: "templates::Occupation"
+    tuple_struct:
+      - type: "templates::OccupationType"
+        value: Unemployed
+  - type: "templates::Health"
+    struct:
+      max:
+        type: u16
+        value: 20

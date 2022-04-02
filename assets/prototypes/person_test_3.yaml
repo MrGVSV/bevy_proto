@@ -1,9 +1,0 @@
----
-name: "Person Test 3"
-components:
-  - type: Person
-    value:
-      name: "Heisenberg"
-  - type: Ordered
-    value:
-      order: 3

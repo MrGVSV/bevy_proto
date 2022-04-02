@@ -1,0 +1,25 @@
+---
+name: "Urist"
+
+# Each template is a relative path from this prototype file, pointing to another prototype to inherit.
+# Luckily, you don't have to write out the full filename— the extension will be automatically added
+# based on this file's extension. So the templates below are actually expanded as:
+# [ "./Healthy.prototype.yaml", "./NPC.prototype.yaml" ]
+# Templates are applied in reverse order. So templates listed first override templates listed last.
+templates:
+  - Healthy
+  - NPC
+# Templates can also be listed inline:
+#   templates: [ Healthy, NPC ]
+# Or without brackets (deserialized as a comma-separated string):
+#   templates: Healthy, NPC
+
+components:
+  - type: "templates::Named"
+    tuple_struct:
+      - type: "alloc::string::String"
+        value: "Urist McTemplate"
+  - type: "templates::Occupation"
+    tuple_struct:
+      - type: "templates::OccupationType"
+        value: Miner
