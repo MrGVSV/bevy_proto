@@ -47,7 +47,7 @@ pub trait Prototypical: 'static + Send + Sync {
     /// use bevy::prelude::*;
     /// use bevy_proto::prelude::{ProtoManager, Prototype, Prototypical};
     ///
-    /// fn spawn_system(mut commands: Commands, manager: ProtoManager) {
+    /// fn spawn_system(mut commands: Commands, manager: ProtoManager<Prototype>) {
     ///   if let Some(proto) = manager.get("My Prototype") {
     ///     let entity = proto.spawn(&mut commands).id();
     ///     // ...
@@ -83,7 +83,7 @@ pub trait Prototypical: 'static + Send + Sync {
     /// #[derive(Component)]
     /// struct Player(pub Entity);
     ///
-    /// fn update_system(mut commands: Commands, player: Query<&Player>, manager: ProtoManager) {
+    /// fn update_system(mut commands: Commands, player: Query<&Player>, manager: ProtoManager<Prototype>) {
     ///   if let Some(proto) = manager.get("My Prototype") {
     ///     // Get the player entity
     ///     let entity = player.single().0;

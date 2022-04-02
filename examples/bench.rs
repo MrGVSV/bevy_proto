@@ -39,7 +39,7 @@ const BATCH_COUNT: u128 = ENTITY_COUNT / BATCH_SIZE;
 
 fn spawn_protos(
     mut commands: Commands,
-    manager: ProtoManager,
+    manager: ProtoManager<Prototype>,
     mut stopwatches: ResMut<Stopwatches>,
 ) {
     let proto = manager.get("Simple").unwrap();
@@ -154,7 +154,7 @@ fn watch_normal(
 
 fn spawn_protos_complex(
     mut commands: Commands,
-    manager: ProtoManager,
+    manager: ProtoManager<Prototype>,
     mut stopwatches: ResMut<Stopwatches>,
 ) {
     let proto = manager.get("Complex").unwrap();
@@ -280,7 +280,7 @@ fn print_totals(totals: Res<Totals>, mut writer: EventWriter<AppExit>) {
         "Prototype: {}ms | Normal: {}ms | Prototype (Complex): {}ms | Normal (Complex): {}ms",
         totals.proto, totals.normal, totals.proto_complex, totals.normal_complex,
     );
-    writer.send_default();
+    writer.send(AppExit);
 }
 
 struct Stopwatches {
@@ -332,12 +332,12 @@ struct Bar {
     x: f32,
 }
 
-fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     let handles = asset_server.load_folder("prototypes/bench").unwrap();
     manager.add_multiple_untyped(handles);
 }
 
-fn check_loaded(manager: ProtoManager, mut state: ResMut<State<BenchState>>) {
+fn check_loaded(manager: ProtoManager<Prototype>, mut state: ResMut<State<BenchState>>) {
     if manager.all_loaded() {
         state.set(BenchState::BenchProto).unwrap();
     }

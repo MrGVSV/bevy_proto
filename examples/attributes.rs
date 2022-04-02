@@ -89,12 +89,12 @@ impl AsEmoji for Face {
     }
 }
 
-fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     let handles = asset_server.load_folder("prototypes/attributes").unwrap();
     manager.add_multiple_untyped(handles);
 }
 
-fn spawn_emojis(mut manager: ProtoManager, mut has_ran: Local<bool>) {
+fn spawn_emojis(mut manager: ProtoManager<Prototype>, mut has_ran: Local<bool>) {
     if *has_ran {
         return;
     }

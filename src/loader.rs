@@ -26,10 +26,10 @@ pub(crate) struct ProtoAssetLoader<T: Prototypical + ProtoDeserializable + Asset
 
 impl<T: Prototypical + ProtoDeserializable + Asset> FromWorld for ProtoAssetLoader<T> {
     fn from_world(world: &mut World) -> Self {
-        let registry = world.resource::<TypeRegistryArc>().clone();
-        let config = world.resource::<ProtoConfigArc>().clone();
-        let name_to_handle = world.resource::<NameToHandle>().clone();
-        let handle_to_name = world.resource::<HandleToName>().clone();
+        let registry = world.get_resource::<TypeRegistryArc>().unwrap().clone();
+        let config = world.get_resource::<ProtoConfigArc>().unwrap().clone();
+        let name_to_handle = world.get_resource::<NameToHandle>().unwrap().clone();
+        let handle_to_name = world.get_resource::<HandleToName>().unwrap().clone();
 
         let mut exts = config.read().extensions().clone();
         #[cfg(feature = "yaml")]
@@ -128,7 +128,7 @@ impl<'a, 'ctx> AssetPreloader<'a, 'ctx> {
         Self {
             load_context,
             preload_paths: Vec::new(),
-            dependency_handles: HashSet::new(),
+            dependency_handles: HashSet::default(),
         }
     }
 

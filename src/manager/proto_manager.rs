@@ -1,5 +1,5 @@
 use crate::manager::{HandleToName, NameToHandle, ProtoHandles, ProtoIdRef};
-use crate::{Prototype, Prototypical};
+use crate::Prototypical;
 use bevy::asset::{Asset, AssetServer, Assets, Handle, HandleId, LoadState};
 use bevy::ecs::system::{EntityCommands, SystemParam};
 use bevy::prelude::{Commands, HandleUntyped, Res};
@@ -12,7 +12,7 @@ use bevy::prelude::{Commands, HandleUntyped, Res};
 /// use bevy::prelude::*;
 /// use bevy_proto::prelude::*;
 ///
-/// fn my_system(manager: ProtoManager, mut commands: Commands) {
+/// fn my_system(manager: ProtoManager<Prototype>, mut commands: Commands) {
 ///   if let Some(proto) = manager.get("My Prototype") {
 ///     proto.spawn(&mut commands);
 ///   }
@@ -21,7 +21,7 @@ use bevy::prelude::{Commands, HandleUntyped, Res};
 ///
 /// [prototypical]: crate::Prototypical
 #[derive(SystemParam)]
-pub struct ProtoManager<'w, 's, T: Prototypical + Asset = Prototype> {
+pub struct ProtoManager<'w, 's, T: Prototypical + Asset> {
     commands: Commands<'w, 's>,
     handle_to_name: Res<'w, HandleToName>,
     name_to_handle: Res<'w, NameToHandle>,
@@ -134,9 +134,9 @@ impl<'w, 's, T: Prototypical + Asset> ProtoManager<'w, 's, T> {
     ///
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_proto::prelude::ProtoManager;
+    /// use bevy_proto::prelude::*;
     ///
-    /// fn load_proto_system(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    /// fn load_proto_system(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     ///   let handle = asset_server.load("prototypes/my_proto.prototype.yaml");
     ///   manager.add(handle);
     /// }
@@ -177,8 +177,9 @@ impl<'w, 's, T: Prototypical + Asset> ProtoManager<'w, 's, T> {
     /// ```
     /// use bevy::prelude::*;
     /// use bevy_proto::prelude::ProtoManager;
+    /// use bevy_proto::Prototype;
     ///
-    /// fn load_proto_system(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+    /// fn load_proto_system(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     ///   let handles = asset_server.load_folder("prototypes").unwrap();
     ///   manager.add_multiple_untyped(handles);
     /// }

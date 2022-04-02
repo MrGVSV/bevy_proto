@@ -15,7 +15,7 @@ struct SpriteBundleDef {
 impl ProtoComponent for SpriteBundleDef {
     fn apply(&self, entity: &mut EntityMut) {
         // Access the `AssetServer` and load our texture
-        let asset_server = entity.world().resource::<AssetServer>();
+        let asset_server = entity.world().get_resource::<AssetServer>().unwrap();
         let texture = asset_server.load(&self.texture_path);
 
         entity.insert_bundle(SpriteBundle {
@@ -38,12 +38,16 @@ impl ProtoComponent for SpriteBundleDef {
     }
 }
 
-fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     let handle = asset_server.load("prototypes/bundles/sprite_test.prototype.yaml");
     manager.add(handle);
 }
 
-fn spawn_sprite(mut commands: Commands, manager: ProtoManager, mut has_ran: Local<bool>) {
+fn spawn_sprite(
+    mut commands: Commands,
+    manager: ProtoManager<Prototype>,
+    mut has_ran: Local<bool>,
+) {
     if *has_ran {
         return;
     }

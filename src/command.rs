@@ -34,7 +34,8 @@ fn apply<T: Prototypical + Asset>(id: ProtoId, entity: Entity, world: &mut World
     let handle = match id {
         ProtoId::Handle(handle) => handle,
         ProtoId::Name(ref name) => *world
-            .resource::<NameToHandle>()
+            .get_resource::<NameToHandle>()
+            .unwrap()
             .read()
             .get(name)
             .ok_or_else(|| ProtoSpawnError::NotLoaded { id: id.clone() })

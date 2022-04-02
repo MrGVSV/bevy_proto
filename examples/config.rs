@@ -18,7 +18,7 @@ struct ComponentB;
 #[reflect(ProtoComponent)]
 struct ComponentC;
 
-fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     let handles = asset_server.load_folder("prototypes/config").unwrap();
     manager.add_multiple_untyped(handles);
 }

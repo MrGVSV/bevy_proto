@@ -12,7 +12,7 @@ exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
 bevy_proto_derive = { version = "0.2", path = "bevy_proto_derive" }
-bevy = { git = "https://github.com/bevyengine/bevy" }
+bevy = "0.6"
 
 # Utility
 anyhow = "1.0"

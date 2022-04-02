@@ -46,13 +46,13 @@ struct Health {
 struct Named(String);
 
 /// Load the prototypes
-fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     let handles = asset_server.load_folder("prototypes/templates").unwrap();
     manager.add_multiple_untyped(handles);
 }
 
 /// Spawn in the NPC
-fn spawn_npc(mut manager: ProtoManager, mut has_ran: Local<bool>) {
+fn spawn_npc(mut manager: ProtoManager<Prototype>, mut has_ran: Local<bool>) {
     if *has_ran {
         return;
     }

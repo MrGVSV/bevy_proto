@@ -75,7 +75,7 @@
 //! use bevy::prelude::*;
 //! use bevy_proto::prelude::*;
 //!
-//! fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+//! fn load_prototype(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
 //!   let handle: Handle<Prototype> = asset_server.load("prototypes/simple-enemy.prototype.yaml");
 //!   manager.add(handle);
 //! }
@@ -87,7 +87,7 @@
 //! use bevy::prelude::*;
 //! use bevy_proto::prelude::*;
 //!
-//! fn spawn_enemy(mut commands: Commands, manager: ProtoManager) {
+//! fn spawn_enemy(mut commands: Commands, manager: ProtoManager<Prototype>) {
 //!   let proto = manager.get("Simple Enemy").expect("Prototype should exist!");
 //!
 //!   // Spawns in our "Simple Enemy" Prototype

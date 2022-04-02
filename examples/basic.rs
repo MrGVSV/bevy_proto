@@ -52,7 +52,7 @@ struct Ordered {
 }
 
 /// Load the prototypes.
-fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
+fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager<Prototype>) {
     // We can load a prototype by simply using the `AssetServer`
     let handle: Handle<Prototype> = asset_server.load("prototypes/basic/Person_01.prototype.yaml");
 
@@ -70,7 +70,11 @@ fn load_prototypes(asset_server: Res<AssetServer>, mut manager: ProtoManager) {
 /// Spawn in the person.
 ///
 /// The `has_ran` parameter just ensures that we only spawn these prototypes once.
-fn spawn_person(mut commands: Commands, manager: ProtoManager, mut has_ran: Local<bool>) {
+fn spawn_person(
+    mut commands: Commands,
+    manager: ProtoManager<Prototype>,
+    mut has_ran: Local<bool>,
+) {
     // Check we haven't already spawned our prototypes
     if *has_ran {
         return;

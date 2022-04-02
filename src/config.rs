@@ -69,7 +69,7 @@ impl ProtoConfig {
         if let ProtoFilter::Whitelist(ref mut list) = self.filter {
             list.insert(type_id);
         } else {
-            let mut set = HashSet::new();
+            let mut set = HashSet::default();
             set.insert(type_id);
             self.filter = ProtoFilter::Whitelist(set);
         }
@@ -84,7 +84,7 @@ impl ProtoConfig {
         if let ProtoFilter::Blacklist(ref mut list) = self.filter {
             list.insert(type_id);
         } else {
-            let mut set = HashSet::new();
+            let mut set = HashSet::default();
             set.insert(type_id);
             self.filter = ProtoFilter::Blacklist(set);
         }
