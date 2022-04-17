@@ -58,7 +58,7 @@ components:
 
 ```toml
 [dependencies]
-bevy_proto = "0.3"
+bevy_proto = "0.4"
 ```
 
 Then add it to your app like so:
@@ -89,7 +89,8 @@ Check out these examples for more details as to how to use this crate:
 ## 🕊 Bevy Compatibility
 
 | bevy | bevy_proto |
-| ---- | ---------- |
+|------|------------|
+| 0.7  | 0.4.0      |
 | 0.6  | 0.3.0      |
 | 0.5  | 0.2.1      |
 
