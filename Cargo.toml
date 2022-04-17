@@ -12,7 +12,7 @@ exclude = ["assets/**/*", ".github/**/*"]
 
 [dependencies]
 bevy_proto_derive = { version = "0.2", path = "bevy_proto_derive" }
-bevy = { version = "0.6", default-features = false }
+bevy = { version = "0.7", default-features = false }
 serde = "1.0"
 typetag = "0.1"
 serde_yaml = "0.8"
@@ -20,7 +20,7 @@ dyn-clone = "1.0"
 indexmap = "1.7"
 
 [dev-dependencies]
-bevy = "0.6"
+bevy = "0.7"
 
 [features]
 default = ["analysis"]
