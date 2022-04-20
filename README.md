@@ -59,6 +59,7 @@ components:
 ```toml
 [dependencies]
 bevy_proto = "0.4"
+typetag = "0.1"
 ```
 
 Then add it to your app like so:
