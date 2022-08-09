@@ -35,8 +35,6 @@ impl ProtoPlugin {
                 recursive_loading: false,
                 deserializer: Box::new(DefaultProtoDeserializer),
                 extensions: Some(vec!["yaml", "json"]),
-                #[cfg(feature = "hot_reloading")]
-                hot_reload: false,
             }),
         }
     }
@@ -62,8 +60,6 @@ impl ProtoPlugin {
                 recursive_loading: true,
                 deserializer: Box::new(DefaultProtoDeserializer),
                 extensions: Some(vec!["yaml", "json"]),
-                #[cfg(feature = "hot_reloading")]
-                hot_reload: false,
             }),
         }
     }
@@ -91,8 +87,6 @@ impl ProtoPlugin {
                 recursive_loading: false,
                 deserializer: Box::new(DefaultProtoDeserializer),
                 extensions: Some(vec!["yaml", "json"]),
-                #[cfg(feature = "hot_reloading")]
-                hot_reload: false,
             }),
         }
     }
@@ -120,8 +114,6 @@ impl ProtoPlugin {
                 recursive_loading: true,
                 deserializer: Box::new(DefaultProtoDeserializer),
                 extensions: Some(vec!["yaml", "json"]),
-                #[cfg(feature = "hot_reloading")]
-                hot_reload: false,
             }),
         }
     }
@@ -129,72 +121,24 @@ impl ProtoPlugin {
 
 impl Plugin for ProtoPlugin {
     fn build(&self, app: &mut App) {
-        if let Some(opts) = &self.options {
-            // Insert custom prototype options
-            app.insert_resource(opts.clone());
-            #[cfg(feature = "hot_reloading")]
-            if opts.hot_reload {
-                app.add_startup_system(begin_watch);
-                app.add_system(watch_for_changes);
-            }
-        } else {
-            // Insert default options
-            app.insert_resource(ProtoDataOptions {
+        let opts = self.options.clone();
+        let opts = opts.unwrap_or(
+            ProtoDataOptions {
                 directories: vec![String::from("assets/prototypes")],
                 recursive_loading: false,
                 deserializer: Box::new(DefaultProtoDeserializer),
                 extensions: Some(vec!["yaml", "json"]),
-                #[cfg(feature = "hot_reloading")]
-                hot_reload: false,
-            });
-        }
+            }
+        );
+        
+        #[cfg(feature = "hot_reloading")]
+        app.add_plugin(crate::hot_reload::HotReloadPlugin {
+            path: opts.directories[0].clone()
+        });
 
+        app.insert_resource(opts);
         // Initialize prototypes
         app.init_resource::<ProtoData>();
-    }
-}
-
-fn begin_watch(
-    mut data: bevy::prelude::ResMut<ProtoData>,
-    opts: bevy::prelude::Res<ProtoDataOptions>,
-) {
-    data.watcher.watch(opts.directories[0].clone()).unwrap();
-}
-
-// Copied from bevy_asset's filesystem watching implementation:
-// https://github.com/bevyengine/bevy/blob/main/crates/bevy_asset/src/io/file_asset_io.rs#L167-L199
-fn watch_for_changes(
-    mut proto_data: bevy::prelude::ResMut<ProtoData>,
-    options: bevy::prelude::Res<ProtoDataOptions>,
-) {
-    let mut changed = bevy::utils::HashSet::default();
-    loop {
-        let event = match proto_data.watcher.receiver.try_recv() {
-            Ok(result) => result.unwrap(),
-            Err(crossbeam_channel::TryRecvError::Empty) => break,
-            Err(crossbeam_channel::TryRecvError::Disconnected) => {
-                panic!("FilesystemWatcher disconnected.")
-            }
-        };
-        if let notify::event::Event {
-            kind: notify::event::EventKind::Modify(_),
-            paths,
-            ..
-        } = event
-        {
-            for path in &paths {
-                if !changed.contains(path) {
-                    if let Ok(data) = std::fs::read_to_string(path) {
-                        if let Some(proto) = options.deserializer.deserialize(&data) {
-                            proto_data
-                                .prototypes
-                                .insert(proto.name().to_string(), proto);
-                        }
-                    }
-                }
-            }
-            changed.extend(paths);
-        }
     }
 }
 

@@ -9,12 +9,8 @@ use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{FromWorld, Handle};
 use bevy::reflect::Uuid;
 use bevy::utils::HashMap;
-#[cfg(feature = "hot_reloading")]
-use crossbeam_channel::Receiver;
 use dyn_clone::DynClone;
 use indexmap::IndexSet;
-#[cfg(feature = "hot_reloading")]
-use notify::{Event, RecommendedWatcher, RecursiveMode, Result, Watcher};
 use serde::{Deserialize, Serialize};
 
 use crate::plugin::DefaultProtoDeserializer;
@@ -40,34 +36,6 @@ impl From<&HandlePath> for HandleId {
 
 type UuidHandleMap = HashMap<Uuid, HandleUntyped>;
 
-// Copied from bevy_asset's implementation
-// https://github.com/bevyengine/bevy/blob/main/crates/bevy_asset/src/filesystem_watcher.rs
-#[cfg(feature = "hot_reloading")]
-pub(crate) struct FilesystemWatcher {
-    pub(crate) watcher: RecommendedWatcher,
-    pub(crate) receiver: Receiver<Result<Event>>,
-}
-
-#[cfg(feature = "hot_reloading")]
-impl FilesystemWatcher {
-    /// Watch for changes recursively at the provided path.
-    pub fn watch<P: AsRef<std::path::Path>>(&mut self, path: P) -> Result<()> {
-        self.watcher.watch(path.as_ref(), RecursiveMode::Recursive)
-    }
-}
-
-#[cfg(feature = "hot_reloading")]
-impl Default for FilesystemWatcher {
-    fn default() -> Self {
-        let (sender, receiver) = crossbeam_channel::unbounded();
-        let watcher: RecommendedWatcher = RecommendedWatcher::new(move |res| {
-            sender.send(res).expect("Watch event send failure.");
-        })
-        .expect("Failed to create filesystem watcher.");
-        FilesystemWatcher { watcher, receiver }
-    }
-}
-
 /// A resource containing data for all prototypes that need data stored
 pub struct ProtoData {
     /// Maps Prototype Name -> Component Type -> HandleId -> Asset Type -> HandleUntyped
@@ -79,9 +47,6 @@ pub struct ProtoData {
         >,
     >,
     pub(crate) prototypes: HashMap<String, Box<dyn Prototypical>>,
-
-    #[cfg(feature = "hot_reloading")]
-    pub(crate) watcher: FilesystemWatcher,
 }
 
 impl ProtoData {
@@ -90,8 +55,6 @@ impl ProtoData {
         Self {
             handles: HashMap::default(),
             prototypes: HashMap::default(),
-            #[cfg(feature = "hot_reloading")]
-            watcher: FilesystemWatcher::default(),
         }
     }
 
@@ -261,8 +224,6 @@ impl FromWorld for ProtoData {
         let mut myself = Self {
             handles: Default::default(),
             prototypes: HashMap::default(),
-            #[cfg(feature = "hot_reloading")]
-            watcher: FilesystemWatcher::default(),
         };
 
         let options = world
@@ -536,9 +497,6 @@ pub struct ProtoDataOptions {
     /// };
     /// ```
     pub extensions: Option<Vec<&'static str>>,
-    /// Whether to enable hot-reloading or not
-    #[cfg(feature = "hot_reloading")]
-    pub hot_reload: bool,
 }
 
 impl Default for ProtoDataOptions {
@@ -548,8 +506,6 @@ impl Default for ProtoDataOptions {
             recursive_loading: Default::default(),
             deserializer: Box::new(DefaultProtoDeserializer),
             extensions: Default::default(),
-            #[cfg(feature = "hot_reloading")]
-            hot_reload: false,
         }
     }
 }

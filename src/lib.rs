@@ -82,6 +82,9 @@ pub use plugin::ProtoPlugin;
 mod prototype;
 pub use prototype::{deserialize_templates_list, Prototype, Prototypical};
 
+#[cfg(feature = "hot_reloading")]
+mod hot_reload;
+
 pub mod data;
 #[macro_use]
 mod utils;
