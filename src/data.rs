@@ -46,7 +46,7 @@ pub struct ProtoData {
             HashMap<HandleId, UuidHandleMap>,
         >,
     >,
-    prototypes: HashMap<String, Box<dyn Prototypical>>,
+    pub(crate) prototypes: HashMap<String, Box<dyn Prototypical>>,
 }
 
 impl ProtoData {
