@@ -85,7 +85,7 @@ pub trait Prototypical: 'static + Send + Sync {
         data: &Res<ProtoData>,
         asset_server: &Res<AssetServer>,
     ) -> EntityCommands<'w, 's, 'a> {
-        let entity = commands.spawn();
+        let entity = commands.spawn_empty();
         self.insert(entity, data, asset_server)
     }
 

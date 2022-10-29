@@ -61,7 +61,7 @@ fn spawn_person(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<
     proto.spawn(&mut commands, &data, &asset_server);
 
     // Insert on an existing entity!
-    let entity = commands.spawn().id();
+    let entity = commands.spawn_empty().id();
     let entity_cmds = commands.entity(entity);
     proto.insert(entity_cmds, &data, &asset_server);
 

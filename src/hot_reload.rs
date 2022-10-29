@@ -1,6 +1,6 @@
 use bevy::prelude::{App, Plugin, Res, ResMut};
 use crossbeam_channel::Receiver;
-use notify::{Event, RecommendedWatcher, RecursiveMode, Result, Watcher};
+use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Result, Watcher};
 
 use crate::prelude::{ProtoData, ProtoDataOptions};
 
@@ -21,9 +21,12 @@ impl FilesystemWatcher {
 impl Default for FilesystemWatcher {
     fn default() -> Self {
         let (sender, receiver) = crossbeam_channel::unbounded();
-        let watcher: RecommendedWatcher = RecommendedWatcher::new(move |res| {
-            sender.send(res).expect("Watch event send failure.");
-        })
+        let watcher: RecommendedWatcher = RecommendedWatcher::new(
+            move |res| {
+                sender.send(res).expect("Watch event send failure.");
+            },
+            Config::default(),
+        )
         .expect("Failed to create filesystem watcher.");
         FilesystemWatcher { watcher, receiver }
     }
