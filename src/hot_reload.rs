@@ -1,4 +1,4 @@
-use bevy::prelude::{App, Plugin, Res, ResMut};
+use bevy::prelude::{App, Plugin, Res, ResMut, Resource};
 use crossbeam_channel::Receiver;
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Result, Watcher};
 
@@ -6,6 +6,7 @@ use crate::prelude::{ProtoData, ProtoDataOptions};
 
 // Copied from bevy_asset's implementation
 // https://github.com/bevyengine/bevy/blob/main/crates/bevy_asset/src/filesystem_watcher.rs
+#[derive(Resource)]
 struct FilesystemWatcher {
     watcher: RecommendedWatcher,
     receiver: Receiver<Result<Event>>,
