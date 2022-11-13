@@ -122,18 +122,16 @@ impl ProtoPlugin {
 impl Plugin for ProtoPlugin {
     fn build(&self, app: &mut App) {
         let opts = self.options.clone();
-        let opts = opts.unwrap_or(
-            ProtoDataOptions {
-                directories: vec![String::from("assets/prototypes")],
-                recursive_loading: false,
-                deserializer: Box::new(DefaultProtoDeserializer),
-                extensions: Some(vec!["yaml", "json"]),
-            }
-        );
-        
+        let opts = opts.unwrap_or(ProtoDataOptions {
+            directories: vec![String::from("assets/prototypes")],
+            recursive_loading: false,
+            deserializer: Box::new(DefaultProtoDeserializer),
+            extensions: Some(vec!["yaml", "json"]),
+        });
+
         #[cfg(feature = "hot_reloading")]
         app.add_plugin(crate::hot_reload::HotReloadPlugin {
-            path: opts.directories[0].clone()
+            path: opts.directories[0].clone(),
         });
 
         app.insert_resource(opts);

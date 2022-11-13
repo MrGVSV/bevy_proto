@@ -5,7 +5,7 @@ use std::ops::{Deref, DerefMut};
 
 use bevy::asset::{Asset, HandleId, HandleUntyped};
 use bevy::ecs::prelude::World;
-use bevy::ecs::system::EntityCommands;
+use bevy::ecs::system::{EntityCommands, Resource};
 use bevy::prelude::{FromWorld, Handle};
 use bevy::reflect::Uuid;
 use bevy::utils::HashMap;
@@ -37,6 +37,7 @@ impl From<&HandlePath> for HandleId {
 type UuidHandleMap = HashMap<Uuid, HandleUntyped>;
 
 /// A resource containing data for all prototypes that need data stored
+#[derive(Resource)]
 pub struct ProtoData {
     /// Maps Prototype Name -> Component Type -> HandleId -> Asset Type -> HandleUntyped
     handles: HashMap<
@@ -119,7 +120,7 @@ impl ProtoData {
         let comp_map = proto_map
             .entry(component.type_id())
             .or_insert_with(HashMap::default);
-        let path_map = comp_map.entry(handle.id).or_insert_with(HashMap::default);
+        let path_map = comp_map.entry(handle.id()).or_insert_with(HashMap::default);
         path_map.insert(T::TYPE_UUID, handle.clone_untyped());
     }
 
@@ -458,7 +459,7 @@ pub trait ProtoDeserializer: DynClone {
 dyn_clone::clone_trait_object!(ProtoDeserializer);
 
 /// Options for controlling how prototype data is handled.
-#[derive(Clone)]
+#[derive(Clone, Resource)]
 pub struct ProtoDataOptions {
     /// Directories containing prototype data.
     pub directories: Vec<String>,

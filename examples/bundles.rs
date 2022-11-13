@@ -25,7 +25,7 @@ impl ProtoComponent for SpriteBundleDef {
         };
 
         // === Insert Generated Bundle === //
-        commands.insert_bundle(my_bundle);
+        commands.insert(my_bundle);
     }
 
     /// Here, we prepare any assets that this bundle/component might need that require additional setup.
@@ -46,7 +46,7 @@ impl ProtoComponent for SpriteBundleDef {
 }
 
 fn spawn_sprite(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 
     /// Here, we attempt to get our prototype by name.
     /// We'll raise an exception if it's not found, just so we can fail fast.

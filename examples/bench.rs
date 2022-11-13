@@ -42,7 +42,7 @@ fn spawn_sprites_programmatic(mut commands: Commands, asset_server: Res<AssetSer
 
     for _ in 0..BATCH_COUNT {
         for _ in 0..BATCH_SIZE {
-            commands.spawn_bundle(SpriteBundle {
+            commands.spawn(SpriteBundle {
                 texture: asset_server.load("textures/sprite.png"),
                 ..Default::default()
             });
@@ -94,7 +94,7 @@ impl ProtoComponent for SpriteBundleDef {
         };
 
         // === Insert Generated Bundle === //
-        commands.insert_bundle(my_bundle);
+        commands.insert(my_bundle);
     }
 
     fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {
