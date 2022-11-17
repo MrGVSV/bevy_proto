@@ -138,7 +138,7 @@ struct Inventory(Option<Vec<String>>);
 #[typetag::serde] // Required
 impl ProtoComponent for Inventory {
     // Required
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &AssetServer) {
         commands.insert(
             Self (self.0.clone())
         );
@@ -294,7 +294,7 @@ struct Creature {
 #[typetag::serde]
 impl ProtoComponent for Creature {
     // Required
-    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &AssetServer) {
         let handle: Handle<Image> = asset_server.load(self.texture_path.as_str());
         let entity_commands = proto_commands.raw_commands();
 
@@ -326,7 +326,7 @@ struct Creature {
 #[typetag::serde]
 impl ProtoComponent for Creature {
     // Required
-    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, proto_commands: &mut ProtoCommands, asset_server: &AssetServer) {
         let texture: Handle<Image> = proto_commands
             .get_handle(self, &self.texture_path)
             .expect("Expected Image handle to have been created");
@@ -393,7 +393,7 @@ impl Prototypical for CustomPrototype {
   fn create_commands<'w, 's, 'a, 'p>(
     &'p self, 
     entity_commands: EntityCommands<'w, 's, 'a>, 
-    proto_data: &'p Res<'_, ProtoData>
+    proto_data: &'p ProtoData
   ) -> ProtoCommands<'w, 's, 'a, 'p> { 
     todo!() 
   }
@@ -470,8 +470,8 @@ breakdown of the top current/potential issues:
     prototype: T, 
     my_asset: Handle<Image>,
     commands: &mut Commands,
-    data: &Res<ProtoData>,
-    asset_server: &Res<AssetServer>,
+    data: &ProtoData,
+    asset_server: &AssetServer,
   ) {
     // Attach fictional OtherComponent with asset "my_asset" which should unload when despawned
     prototype.spawn(commands, data, asset_server).insert(OtherComponent(my_asset));

@@ -5,7 +5,7 @@ use std::slice::Iter;
 
 use bevy::ecs::prelude::Commands;
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{AssetServer, Res};
+use bevy::prelude::AssetServer;
 use indexmap::IndexSet;
 use serde::{
     de::{self, Error, SeqAccess, Visitor},
@@ -46,7 +46,7 @@ pub trait Prototypical: 'static + Send + Sync {
     fn create_commands<'w, 's, 'a, 'p>(
         &'p self,
         entity: EntityCommands<'w, 's, 'a>,
-        data: &'p Res<ProtoData>,
+        data: &'p ProtoData,
     ) -> ProtoCommands<'w, 's, 'a, 'p>;
 
     /// Spawns an entity with this prototype's component structure.
@@ -63,7 +63,7 @@ pub trait Prototypical: 'static + Send + Sync {
     /// use bevy::prelude::*;
     /// use bevy_proto::prelude::{ProtoData, Prototype, Prototypical};
     ///
-    /// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>) {
+    /// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
     ///     let proto: Prototype = serde_yaml::from_str(r#"
     ///     name: My Prototype
     ///     components:
@@ -82,8 +82,8 @@ pub trait Prototypical: 'static + Send + Sync {
     fn spawn<'w, 's, 'a, 'p>(
         &'p self,
         commands: &'a mut Commands<'w, 's>,
-        data: &Res<ProtoData>,
-        asset_server: &Res<AssetServer>,
+        data: &ProtoData,
+        asset_server: &AssetServer,
     ) -> EntityCommands<'w, 's, 'a> {
         let entity = commands.spawn_empty();
         self.insert(entity, data, asset_server)
@@ -108,7 +108,7 @@ pub trait Prototypical: 'static + Send + Sync {
     /// #[derive(Component)]
     /// struct Player(pub Entity);
     ///
-    /// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: &Res<AssetServer>, player: Query<&Player>) {
+    /// fn setup_system(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>, player: Query<&Player>) {
     ///     let proto: Prototype = serde_yaml::from_str(r#"
     ///     name: My Prototype
     ///     components:
@@ -131,8 +131,8 @@ pub trait Prototypical: 'static + Send + Sync {
     fn insert<'w, 's, 'a, 'p>(
         &'p self,
         entity: EntityCommands<'w, 's, 'a>,
-        data: &Res<ProtoData>,
-        asset_server: &Res<AssetServer>,
+        data: &ProtoData,
+        asset_server: &AssetServer,
     ) -> EntityCommands<'w, 's, 'a> {
         let mut proto_commands = self.create_commands(entity, data);
 
@@ -157,8 +157,8 @@ fn spawn_internal<'a>(
     templates: Rev<Iter<'a, String>>,
     components: Iter<'a, Box<dyn ProtoComponent>>,
     proto_commands: &mut ProtoCommands,
-    data: &'a Res<ProtoData>,
-    asset_server: &Res<AssetServer>,
+    data: &'a ProtoData,
+    asset_server: &AssetServer,
     traversed: &mut IndexSet<&'a str>,
 ) {
     // We insert first on the off chance that someone made a prototype its own template...
@@ -229,7 +229,7 @@ impl Prototypical for Prototype {
     fn create_commands<'w, 's, 'a, 'p>(
         &'p self,
         entity: EntityCommands<'w, 's, 'a>,
-        data: &'p Res<ProtoData>,
+        data: &'p ProtoData,
     ) -> ProtoCommands<'w, 's, 'a, 'p> {
         data.get_commands(self, entity)
     }

@@ -78,7 +78,7 @@ pub fn proto_comp_derive(input: TokenStream) -> TokenStream {
             fn insert_self(
                 &self,
                 commands: &mut bevy_proto::prelude::ProtoCommands,
-                asset_server: &bevy::prelude::Res<bevy::prelude::AssetServer>,
+                asset_server: &bevy::prelude::AssetServer,
             ) {
                 #generator;
             }

@@ -46,7 +46,7 @@ trait AsEmoji {
 fn create_emoji<T: AsEmoji + ProtoComponent>(
     component: &T,
     commands: &mut ProtoCommands,
-    _asset_server: &Res<AssetServer>,
+    _asset_server: &AssetServer,
 ) {
     commands.insert(component.as_emoji());
 }

@@ -83,7 +83,7 @@ struct SpriteBundleDef {
 
 #[typetag::serde]
 impl ProtoComponent for SpriteBundleDef {
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &AssetServer) {
         // === Get Prepared Assets === //
         let texture: Handle<Image> = asset_server.get_handle(&self.texture_path);
 

@@ -1,5 +1,5 @@
 //! Contains the [`ProtoComponent`] trait.
-use bevy::prelude::{AssetServer, Res, World};
+use bevy::prelude::{AssetServer, World};
 
 use crate::data::{ProtoCommands, ProtoData};
 use crate::prototype::Prototypical;
@@ -63,7 +63,7 @@ use crate::prototype::Prototypical;
 /// impl ProtoComponent for Inventory {
 ///     // The `Inventory` implementation of `insert_self` inserts two components:
 ///     // one for `Items`, and one for `QuestItems`.
-///     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>) {
+///     fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &AssetServer) {
 ///         commands.insert(self.items.clone());
 ///         commands.insert(self.quest_items.clone());
 ///     }
@@ -76,7 +76,7 @@ use crate::prototype::Prototypical;
 #[typetag::serde(tag = "type", content = "value")]
 pub trait ProtoComponent: Send + Sync + 'static {
     /// Defines how this struct inserts components and/or bundles into an entity.
-    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &Res<AssetServer>);
+    fn insert_self(&self, commands: &mut ProtoCommands, asset_server: &AssetServer);
     /// Defines how this struct creates and inserts asset handles for later use.
     #[allow(unused_variables)]
     fn prepare(&self, world: &mut World, prototype: &dyn Prototypical, data: &mut ProtoData) {}

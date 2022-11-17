@@ -17,7 +17,7 @@ struct Person {
 /// Note that we must apply the `#[typetag::serde]` attribute
 #[typetag::serde]
 impl ProtoComponent for Person {
-    fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &Res<AssetServer>) {
+    fn insert_self(&self, commands: &mut ProtoCommands, _asset_server: &AssetServer) {
         /// Here, we create the component we're going to insert.
         /// This can really be any valid Bevy component type, but we'll
         /// use `Person` since it's so simple
