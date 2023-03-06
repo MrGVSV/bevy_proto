@@ -68,10 +68,11 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(ProtoPlugin::default())
-        .add_startup_system(spawn_sprites_proto.label("prototype"))
-        .add_startup_system(spawn_sprites_programmatic.after("prototype"))
+        .add_startup_system(spawn_sprites_proto)
+        .add_startup_system(spawn_sprites_programmatic.after(spawn_sprites_proto))
         .run();
 }
+
 
 /// The code below is covered in the `bundles` example. It's an implementation
 /// detail we don't need to focus on for this particular example
