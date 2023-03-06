@@ -58,7 +58,7 @@ components:
 
 ```toml
 [dependencies]
-bevy_proto = "0.6"
+bevy_proto = "0.7"
 typetag = "0.2"
 ```
 
@@ -91,6 +91,7 @@ Check out these examples for more details as to how to use this crate:
 
 | bevy | bevy_proto |
 |------|------------|
+| 0.10 | 0.7.0      |
 | 0.9  | 0.6.0      |
 | 0.8  | 0.5.0      |
 | 0.7  | 0.4.0      |
