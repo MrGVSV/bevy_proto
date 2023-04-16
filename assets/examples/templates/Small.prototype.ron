@@ -1,0 +1,10 @@
+(
+  name: "Small",
+  schematics: {
+    "templates::Scaled": (0.25),
+    // This will have no effect since its overwritten by the one on `Player`:
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/player/p2_front.png")
+    )
+  }
+)

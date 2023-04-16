@@ -1,0 +1,28 @@
+(
+  name: "Player",
+  // Templates allow us to inherit functionality from other prototypes.
+  // They are applied in reverse order, so that prototypes closer to
+  // the beginning of the list overwrite ones closer to the end.
+  // This only applies to schematics of the same type in order to
+  // maintain schematic uniqueness.
+  // Other schematics will continue to apply to this prototype as normal.
+  templates: [
+    // Because `Small` comes before `Big`, we can expect the schematics
+    // from `Small` to overwrite those from `Big`.
+    "Small",
+    "Big",
+    // The strings above are shorthand for paths to prototypes
+    // in the same directory and with the same extension.
+    // We can also use more conventional paths:
+    "./Green.prototype.ron",
+    // Prototypes in other formats will need to specify their extension
+    "./Red.prototype.yaml",
+  ],
+  // Schematics defined on a prototype always take precedence over those
+  // defined in templates.
+  schematics: {
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/player/p1_front.png")
+    )
+  }
+)

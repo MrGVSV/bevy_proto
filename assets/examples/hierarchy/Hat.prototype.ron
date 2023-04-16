@@ -1,0 +1,16 @@
+(
+  name: "Hat",
+  schematics: {
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/items/mushroomBrown.png"),
+      // Remember: children are anchored to their parents!
+      transform: (
+        translation: (
+          x: 0,
+          y: 80,
+          z: 0
+        )
+      )
+    )
+  }
+)

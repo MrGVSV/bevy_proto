@@ -1,5 +1,0 @@
----
-name: "Silly"
-components:
-  - type: Mood
-    value: Silly

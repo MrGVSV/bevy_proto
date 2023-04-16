@@ -1,0 +1,11 @@
+(
+  name: "CustomSchematic",
+  schematics: {
+    // Notice that even though we used `FooInput` as our input type,
+    // this still uses the base `Foo` type.
+    "custom_schematic::Foo": (
+      image: "textures/platformer/player/p1_front.png",
+      message: Some("Hi mom!")
+    )
+  }
+)

@@ -1,0 +1,16 @@
+(
+  name: "Lock",
+  schematics: {
+    "hierarchy::DrawRelations": (),
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/tiles/lock_yellow.png"),
+      transform: (
+        translation: (
+          x: -200,
+          y: -200,
+          z: 0
+        )
+      )
+    )
+  },
+)

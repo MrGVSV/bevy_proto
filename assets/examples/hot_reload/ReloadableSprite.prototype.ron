@@ -1,0 +1,16 @@
+(
+  name: "ReloadableSprite",
+  schematics: {
+    "bevy_proto::custom::SpriteBundle": (
+      // This example is all about hot-reloading,
+      // so feel free to change any of these values!
+      texture: AssetPath("textures/platformer/player/p1_front.png"),
+      transform: (
+        translation: (
+          x: 0.0,
+          y: 100.0,
+        )
+      )
+    ),
+  }
+)

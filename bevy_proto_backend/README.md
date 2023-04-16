@@ -1,0 +1,1 @@
+Backend crate for [`bevy_proto`](https://crates.io/crates/bevy_proto).

@@ -1,0 +1,87 @@
+(
+  name: "Parent",
+  // Templates always merge into a single entity.
+  // However, they may define their own children which may or may
+  // not merge into their inheritor's children (see below for details).
+  templates: ["HatSalesman"],
+  schematics: {
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/player/p1_front.png"),
+      transform: (
+        translation: (
+          x: 0,
+          y: 200,
+          z: 0
+        )
+      )
+    )
+  },
+  children: [
+    // Children can be simple paths to other prototypes
+    "Lock",
+    // We can also define some more metadata around our children:
+    (
+      // Merge keys allow child entities from templates to be merged into
+      // a single entity.
+      // Unlike names, these do not need to be globally unique.
+      merge_key: Some("hat-wearer"),
+      // And again, we can use the path to another prototype
+      value: Path("Child")
+    ),
+    // But they can also be nested prototypes by using Inline
+    (
+      value: Inline((
+        // Names must still be globally unique!
+        // (Tip: you can use a random UUID to ensure uniqueness)
+        name: "OtherChild",
+        schematics: {
+          "hierarchy::DrawRelations": (),
+          "bevy_proto::custom::SpriteBundle": (
+            texture: AssetPath("textures/platformer/player/p3_front.png"),
+            transform: (
+              // Remember: children are anchored to their parents!
+              translation: (
+                x: 200,
+                y: -200,
+                z: 0
+              )
+            )
+          )
+        },
+        // And we can nest as much as we want!
+        children: [(
+          value: Inline((
+            name: "Key",
+            schematics: {
+              // Using `ProtoEntity::EntityPath` we can reference any other
+              // entity in the tree.
+              // Here, we want to point to the "Lock" entity.
+              //
+              // We can do this a couple ways:
+              // 1. "/Lock" - Get first "Lock" child on root entity
+              // 2. "../../Lock" - Get first "Lock" child on grandparent
+              // 3. "../~-1:Lock" - Get first "Lock" sibling before parent
+              //
+              // We'll go with #2 here.
+              // Keep in mind that since `Opens` requires an `Entity`,
+              // this must point to a valid entity or we'll panic!
+              "hierarchy::Opens": (EntityPath("../../Lock")),
+              "hierarchy::DrawRelations": (),
+              "bevy_proto::custom::SpriteBundle": (
+                texture: AssetPath("textures/platformer/items/keyYellow.png"),
+                transform: (
+                  // Remember: children are anchored to their parents!
+                  translation: (
+                    x: 0,
+                    y: -200,
+                    z: 0
+                  )
+                )
+              )
+            },
+          ))
+        )]
+      ))
+    ),
+  ]
+)

@@ -1,0 +1,4 @@
+(
+  name: "CycleC",
+  templates: ["CycleA"],
+)
