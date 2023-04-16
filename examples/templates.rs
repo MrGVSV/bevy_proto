@@ -1,76 +1,84 @@
-//! This example demonstrates the usage of templates.
+//! This example demonstrates how to use prototypes as templates.
 //!
-//! The best way to see how it works is to browse through the associated prototypes in
-//! `assets/prototypes/templates/`. Then run this example and see how the template prototype
-//! influences its inheritors.
+//! Templates allow prototypes to inherit functionality from other
+//! prototypes.
+//! In this example, our `Player` inherits from the following prototypes:
 //!
-//! Essentially, all inheritors of a template take on that template's components. If they
-//! define their own version of a component, then that version will supersede the template's.
-//! And lastly, if the component defines their own components, these will be applied as normal.
+//! 1. `Small`
+//! 2. `Big`
+//! 3. `Green`
+//! 4. `Red`
 //!
-//! Use templates to reduce markup duplication and bundle common components.
+//! The order of templates matters.
+//! Templates closer to the start overwrite duplicate schematics
+//! in templates closer to the end.
+//! So in this case, `Player` overwrites `Small` which overwrites `Big`
+//! which overwrites `Green` which overwrites `Red`.
 //!
-
-#![allow(unused_doc_comments)]
+//! > Again, these overwrites only occur on schematics of the same type.
+//!
+//! In the end, since `Small` and `Big` share the same schematics, and
+//! `Green` and `Red` also share schematics (that differ from the other two),
+//! we should expect to see the schematics from `Small` and `Green` applied.
+//! And indeed we see our `Player` as both small and green.
 
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
 
 use bevy_proto::prelude::*;
-
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-struct NPC;
-
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-struct Occupation(OccupationType);
-
-#[derive(Serialize, Deserialize, Copy, Clone, Debug)]
-enum OccupationType {
-    Unemployed,
-    Miner,
-    Shopkeeper,
-}
-
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-struct Health {
-    max: u16,
-}
-
-#[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-struct Named(String);
-
-/// Spawn in the NPC
-fn spawn_npc(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-    let proto = data.get_prototype("Alice").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Bob").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Urist").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-    let proto = data.get_prototype("Mystery").expect("Should exist!");
-    proto.spawn(&mut commands, &data, &asset_server);
-}
-
-/// Handle the NPC spawning
-fn on_spawn(query: Query<(&Health, &Occupation, Option<&Named>), Added<NPC>>) {
-    for (health, occupation, name) in query.iter() {
-        let name = if let Some(name) = name {
-            format!("'{}'", name.0)
-        } else {
-            String::from("<UNKNOWN>")
-        };
-        println!(
-            "NPC {} => MaxHP: {} | Occupation: {:?}",
-            name, health.max, occupation.0
-        );
-    }
-}
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::with_dir("assets/prototypes/templates"))
-        .add_startup_system(spawn_npc)
-        .add_system(on_spawn)
+        .add_plugin(ProtoPlugin::default())
+        .register_type::<Colored>()
+        .register_type::<Scaled>()
+        .add_startup_systems((load, setup))
+        .add_systems((
+            spawn.run_if(prototype_ready("Player").and_then(run_once())),
+            on_spawn,
+            inspect,
+        ))
         .run();
+}
+
+/// A component used to tint a sprite.
+#[derive(Component, Schematic, Reflect, FromReflect)]
+#[reflect(Schematic)]
+struct Colored(Color);
+
+/// A component used to scale a sprite.
+#[derive(Component, Schematic, Reflect, FromReflect)]
+#[reflect(Schematic)]
+struct Scaled(f32);
+
+fn load(mut prototypes: PrototypesMut) {
+    prototypes.load("examples/templates/Player.prototype.ron");
+}
+
+fn spawn(mut commands: ProtoCommands) {
+    commands.spawn("Player");
+}
+
+fn on_spawn(
+    mut colored_query: Query<(&Colored, &mut Sprite), Added<Colored>>,
+    mut scaled_query: Query<(&Scaled, &mut Transform), Added<Scaled>>,
+) {
+    for (colored, mut sprite) in &mut colored_query {
+        sprite.color = colored.0;
+    }
+
+    for (scaled, mut transform) in &mut scaled_query {
+        transform.scale *= scaled.0;
+    }
+}
+
+// This relies on the `auto_name` feature to be useful
+fn inspect(query: Query<DebugName, Added<Name>>) {
+    for name in &query {
+        println!("Spawned: {:?}", name);
+    }
+}
+
+fn setup(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
 }

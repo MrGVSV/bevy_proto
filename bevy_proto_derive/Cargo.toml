@@ -11,7 +11,15 @@ readme = "README.md"
 [lib]
 proc-macro = true
 
+[features]
+default = ["assertions"]
+# If enabled, static assertions will be generated to enforce certain invariants
+# and improve compile-time error reporting.
+assertions = []
+
 [dependencies]
-syn = "1.0"
+syn = "2.0"
 quote = "1.0"
 proc-macro2 = "1.0"
+proc-macro-crate = "1.3"
+optional-error = "0.1"

@@ -1,112 +1,123 @@
-#![warn(missing_docs)]
-//! Serializable entity configuration for the Bevy game engine.
+//! Define and spawn entities with simple configuration files.
 //!
-//! This crate provides several abstractions for specifying serializable entities and components:
-//! - The [`ProtoComponent`](components::ProtoComponent) trait provides methods to load components from assets.
-//! - The [`ProtoDeserializer`](data::ProtoDeserializer) trait describes component deserialization.
-//! - [`ProtoPlugin`](plugin::ProtoPlugin) provides configuration for asset loading.
+//! # Capabilities
 //!
-//! # Examples
+//! * Define entities in configuration files called _[prototypes]_
+//! * Inherit from other prototype files
+//! * Establish entity hierarchies
+//! * Load or preload assets
 //!
-//! Define a serialized prototype:
-//! ```yaml
-//! # assets/prototypes/simple-enemy.yaml
-//! name: "Simple Enemy"
-//! components:
-//!     - type: Enemy
-//!     - type: Attack
-//!       value:
-//!         damage: 10
+//! This is all built on a backend crate called [`bevy_proto_backend`].
+//! If you want to define your own prototype schema,
+//! feel free to use that crate directly!
+//!
+//! # Example
+//!
+//! Prototypes can be defined using a RON file ending in `.prototype.ron`:
+//!
+//! ```text
+//! // Player.prototype.ron
+//! (
+//!   name: "Player",
+//!   schematics: {
+//!     "bevy_proto::custom::SpriteBundle": (
+//!       texture: AssetPath("textures/player.png"),
+//!     ),
+//!   }
+//! )
 //! ```
 //!
-//! Implement `ProtoComponent` for the component types:
+//! Then they can be loaded and spawned from any system:
+//!
 //! ```
-//! use bevy::prelude::*;
 //! use bevy_proto::prelude::*;
-//! use serde::{Deserialize, Serialize};
 //!
-//! #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-//! struct Enemy;
+//! fn load_player(mut prototypes: PrototypesMut) {
+//!   prototypes.load("prototypes/Player.prototype.ron");
+//! }
 //!
-//! #[derive(Clone, Serialize, Deserialize, ProtoComponent, Component)]
-//! struct Attack {
-//!     damage: u16
+//! fn spawn_player(mut commands: ProtoCommands) {
+//!   commands.spawn("Player");
 //! }
 //! ```
 //!
-//! Add the plugin:
-//! ```
-//! use bevy::prelude::*;
-//! use bevy_proto::prelude::*;
+//! # Cargo Features
 //!
-//! fn main() {
-//!     App::new()
-//!         .add_plugins(DefaultPlugins)
-//!   
-//!         .add_plugin(ProtoPlugin {
-//!             options: Some(ProtoDataOptions {
-//!                // You can also change the prototype directories here
-//!                directories: vec![String::from("assets/prototypes")],
-//!                // And specify whether you want the prototype files to be recursively loaded
-//!                recursive_loading: false,
-//!                // You can also update the allowed extensions within those directories
-//!                extensions: Some(vec!["yaml", "json"]),
-//!                ..ProtoDataOptions::default()
-//!            })
-//!         });
-//! }
-//! ```
+//! | Feature           | Default | Description                                                    |
+//! | ----------------- | ------- | -------------------------------------------------------------- |
+//! | auto_name         | ✅      | Automatically insert [`Name`] components on spawned prototypes |
+//! | custom_schematics | ✅      | Enables some [custom schematics] defined by this crate         |
+//! | ron               | ✅      | Enables RON deserialization                                    |
+//! | yaml              | ❌      | Enables YAML deserialization                                   |
+//! | bevy_animation    | ✅      | Registers types under Bevy's `bevy_animation` feature          |
+//! | bevy_audio        | ✅      | Registers types under Bevy's `bevy_audio` feature              |
+//! | bevy_gltf         | ✅      | Registers types under Bevy's `bevy_gltf` feature               |
+//! | bevy_pbr          | ✅      | Registers types under Bevy's `bevy_pbr` feature                |
+//! | bevy_render       | ✅      | Registers types under Bevy's `bevy_render` feature             |
+//! | bevy_scene        | ✅      | Registers types under Bevy's `bevy_scene` feature              |
+//! | bevy_sprite       | ✅      | Registers types under Bevy's `bevy_sprite` feature             |
+//! | bevy_text         | ✅      | Registers types under Bevy's `bevy_text` feature               |
 //!
-//! Finally, spawn a prototype with a system:
-//!
-//! ```
-//! use bevy::prelude::*;
-//! use bevy_proto::prelude::*;
-//!
-//! fn spawn_enemy(mut commands: Commands, data: Res<ProtoData>, asset_server: Res<AssetServer>) {
-//!     let proto = data.get_prototype("Simple Enemy").expect("Prototype doesn't exist!");
-//!
-//!     // Spawns in our "Simple Enemy" Prototype
-//!     proto.spawn(&mut commands, &data, &asset_server);
-//! }
-//!
-//! ```
-//!
-extern crate bevy_proto_derive;
+//! [prototypes]: proto::Prototype
+//! [`Name`]: bevy::core::Name
+//! [custom schematics]: custom
 
-mod components;
-pub use bevy_proto_derive::ProtoComponent;
-pub use components::ProtoComponent;
+mod conditions;
+pub mod config;
+#[cfg(feature = "custom_schematics")]
+pub mod custom;
+pub mod hooks;
 mod plugin;
-pub use plugin::ProtoPlugin;
-mod prototype;
-pub use prototype::{deserialize_templates_list, Prototype, Prototypical};
+pub mod proto;
+mod schematics;
 
-#[cfg(feature = "hot_reloading")]
-mod hot_reload;
-
-pub mod data;
-#[macro_use]
-mod utils;
-
+/// Provides the basics needed to use this crate.
+///
+/// This is meant to be used like:
+/// ```
+/// use bevy_proto::prelude::*;
+/// ```
 pub mod prelude {
-    //! Includes all public types and the macro to derive [`ProtoComponent`](super::components::ProtoComponent).
+    pub use bevy_proto_backend::deps::DependenciesBuilder;
+    pub use bevy_proto_backend::proto::Prototypical;
+    pub use bevy_proto_backend::schematics::{ReflectSchematic, Schematic};
+    pub use bevy_proto_backend::tree::EntityTree;
 
-    pub use super::components::ProtoComponent;
-    pub use super::data::*;
+    pub use super::conditions::*;
     pub use super::plugin::ProtoPlugin;
-    pub use super::prototype::{Prototype, Prototypical};
-    pub use bevy_proto_derive::*;
+    pub use super::proto::Prototype;
+
+    /// A helper SystemParam for managing [prototypes].
+    ///
+    /// For the mutable version, see [`PrototypesMut`].
+    ///
+    /// [prototypes]: Prototype
+    pub type Prototypes<'w> = bevy_proto_backend::proto::Prototypes<'w, Prototype>;
+
+    /// A helper SystemParam for managing [prototypes].
+    ///
+    /// For the immutable version, see [`Prototypes`].
+    ///
+    /// [prototypes]: Prototype
+    pub type PrototypesMut<'w> = bevy_proto_backend::proto::PrototypesMut<'w, Prototype>;
+
+    /// A system parameter similar to [`Commands`], but catered towards [prototypes].
+    ///
+    /// [`Commands`]: bevy::prelude::Commands
+    /// [prototypes]: Prototype
+    pub type ProtoCommands<'w, 's> = bevy_proto_backend::proto::ProtoCommands<'w, 's, Prototype>;
+
+    /// A struct similar to [`EntityCommands`], but catered towards [prototypes].
+    ///
+    /// [`EntityCommands`]: bevy::ecs::system::EntityCommands
+    /// [prototypes]: Prototype
+    pub type ProtoEntityCommands<'w, 's, 'a> =
+        bevy_proto_backend::proto::ProtoEntityCommands<'w, 's, 'a, Prototype>;
 }
 
-#[cfg(doctest)]
-mod test_readme {
-    macro_rules! external_doc_test {
-        ($x:expr) => {
-            #[doc = $x]
-            extern "C" {}
-        };
-    }
-
-    external_doc_test!(include_str!("../README.md"));
+/// Provides access to the [backend crate] that `bevy_proto` is built on.
+///
+/// [backend crate]: bevy_proto_backend
+pub mod backend {
+    pub use bevy_proto_backend::*;
 }

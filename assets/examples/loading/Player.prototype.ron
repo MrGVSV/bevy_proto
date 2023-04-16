@@ -1,0 +1,16 @@
+(
+  // The name of this prototype.
+  // It must be unique across all loaded prototypes.
+  // In the future, there will be an optional `package` field
+  // to help ensure uniqueness within a "package".
+  name: "Player",
+  // The unordered mapping of schematics for this prototype.
+  // These are deserialized using the reflection deserializer.
+  schematics: {
+    // This schematic is provided by `bevy_proto` and resolves
+    // to a Bevy `SpriteBundle`:
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/player/p1_front.png"),
+    ),
+  }
+)

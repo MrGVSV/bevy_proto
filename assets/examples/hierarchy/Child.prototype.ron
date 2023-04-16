@@ -1,0 +1,17 @@
+(
+  name: "Child",
+  schematics: {
+    "hierarchy::DrawRelations": (),
+    "bevy_proto::custom::SpriteBundle": (
+      texture: AssetPath("textures/platformer/player/p2_front.png"),
+      // Remember: children are anchored to their parents!
+      transform: (
+        translation: (
+          x: 0,
+          y: -200,
+          z: 0
+        )
+      )
+    )
+  }
+)

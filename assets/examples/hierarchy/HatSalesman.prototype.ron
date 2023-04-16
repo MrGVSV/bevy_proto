@@ -1,0 +1,22 @@
+(
+  name: "HatSalesman",
+  schematics: {
+    "hierarchy::HasHat": ()
+  },
+  children: [
+    // This child will be its own entity
+    "Hat",
+    (
+      // This child will merge into the child in `Parent`
+      // with the matchin `merge_key`
+      merge_key: Some("hat-wearer"),
+      value: Inline((
+        name: "HatSaleschild",
+        schematics: {
+          "hierarchy::HasHat": ()
+        },
+        children: ["Hat"]
+      ))
+    )
+  ]
+)

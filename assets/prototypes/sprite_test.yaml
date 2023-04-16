@@ -1,6 +1,0 @@
----
-name: "Sprite Test"
-components:
-  - type: SpriteBundleDef
-    value:
-      texture_path: "textures/sprite.png"

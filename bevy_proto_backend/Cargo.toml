@@ -1,0 +1,57 @@
+[package]
+name = "bevy_proto_backend"
+version = "0.1.0"
+edition = "2021"
+authors = ["Gino Valente <gino.valente.code@gmail.com>"]
+description = "Backend crate for bevy_proto"
+repository = "https://github.com/MrGVSV/bevy_proto"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[features]
+default = [
+    # Crate Features
+    "auto_name",
+    # Bevy Features
+    "bevy_animation",
+    "bevy_audio",
+    "bevy_gltf",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_sprite",
+    "bevy_text",
+]
+
+# When enabled, entities will automatically use a prototype's ID as its `Name`
+auto_name = []
+
+# Enables registrations for types available with Bevy's bevy_animation feature
+bevy_animation = ["bevy/bevy_animation"]
+# Enables registrations for types available with Bevy's bevy_audio feature
+bevy_audio = ["bevy/bevy_audio"]
+# Enables registrations for types available with Bevy's bevy_gltf feature
+bevy_gltf = ["bevy/bevy_gltf"]
+# Enables registrations for types available with Bevy's bevy_pbr feature
+bevy_pbr = ["bevy/bevy_pbr"]
+# Enables registrations for types available with Bevy's bevy_render feature
+bevy_render = ["bevy/bevy_render"]
+# Enables registrations for types available with Bevy's bevy_scene feature
+bevy_scene = ["bevy/bevy_scene"]
+# Enables registrations for types available with Bevy's bevy_sprite feature
+bevy_sprite = ["bevy/bevy_sprite"]
+# Enables registrations for types available with Bevy's bevy_text feature
+bevy_text = ["bevy/bevy_text"]
+
+[dependencies]
+bevy_proto_derive = { path = "../bevy_proto_derive" }
+bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
+anyhow = "1.0"
+serde = "1.0"
+thiserror = "1.0"
+path-clean = "1.0"
+indexmap = "1.9"
+parking_lot = "0.12"
+
+[dev-dependencies]
+ron = "0.8"
