@@ -4,7 +4,7 @@
 [![Docs](https://img.shields.io/docsrs/bevy_proto)](https://docs.rs/bevy_proto/latest/bevy_proto/)
 [![License](https://img.shields.io/crates/l/bevy_proto)](https://github.com/MrGVSV/bevy_proto/blob/main/License.md)
 
-Spawn entities with a simple configuration file.
+Spawn entities in Bevy with a simple configuration file, similar to Unity's prefabs.
 
 This crate can be used for:
 
