@@ -44,7 +44,7 @@ bevy_sprite = ["bevy/bevy_sprite"]
 bevy_text = ["bevy/bevy_text"]
 
 [dependencies]
-bevy_proto_derive = { path = "../bevy_proto_derive" }
+bevy_proto_derive = { version = "0.3", path = "../bevy_proto_derive" }
 bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
 anyhow = "1.0"
 serde = "1.0"
