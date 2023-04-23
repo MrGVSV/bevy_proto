@@ -1,6 +1,6 @@
 [package]
 name = "bevy_proto"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Create config files for entities in Bevy"
@@ -57,7 +57,7 @@ bevy_sprite = ["bevy/bevy_sprite", "bevy_proto_backend/bevy_sprite"]
 bevy_text = ["bevy/bevy_text", "bevy_proto_backend/bevy_text"]
 
 [dependencies]
-bevy_proto_backend = { version = "0.1", path = "./bevy_proto_backend" }
+bevy_proto_backend = { version = "0.1.1", path = "./bevy_proto_backend" }
 bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
 anyhow = "1.0"
 serde = "1.0"

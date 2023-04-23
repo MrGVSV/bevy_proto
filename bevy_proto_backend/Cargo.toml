@@ -1,6 +1,6 @@
 [package]
 name = "bevy_proto_backend"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Backend crate for bevy_proto"
@@ -44,7 +44,7 @@ bevy_sprite = ["bevy/bevy_sprite"]
 bevy_text = ["bevy/bevy_text"]
 
 [dependencies]
-bevy_proto_derive = { version = "0.3", path = "../bevy_proto_derive" }
+bevy_proto_derive = { version = "0.3.1", path = "../bevy_proto_derive" }
 bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
 anyhow = "1.0"
 serde = "1.0"
