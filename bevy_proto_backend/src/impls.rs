@@ -36,6 +36,44 @@ macro_rules! register_schematic {
     }};
 }
 
+macro_rules! from_to {
+    ($real: ty, $mock: ty, $body: expr) => {
+        const _: () = {
+            type Input = $real;
+
+            impl From<Input> for $mock {
+                fn from(value: Input) -> Self {
+                    $body(value)
+                }
+            }
+        };
+
+        const _: () = {
+            type Input = $mock;
+
+            impl From<Input> for $real {
+                fn from(value: Input) -> Self {
+                    $body(value)
+                }
+            }
+        };
+    };
+}
+
+macro_rules! from_to_default {
+    ($real: ty, $mock: ty, $body: expr) => {
+        from_to!($real, $mock, $body);
+
+        const _: () = {
+            impl Default for $mock {
+                fn default() -> Self {
+                    <$real as Default>::default().into()
+                }
+            }
+        };
+    };
+}
+
 mod bevy_impls {
 
     #[cfg(feature = "bevy_animation")]
@@ -163,7 +201,7 @@ mod bevy_impls {
         use bevy::core_pipeline::prepass::{DepthPrepass, NormalPrepass};
         use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
         use bevy::prelude::{Camera2d, Camera3d, Color};
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 
         use bevy_proto_derive::impl_external_schematic;
 
@@ -186,6 +224,7 @@ mod bevy_impls {
             struct BloomSettings {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct BloomSettingsInput {
                 pub intensity: f32,
                 pub low_frequency_boost: f32,
@@ -194,44 +233,47 @@ mod bevy_impls {
                 pub prefilter_settings: BloomPrefilterSettingsInput,
                 pub composite_mode: BloomCompositeModeInput,
             }
-            impl From<BloomSettingsInput> for BloomSettings {
-                fn from(value: BloomSettingsInput) -> Self {
-                    Self {
-                        intensity: value.intensity,
-                        low_frequency_boost: value.low_frequency_boost,
-                        low_frequency_boost_curvature: value.low_frequency_boost_curvature,
-                        high_pass_frequency: value.high_pass_frequency,
-                        prefilter_settings: value.prefilter_settings.into(),
-                        composite_mode: value.composite_mode.into(),
-                    }
+            from_to_default!(
+                BloomSettings,
+                BloomSettingsInput,
+                |value: Input| Self {
+                    intensity: value.intensity,
+                    low_frequency_boost: value.low_frequency_boost,
+                    low_frequency_boost_curvature: value.low_frequency_boost_curvature,
+                    high_pass_frequency: value.high_pass_frequency,
+                    prefilter_settings: value.prefilter_settings.into(),
+                    composite_mode: value.composite_mode.into(),
                 }
-            }
+            );
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct BloomPrefilterSettingsInput {
                 pub threshold: f32,
                 pub threshold_softness: f32,
             }
-            impl From<BloomPrefilterSettingsInput> for BloomPrefilterSettings {
-                fn from(value: BloomPrefilterSettingsInput) -> Self {
-                    Self {
-                        threshold: value.threshold,
-                        threshold_softness: value.threshold_softness,
-                    }
+            from_to_default!(
+                BloomPrefilterSettings,
+                BloomPrefilterSettingsInput,
+                |value: Input| Self {
+                    threshold: value.threshold,
+                    threshold_softness: value.threshold_softness,
                 }
-            }
+            );
+
             #[derive(Reflect, FromReflect)]
             pub enum BloomCompositeModeInput {
                 EnergyConserving,
                 Additive,
             }
-            impl From<BloomCompositeModeInput> for BloomCompositeMode {
-                fn from(value: BloomCompositeModeInput) -> Self {
-                    match value {
-                        BloomCompositeModeInput::EnergyConserving => Self::EnergyConserving,
-                        BloomCompositeModeInput::Additive => Self::Additive,
-                    }
+            from_to!(
+                BloomCompositeMode,
+                BloomCompositeModeInput,
+                |value| match value {
+                    Input::EnergyConserving => Self::EnergyConserving,
+                    Input::Additive => Self::Additive,
                 }
-            }
+            );
         }
 
         impl_external_schematic! {
@@ -239,16 +281,17 @@ mod bevy_impls {
             struct Camera2d {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct Camera2dInput {
                 pub clear_color: ClearColorConfigInput,
             }
-            impl From<Camera2dInput> for Camera2d {
-                fn from(value: Camera2dInput) -> Self {
-                    Self {
-                        clear_color: value.clear_color.into(),
-                    }
+            from_to_default!(
+                Camera2d,
+                Camera2dInput,
+                |value: Input| Self {
+                    clear_color: value.clear_color.into(),
                 }
-            }
+            );
         }
 
         impl_external_schematic! {
@@ -256,31 +299,34 @@ mod bevy_impls {
             struct Camera3d {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct Camera3dInput {
                 pub clear_color: ClearColorConfigInput,
                 pub depth_load_op: Camera3dDepthLoadOpInput,
             }
-            impl From<Camera3dInput> for Camera3d {
-                fn from(value: Camera3dInput) -> Self {
-                    Self {
-                        clear_color: value.clear_color.into(),
-                        depth_load_op: value.depth_load_op.into()
-                    }
+            from_to_default!(
+                Camera3d,
+                Camera3dInput,
+                |value: Input| Self {
+                    clear_color: value.clear_color.into(),
+                    depth_load_op: value.depth_load_op.into()
                 }
-            }
+            );
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum Camera3dDepthLoadOpInput {
                 Clear(f32),
                 Load,
             }
-            impl From<Camera3dDepthLoadOpInput> for Camera3dDepthLoadOp {
-                fn from(value: Camera3dDepthLoadOpInput) -> Self {
-                    match value {
-                        Camera3dDepthLoadOpInput::Clear(value) => Self::Clear(value),
-                        Camera3dDepthLoadOpInput::Load => Self::Load,
-                    }
+            from_to_default!(
+                Camera3dDepthLoadOp,
+                Camera3dDepthLoadOpInput,
+                |value: Input| match value {
+                    Input::Clear(value) => Self::Clear(value),
+                    Input::Load => Self::Load,
                 }
-            }
+            );
         }
 
         impl_external_schematic! {
@@ -322,20 +368,21 @@ mod bevy_impls {
         }
 
         #[derive(Reflect, FromReflect)]
+        #[reflect(Default)]
         pub enum ClearColorConfigInput {
             Default,
             Custom(Color),
             None,
         }
-        impl From<ClearColorConfigInput> for ClearColorConfig {
-            fn from(value: ClearColorConfigInput) -> Self {
-                match value {
-                    ClearColorConfigInput::Default => Self::Default,
-                    ClearColorConfigInput::Custom(color) => Self::Custom(color),
-                    ClearColorConfigInput::None => Self::None,
-                }
+        from_to_default!(
+            ClearColorConfig,
+            ClearColorConfigInput,
+            |value| match value {
+                Input::Default => Self::Default,
+                Input::Custom(color) => Self::Custom(color),
+                Input::None => Self::None,
             }
-        }
+        );
     }
 
     #[cfg(feature = "bevy_gltf")]
@@ -358,13 +405,13 @@ mod bevy_impls {
             pub struct GltfExtrasInput{
                 pub value: String,
             }
-            impl From<GltfExtrasInput> for GltfExtras {
-                fn from(value: GltfExtrasInput) -> Self {
-                    Self {
-                        value: value.value,
-                    }
+            from_to_default!(
+                GltfExtras,
+                GltfExtrasInput,
+                |value: Input| Self {
+                    value: value.value,
                 }
-            }
+            );
         }
     }
 
@@ -379,7 +426,7 @@ mod bevy_impls {
             NotShadowCaster, NotShadowReceiver, PointLight, SpotLight,
         };
         use bevy::prelude::Color;
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 
         use bevy_proto_derive::impl_external_schematic;
 
@@ -409,6 +456,7 @@ mod bevy_impls {
             struct CascadeShadowConfig {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct CascadeShadowConfigInput {
                 pub num_cascades: usize,
                 pub minimum_distance: f32,
@@ -427,6 +475,18 @@ mod bevy_impls {
                     }.into()
                 }
             }
+            impl Default for CascadeShadowConfigInput {
+                fn default() -> Self {
+                    let base = CascadeShadowConfigBuilder::default();
+                    Self {
+                        num_cascades: base.num_cascades,
+                        minimum_distance: base.minimum_distance,
+                        maximum_distance: base.maximum_distance,
+                        first_cascade_far_bound: base.first_cascade_far_bound,
+                        overlap_proportion: base.overlap_proportion,
+                    }
+                }
+            }
         }
 
         impl_external_schematic! {
@@ -434,6 +494,7 @@ mod bevy_impls {
             enum ClusterConfig {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum ClusterConfigInput {
                 None,
                 Single,
@@ -449,25 +510,25 @@ mod bevy_impls {
                     dynamic_resizing: bool,
                 },
             }
-            impl From<ClusterConfigInput> for ClusterConfig {
-                fn from(value: ClusterConfigInput) -> Self {
-                    match value {
-                        ClusterConfigInput::None => Self::None,
-                        ClusterConfigInput::Single => Self::Single,
-                        ClusterConfigInput::XYZ {
-                            dimensions,
-                            z_config,
-                            dynamic_resizing,
-                        } => Self::XYZ {dimensions, z_config, dynamic_resizing},
-                        ClusterConfigInput::FixedZ {
-                            total,
-                            z_slices,
-                            z_config,
-                            dynamic_resizing,
-                        } => Self::FixedZ {total, z_slices, z_config, dynamic_resizing},
-                    }
+            from_to_default!(
+                ClusterConfig,
+                ClusterConfigInput,
+                |value: Input| match value {
+                    Input::None => Self::None,
+                    Input::Single => Self::Single,
+                    Input::XYZ {
+                        dimensions,
+                        z_config,
+                        dynamic_resizing,
+                    } => Self::XYZ {dimensions, z_config, dynamic_resizing},
+                    Input::FixedZ {
+                        total,
+                        z_slices,
+                        z_config,
+                        dynamic_resizing,
+                    } => Self::FixedZ {total, z_slices, z_config, dynamic_resizing},
                 }
-            }
+            );
         }
 
         impl_external_schematic! {
@@ -475,6 +536,7 @@ mod bevy_impls {
             struct DirectionalLight {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct DirectionalLightInput {
                 pub color: Color,
                 pub illuminance: f32,
@@ -482,15 +544,15 @@ mod bevy_impls {
                 pub shadow_depth_bias: f32,
                 pub shadow_normal_bias: f32,
             }
-            impl From<DirectionalLightInput> for DirectionalLight {
-                fn from(value: DirectionalLightInput) -> Self {
-                    Self {
-                        color: value.color,
-                        illuminance: value.illuminance,
-                        shadows_enabled: value.shadows_enabled,
-                        shadow_depth_bias: value.shadow_depth_bias,
-                        shadow_normal_bias: value.shadow_normal_bias,
-                    }
+            from_to_default! {
+                DirectionalLight,
+                DirectionalLightInput,
+                |value: Input| Self {
+                    color: value.color,
+                    illuminance: value.illuminance,
+                    shadows_enabled: value.shadows_enabled,
+                    shadow_depth_bias: value.shadow_depth_bias,
+                    shadow_normal_bias: value.shadow_normal_bias,
                 }
             }
         }
@@ -509,22 +571,24 @@ mod bevy_impls {
             struct FogSettings {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct FogSettingsInput {
                 pub color: Color,
                 pub directional_light_color: Color,
                 pub directional_light_exponent: f32,
                 pub falloff: FogFalloffInput,
             }
-            impl From<FogSettingsInput> for FogSettings {
-                fn from(value: FogSettingsInput) -> Self {
-                    Self {
-                        color: value.color,
-                        directional_light_color: value.directional_light_color,
-                        directional_light_exponent: value.directional_light_exponent,
-                        falloff: value.falloff.into(),
-                    }
+            from_to_default! {
+                FogSettings,
+                FogSettingsInput,
+                |value: Input| Self {
+                    color: value.color,
+                    directional_light_color: value.directional_light_color,
+                    directional_light_exponent: value.directional_light_exponent,
+                    falloff: value.falloff.into(),
                 }
             }
+
             #[derive(Reflect, FromReflect)]
             pub enum FogFalloffInput {
                 Linear {
@@ -542,14 +606,14 @@ mod bevy_impls {
                     inscattering: Vec3,
                 },
             }
-            impl From<FogFalloffInput> for FogFalloff {
-                fn from(value: FogFalloffInput) -> Self {
-                    match value {
-                        FogFalloffInput::Linear {start, end} => Self::Linear {start, end},
-                        FogFalloffInput::Exponential {density} => Self::Exponential {density},
-                        FogFalloffInput::ExponentialSquared {density} => Self::ExponentialSquared {density},
-                        FogFalloffInput::Atmospheric {extinction, inscattering} => Self::Atmospheric {extinction, inscattering},
-                    }
+            from_to! {
+                FogFalloff,
+                FogFalloffInput,
+                |value: Input| match value {
+                    Input::Linear {start, end} => Self::Linear {start, end},
+                    Input::Exponential {density} => Self::Exponential {density},
+                    Input::ExponentialSquared {density} => Self::ExponentialSquared {density},
+                    Input::Atmospheric {extinction, inscattering} => Self::Atmospheric {extinction, inscattering},
                 }
             }
         }
@@ -585,6 +649,7 @@ mod bevy_impls {
             struct PointLight {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct PointLightInput {
                 pub color: Color,
                 pub intensity: f32,
@@ -594,17 +659,17 @@ mod bevy_impls {
                 pub shadow_depth_bias: f32,
                 pub shadow_normal_bias: f32,
             }
-            impl From<PointLightInput> for PointLight {
-                fn from(value: PointLightInput) -> Self {
-                    Self {
-                        color: value.color,
-                        intensity: value.intensity,
-                        range: value.range,
-                        radius: value.radius,
-                        shadows_enabled: value.shadows_enabled,
-                        shadow_depth_bias: value.shadow_depth_bias,
-                        shadow_normal_bias: value.shadow_normal_bias,
-                    }
+            from_to_default! {
+                PointLight,
+                PointLightInput,
+                |value: Input| Self {
+                    color: value.color,
+                    intensity: value.intensity,
+                    range: value.range,
+                    radius: value.radius,
+                    shadows_enabled: value.shadows_enabled,
+                    shadow_depth_bias: value.shadow_depth_bias,
+                    shadow_normal_bias: value.shadow_normal_bias,
                 }
             }
         }
@@ -614,6 +679,7 @@ mod bevy_impls {
             struct SpotLight {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct SpotLightInput {
                 pub color: Color,
                 pub intensity: f32,
@@ -625,19 +691,19 @@ mod bevy_impls {
                 pub outer_angle: f32,
                 pub inner_angle: f32,
             }
-            impl From<SpotLightInput> for SpotLight {
-                fn from(value: SpotLightInput) -> Self {
-                    Self {
-                        color: value.color,
-                        intensity: value.intensity,
-                        range: value.range,
-                        radius: value.radius,
-                        shadows_enabled: value.shadows_enabled,
-                        shadow_depth_bias: value.shadow_depth_bias,
-                        shadow_normal_bias: value.shadow_normal_bias,
-                        outer_angle: value.outer_angle,
-                        inner_angle: value.inner_angle,
-                    }
+            from_to_default! {
+                SpotLight,
+                SpotLightInput,
+                |value: Input| Self {
+                    color: value.color,
+                    intensity: value.intensity,
+                    range: value.range,
+                    radius: value.radius,
+                    shadows_enabled: value.shadows_enabled,
+                    shadow_depth_bias: value.shadow_depth_bias,
+                    shadow_normal_bias: value.shadow_normal_bias,
+                    outer_angle: value.outer_angle,
+                    inner_angle: value.inner_angle,
                 }
             }
         }
@@ -662,7 +728,7 @@ mod bevy_impls {
         use bevy::prelude::{
             Camera, Entity, OrthographicProjection, PerspectiveProjection, Projection,
         };
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
         use bevy::render::camera::CameraRenderGraph;
         use bevy::render::mesh::skinning::SkinnedMesh;
         use bevy::render::primitives::Aabb;
@@ -713,20 +779,21 @@ mod bevy_impls {
             struct ColorGrading {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct ColorGradingInput {
                 pub exposure: f32,
                 pub gamma: f32,
                 pub pre_saturation: f32,
                 pub post_saturation: f32,
             }
-            impl From<ColorGradingInput> for ColorGrading {
-                fn from(value: ColorGradingInput) -> Self {
-                    Self {
-                        exposure: value.exposure,
-                        gamma: value.gamma,
-                        pre_saturation: value.pre_saturation,
-                        post_saturation: value.post_saturation,
-                    }
+            from_to_default! {
+                ColorGrading,
+                ColorGradingInput,
+                |value: Input| Self {
+                    exposure: value.exposure,
+                    gamma: value.gamma,
+                    pre_saturation: value.pre_saturation,
+                    post_saturation: value.post_saturation,
                 }
             }
         }
@@ -744,16 +811,17 @@ mod bevy_impls {
             enum Projection {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum ProjectionInput {
                 Perspective(PerspectiveProjection),
                 Orthographic(OrthographicProjection),
             }
-            impl From<ProjectionInput> for Projection {
-                fn from(value: ProjectionInput) -> Self {
-                    match value {
-                        ProjectionInput::Perspective(projection) => Self::Perspective(projection),
-                        ProjectionInput::Orthographic(projection) => Self::Orthographic(projection),
-                    }
+            from_to_default! {
+                Projection,
+                ProjectionInput,
+                |value: Input| match value {
+                    Input::Perspective(projection) => Self::Perspective(projection),
+                    Input::Orthographic(projection) => Self::Orthographic(projection),
                 }
             }
         }
@@ -790,7 +858,7 @@ mod bevy_impls {
         use bevy::app::App;
         use bevy::math::Vec2;
         use bevy::prelude::Color;
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
         use bevy::sprite::{Anchor, Mesh2dHandle, Sprite, TextureAtlasSprite};
 
         use bevy_proto_derive::impl_external_schematic;
@@ -816,6 +884,7 @@ mod bevy_impls {
             struct TextureAtlasSprite {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct TextureAtlasSpriteInput {
                 pub color: Color,
                 pub index: usize,
@@ -824,16 +893,16 @@ mod bevy_impls {
                 pub custom_size: Option<Vec2>,
                 pub anchor: Anchor,
             }
-            impl From<TextureAtlasSpriteInput> for TextureAtlasSprite {
-                fn from(value: TextureAtlasSpriteInput) -> Self {
-                    Self {
-                        color: value.color,
-                        index: value.index,
-                        flip_x: value.flip_x,
-                        flip_y: value.flip_y,
-                        custom_size: value.custom_size,
-                        anchor: value.anchor,
-                    }
+            from_to_default! {
+                TextureAtlasSprite,
+                TextureAtlasSpriteInput,
+                |value: Input| Self {
+                    color: value.color,
+                    index: value.index,
+                    flip_x: value.flip_x,
+                    flip_y: value.flip_y,
+                    custom_size: value.custom_size,
+                    anchor: value.anchor,
                 }
             }
         }
@@ -843,7 +912,7 @@ mod bevy_impls {
     pub mod text {
         use bevy::app::App;
         use bevy::math::Vec2;
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
         use bevy::text::{BreakLineOn, Text, Text2dBounds, TextAlignment, TextSection};
 
         use bevy_proto_derive::impl_external_schematic;
@@ -857,46 +926,49 @@ mod bevy_impls {
             struct Text {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct TextInput {
                 pub sections: Vec<TextSection>,
                 pub alignment: TextAlignmentInput,
                 pub linebreak_behaviour: BreakLineOnInput,
             }
-            impl From<TextInput> for Text {
-                fn from(value: TextInput) -> Self {
-                    Self {
-                        sections: value.sections,
-                        alignment: value.alignment.into(),
-                        linebreak_behaviour: value.linebreak_behaviour.into(),
-                    }
+            from_to_default! {
+                Text,
+                TextInput,
+                |value: Input| Self {
+                    sections: value.sections,
+                    alignment: value.alignment.into(),
+                    linebreak_behaviour: value.linebreak_behaviour.into(),
                 }
             }
+
             #[derive(Reflect, FromReflect)]
             pub enum TextAlignmentInput {
                 Left,
                 Center,
                 Right,
             }
-            impl From<TextAlignmentInput> for TextAlignment {
-                fn from(value: TextAlignmentInput) -> Self {
-                    match value {
-                        TextAlignmentInput::Left => Self::Left,
-                        TextAlignmentInput::Center => Self::Center,
-                        TextAlignmentInput::Right => Self::Right,
-                    }
+            from_to! {
+                TextAlignment,
+                TextAlignmentInput,
+                |value: Input| match value {
+                    Input::Left => Self::Left,
+                    Input::Center => Self::Center,
+                    Input::Right => Self::Right,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
             pub enum BreakLineOnInput {
                 WordBoundary,
                 AnyCharacter,
             }
-            impl From<BreakLineOnInput> for BreakLineOn {
-                fn from(value: BreakLineOnInput) -> Self {
-                    match value {
-                        BreakLineOnInput::WordBoundary => Self::WordBoundary,
-                        BreakLineOnInput::AnyCharacter => Self::AnyCharacter,
-                    }
+            from_to! {
+                BreakLineOn,
+                BreakLineOnInput,
+                |value: Input| match value {
+                    Input::WordBoundary => Self::WordBoundary,
+                    Input::AnyCharacter => Self::AnyCharacter,
                 }
             }
         }
@@ -906,14 +978,15 @@ mod bevy_impls {
             struct Text2dBounds {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct Text2dBoundsInput {
                 pub size: Vec2,
             }
-            impl From<Text2dBoundsInput> for Text2dBounds {
-                fn from(value: Text2dBoundsInput) -> Self {
-                    Self {
-                        size: value.size,
-                    }
+            from_to_default! {
+                Text2dBounds,
+                Text2dBoundsInput,
+                |value: Input| Self {
+                    size: value.size,
                 }
             }
         }
@@ -963,7 +1036,7 @@ mod bevy_impls {
         use bevy::app::App;
         use bevy::math::{Rect, Vec2};
         use bevy::prelude::{BackgroundColor, Button, Color, Label};
-        use bevy::reflect::{FromReflect, Reflect};
+        use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
         use bevy::ui::{
             AlignContent, AlignItems, AlignSelf, CalculatedClip, CalculatedSize, Direction,
             Display, FlexDirection, FlexWrap, FocusPolicy, Interaction, JustifyContent, Overflow,
@@ -993,11 +1066,12 @@ mod bevy_impls {
             struct BackgroundColor();
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct BackgroundColorInput(pub Color);
-            impl From<BackgroundColorInput> for BackgroundColor {
-                fn from(value: BackgroundColorInput) -> Self {
-                    Self(value.0)
-                }
+            from_to_default! {
+                BackgroundColor,
+                BackgroundColorInput,
+                |value: Input| Self(value.0)
             }
         }
 
@@ -1019,14 +1093,15 @@ mod bevy_impls {
             struct CalculatedClip {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct CalculatedClipInput {
                 pub clip: Rect,
             }
-            impl From<CalculatedClipInput> for CalculatedClip {
-                fn from(value: CalculatedClipInput) -> Self {
-                    Self {
-                        clip: value.clip,
-                    }
+            from_to_default! {
+                CalculatedClip,
+                CalculatedClipInput,
+                |value: Input| Self {
+                    clip: value.clip,
                 }
             }
         }
@@ -1036,16 +1111,17 @@ mod bevy_impls {
             struct CalculatedSize {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct CalculatedSizeInput {
                 pub size: Vec2,
                 pub preserve_aspect_ratio: bool,
             }
-            impl From<CalculatedSizeInput> for CalculatedSize {
-                fn from(value: CalculatedSizeInput) -> Self {
-                    Self {
-                        size: value.size,
-                        preserve_aspect_ratio: value.preserve_aspect_ratio,
-                    }
+            from_to_default! {
+                CalculatedSize,
+                CalculatedSizeInput,
+                |value: Input| Self {
+                    size: value.size,
+                    preserve_aspect_ratio: value.preserve_aspect_ratio,
                 }
             }
         }
@@ -1055,16 +1131,17 @@ mod bevy_impls {
             enum FocusPolicy {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum FocusPolicyInput {
                 Block,
                 Pass,
             }
-            impl From<FocusPolicyInput> for FocusPolicy {
-                fn from(value: FocusPolicyInput) -> Self {
-                    match value {
-                        FocusPolicyInput::Block => Self::Block,
-                        FocusPolicyInput::Pass => Self::Pass,
-                    }
+            from_to_default! {
+                FocusPolicy,
+                FocusPolicyInput,
+                |value: Input| match value {
+                    Input::Block => Self::Block,
+                    Input::Pass => Self::Pass,
                 }
             }
         }
@@ -1074,18 +1151,19 @@ mod bevy_impls {
             enum Interaction {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum InteractionInput {
                 Clicked,
                 Hovered,
                 None,
             }
-            impl From<InteractionInput> for Interaction {
-                fn from(value: InteractionInput) -> Self {
-                    match value {
-                        InteractionInput::Clicked => Self::Clicked,
-                        InteractionInput::Hovered => Self::Hovered,
-                        InteractionInput::None => Self::None,
-                    }
+            from_to_default! {
+                Interaction,
+                InteractionInput,
+                |value: Input| match value {
+                    Input::Clicked => Self::Clicked,
+                    Input::Hovered => Self::Hovered,
+                    Input::None => Self::None,
                 }
             }
         }
@@ -1108,14 +1186,15 @@ mod bevy_impls {
             struct RelativeCursorPosition {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct RelativeCursorPositionInput {
                 pub normalized: Option<Vec2>,
             }
-            impl From<RelativeCursorPositionInput> for RelativeCursorPosition {
-                fn from(value: RelativeCursorPositionInput) -> Self {
-                    Self {
-                        normalized: value.normalized,
-                    }
+            from_to_default! {
+                RelativeCursorPosition,
+                RelativeCursorPositionInput,
+                |value: Input| Self {
+                    normalized: value.normalized,
                 }
             }
         }
@@ -1125,6 +1204,7 @@ mod bevy_impls {
             struct Style {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct StyleInput {
                 pub display: DisplayInput,
                 pub position_type: PositionTypeInput,
@@ -1149,35 +1229,37 @@ mod bevy_impls {
                 pub overflow: OverflowInput,
                 pub gap: SizeInput,
             }
-            impl From<StyleInput> for Style {
-                fn from(value: StyleInput) -> Self {
-                    Self {
-                        display: value.display.into(),
-                        position_type: value.position_type.into(),
-                        direction: value.direction.into(),
-                        flex_direction: value.flex_direction.into(),
-                        flex_wrap: value.flex_wrap.into(),
-                        align_items: value.align_items.into(),
-                        align_self: value.align_self.into(),
-                        align_content: value.align_content.into(),
-                        justify_content: value.justify_content.into(),
-                        position: value.position.into(),
-                        margin: value.margin.into(),
-                        padding: value.padding.into(),
-                        border: value.border.into(),
-                        flex_grow: value.flex_grow,
-                        flex_shrink: value.flex_shrink,
-                        flex_basis: value.flex_basis.into(),
-                        size: value.size.into(),
-                        min_size: value.min_size.into(),
-                        max_size: value.max_size.into(),
-                        aspect_ratio: value.aspect_ratio,
-                        overflow: value.overflow.into(),
-                        gap: value.gap.into(),
-                    }
+            from_to_default! {
+                Style,
+                StyleInput,
+                |value: Input| Self {
+                    display: value.display.into(),
+                    position_type: value.position_type.into(),
+                    direction: value.direction.into(),
+                    flex_direction: value.flex_direction.into(),
+                    flex_wrap: value.flex_wrap.into(),
+                    align_items: value.align_items.into(),
+                    align_self: value.align_self.into(),
+                    align_content: value.align_content.into(),
+                    justify_content: value.justify_content.into(),
+                    position: value.position.into(),
+                    margin: value.margin.into(),
+                    padding: value.padding.into(),
+                    border: value.border.into(),
+                    flex_grow: value.flex_grow,
+                    flex_shrink: value.flex_shrink,
+                    flex_basis: value.flex_basis.into(),
+                    size: value.size.into(),
+                    min_size: value.min_size.into(),
+                    max_size: value.max_size.into(),
+                    aspect_ratio: value.aspect_ratio,
+                    overflow: value.overflow.into(),
+                    gap: value.gap.into(),
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum AlignContentInput {
                 Start,
                 End,
@@ -1189,22 +1271,24 @@ mod bevy_impls {
                 SpaceEvenly,
                 SpaceAround,
             }
-            impl From<AlignContentInput> for AlignContent {
-                fn from(value: AlignContentInput) -> Self {
-                    match value {
-                        AlignContentInput::Start => Self::Start,
-                        AlignContentInput::End => Self::End,
-                        AlignContentInput::FlexStart => Self::FlexStart,
-                        AlignContentInput::FlexEnd => Self::FlexEnd,
-                        AlignContentInput::Center => Self::Center,
-                        AlignContentInput::Stretch => Self::Stretch,
-                        AlignContentInput::SpaceBetween => Self::SpaceBetween,
-                        AlignContentInput::SpaceEvenly => Self::SpaceEvenly,
-                        AlignContentInput::SpaceAround => Self::SpaceAround,
-                    }
+            from_to_default! {
+                AlignContent,
+                AlignContentInput,
+                |value: Input| match value {
+                    Input::Start => Self::Start,
+                    Input::End => Self::End,
+                    Input::FlexStart => Self::FlexStart,
+                    Input::FlexEnd => Self::FlexEnd,
+                    Input::Center => Self::Center,
+                    Input::Stretch => Self::Stretch,
+                    Input::SpaceBetween => Self::SpaceBetween,
+                    Input::SpaceEvenly => Self::SpaceEvenly,
+                    Input::SpaceAround => Self::SpaceAround,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum AlignItemsInput {
                 Start,
                 End,
@@ -1214,20 +1298,22 @@ mod bevy_impls {
                 Baseline,
                 Stretch,
             }
-            impl From<AlignItemsInput> for AlignItems {
-                fn from(value: AlignItemsInput) -> Self {
-                    match value {
-                        AlignItemsInput::Start => Self::Start,
-                        AlignItemsInput::End => Self::End,
-                        AlignItemsInput::FlexStart => Self::FlexStart,
-                        AlignItemsInput::FlexEnd => Self::FlexEnd,
-                        AlignItemsInput::Center => Self::Center,
-                        AlignItemsInput::Baseline => Self::Baseline,
-                        AlignItemsInput::Stretch => Self::Stretch,
-                    }
+            from_to_default! {
+                AlignItems,
+                AlignItemsInput,
+                |value: Input| match value {
+                    Input::Start => Self::Start,
+                    Input::End => Self::End,
+                    Input::FlexStart => Self::FlexStart,
+                    Input::FlexEnd => Self::FlexEnd,
+                    Input::Center => Self::Center,
+                    Input::Baseline => Self::Baseline,
+                    Input::Stretch => Self::Stretch,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum AlignSelfInput {
                 Auto,
                 Start,
@@ -1238,81 +1324,91 @@ mod bevy_impls {
                 Baseline,
                 Stretch,
             }
-            impl From<AlignSelfInput> for AlignSelf {
-                fn from(value: AlignSelfInput) -> Self {
-                    match value {
-                        AlignSelfInput::Auto => Self::Auto,
-                        AlignSelfInput::Start => Self::Start,
-                        AlignSelfInput::End => Self::End,
-                        AlignSelfInput::FlexStart => Self::FlexStart,
-                        AlignSelfInput::FlexEnd => Self::FlexEnd,
-                        AlignSelfInput::Center => Self::Center,
-                        AlignSelfInput::Baseline => Self::Baseline,
-                        AlignSelfInput::Stretch => Self::Stretch,
-                    }
+            from_to_default! {
+                AlignSelf,
+                AlignSelfInput,
+                |value: Input| match value {
+                    Input::Auto => Self::Auto,
+                    Input::Start => Self::Start,
+                    Input::End => Self::End,
+                    Input::FlexStart => Self::FlexStart,
+                    Input::FlexEnd => Self::FlexEnd,
+                    Input::Center => Self::Center,
+                    Input::Baseline => Self::Baseline,
+                    Input::Stretch => Self::Stretch,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum DirectionInput {
                 Inherit,
                 LeftToRight,
                 RightToLeft,
             }
-            impl From<DirectionInput> for Direction {
-                fn from(value: DirectionInput) -> Self {
-                    match value {
-                        DirectionInput::Inherit => Self::Inherit,
-                        DirectionInput::LeftToRight => Self::LeftToRight,
-                        DirectionInput::RightToLeft => Self::RightToLeft,
-                    }
+            from_to_default! {
+                Direction,
+                DirectionInput,
+                |value: Input| match value {
+                    Input::Inherit => Self::Inherit,
+                    Input::LeftToRight => Self::LeftToRight,
+                    Input::RightToLeft => Self::RightToLeft,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum DisplayInput {
                 None,
                 Flex,
             }
-            impl From<DisplayInput> for Display {
-                fn from(value: DisplayInput) -> Self {
-                    match value {
-                        DisplayInput::None => Self::None,
-                        DisplayInput::Flex => Self::Flex,
-                    }
+            from_to_default! {
+                Display,
+                DisplayInput,
+                |value: Input| match value {
+                    Input::None => Self::None,
+                    Input::Flex => Self::Flex,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum FlexWrapInput {
                 NoWrap,
                 Wrap,
                 WrapReverse,
             }
-            impl From<FlexWrapInput> for FlexWrap {
-                fn from(value: FlexWrapInput) -> Self {
-                    match value {
-                        FlexWrapInput::NoWrap => Self::NoWrap,
-                        FlexWrapInput::Wrap => Self::Wrap,
-                        FlexWrapInput::WrapReverse => Self::WrapReverse,
-                    }
+            from_to_default! {
+                FlexWrap,
+                FlexWrapInput,
+                |value: Input| match value {
+                    Input::NoWrap => Self::NoWrap,
+                    Input::Wrap => Self::Wrap,
+                    Input::WrapReverse => Self::WrapReverse,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum FlexDirectionInput {
                 Row,
                 Column,
                 RowReverse,
                 ColumnReverse,
             }
-            impl From<FlexDirectionInput> for FlexDirection {
-                fn from(value: FlexDirectionInput) -> Self {
-                    match value {
-                        FlexDirectionInput::Row => Self::Row,
-                        FlexDirectionInput::Column => Self::Column,
-                        FlexDirectionInput::RowReverse => Self::RowReverse,
-                        FlexDirectionInput::ColumnReverse => Self::ColumnReverse,
-                    }
+            from_to_default! {
+                FlexDirection,
+                FlexDirectionInput,
+                |value: Input| match value {
+                    Input::Row => Self::Row,
+                    Input::Column => Self::Column,
+                    Input::RowReverse => Self::RowReverse,
+                    Input::ColumnReverse => Self::ColumnReverse,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum JustifyContentInput {
                 Start,
                 End,
@@ -1323,91 +1419,101 @@ mod bevy_impls {
                 SpaceAround,
                 SpaceEvenly,
             }
-            impl From<JustifyContentInput> for JustifyContent {
-                fn from(value: JustifyContentInput) -> Self {
-                    match value {
-                        JustifyContentInput::Start => Self::Start,
-                        JustifyContentInput::End => Self::End,
-                        JustifyContentInput::FlexStart => Self::FlexStart,
-                        JustifyContentInput::FlexEnd => Self::FlexEnd,
-                        JustifyContentInput::Center => Self::Center,
-                        JustifyContentInput::SpaceBetween => Self::SpaceBetween,
-                        JustifyContentInput::SpaceEvenly => Self::SpaceEvenly,
-                        JustifyContentInput::SpaceAround => Self::SpaceAround,
-                    }
+            from_to_default! {
+                JustifyContent,
+                JustifyContentInput,
+                |value: Input| match value {
+                    Input::Start => Self::Start,
+                    Input::End => Self::End,
+                    Input::FlexStart => Self::FlexStart,
+                    Input::FlexEnd => Self::FlexEnd,
+                    Input::Center => Self::Center,
+                    Input::SpaceBetween => Self::SpaceBetween,
+                    Input::SpaceEvenly => Self::SpaceEvenly,
+                    Input::SpaceAround => Self::SpaceAround,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum OverflowInput {
                 Visible,
                 Hidden,
             }
-            impl From<OverflowInput> for Overflow {
-                fn from(value: OverflowInput) -> Self {
-                    match value {
-                        OverflowInput::Visible => Self::Visible,
-                        OverflowInput::Hidden => Self::Hidden,
-                    }
+            from_to_default! {
+                Overflow,
+                OverflowInput,
+                |value: Input| match value {
+                    Input::Visible => Self::Visible,
+                    Input::Hidden => Self::Hidden,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum PositionTypeInput {
                 Relative,
                 Absolute,
             }
-            impl From<PositionTypeInput> for PositionType {
-                fn from(value: PositionTypeInput) -> Self {
-                    match value {
-                        PositionTypeInput::Relative => Self::Relative,
-                        PositionTypeInput::Absolute => Self::Absolute,
-                    }
+            from_to_default! {
+                PositionType,
+                PositionTypeInput,
+                |value: Input| match value {
+                    Input::Relative => Self::Relative,
+                    Input::Absolute => Self::Absolute,
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct SizeInput {
                 pub width: ValInput,
                 pub height: ValInput,
             }
-            impl From<SizeInput> for Size {
-                fn from(value: SizeInput) -> Self {
-                    Self {
-                        width: value.width.into(),
-                        height: value.height.into(),
-                    }
+            from_to_default! {
+                Size,
+                SizeInput,
+                |value: Input| Self {
+                    width: value.width.into(),
+                    height: value.height.into(),
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub struct UiRectInput {
                 pub left: ValInput,
                 pub right: ValInput,
                 pub top: ValInput,
                 pub bottom: ValInput,
             }
-            impl From<UiRectInput> for UiRect {
-                fn from(value: UiRectInput) -> Self {
-                    Self {
-                        left: value.left.into(),
-                        right: value.right.into(),
-                        top: value.top.into(),
-                        bottom: value.bottom.into(),
-                    }
+            from_to_default! {
+                UiRect,
+                UiRectInput,
+                |value: Input| Self {
+                    left: value.left.into(),
+                    right: value.right.into(),
+                    top: value.top.into(),
+                    bottom: value.bottom.into(),
                 }
             }
+
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum ValInput {
                 Undefined,
                 Auto,
                 Px(f32),
                 Percent(f32),
             }
-            impl From<ValInput> for Val {
-                fn from(value: ValInput) -> Self {
-                    match value {
-                        ValInput::Undefined => Self::Undefined,
-                        ValInput::Auto => Self::Auto,
-                        ValInput::Px(value) => Self::Px(value),
-                        ValInput::Percent(value) => Self::Percent(value),
-                    }
+            from_to_default! {
+                Val,
+                ValInput,
+                |value: Input| match value {
+                    Input::Undefined => Self::Undefined,
+                    Input::Auto => Self::Auto,
+                    Input::Px(value) => Self::Px(value),
+                    Input::Percent(value) => Self::Percent(value),
                 }
             }
         }
@@ -1416,7 +1522,9 @@ mod bevy_impls {
             pub struct UiImage {
                 #[schematic(asset)]
                 pub texture: Handle<Image>,
+                #[reflect(default)]
                 pub flip_x: bool,
+                #[reflect(default)]
                 pub flip_y: bool,
             }
         }
@@ -1426,16 +1534,17 @@ mod bevy_impls {
             enum ZIndex {}
             // ---
             #[derive(Reflect, FromReflect)]
+            #[reflect(Default)]
             pub enum ZIndexInput {
                 Local(i32),
                 Global(i32),
             }
-            impl From<ZIndexInput> for ZIndex {
-                fn from(value: ZIndexInput) -> Self {
-                    match value {
-                        ZIndexInput::Local(z) => Self::Local(z),
-                        ZIndexInput::Global(z) => Self::Global(z),
-                    }
+            from_to_default! {
+                ZIndex,
+                ZIndexInput,
+                |value: Input| match value {
+                    Input::Local(z) => Self::Local(z),
+                    Input::Global(z) => Self::Global(z),
                 }
             }
         }
