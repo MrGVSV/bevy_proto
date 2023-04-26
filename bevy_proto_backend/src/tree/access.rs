@@ -371,6 +371,41 @@ impl FromSchematicInput<ProtoEntity> for Option<Entity> {
     }
 }
 
+/// A helper struct to deserialize `Vec<Entity>`.
+///
+/// # Example
+///
+/// ```ignore
+/// # use bevy::prelude::{Entity, FromReflect, Reflect};
+/// # use bevy_proto_backend::tree::ProtoEntityList;
+/// # use bevy_proto_backend::schematics::{Schematic, ReflectSchematic};
+/// #[derive(Reflect, FromReflect, Schematic)]
+/// #[reflect(Schematic)]
+/// struct EntityGroup {
+///   #[from = ProtoEntityList]
+///   entities: Vec<Entity>
+/// }
+/// ```
+///
+#[derive(Default, Clone, PartialEq, Reflect, FromReflect, Deserialize)]
+#[reflect(Default, Deserialize)]
+#[serde(transparent)]
+pub struct ProtoEntityList(pub Vec<ProtoEntity>);
+
+impl FromSchematicInput<ProtoEntityList> for Vec<Entity> {
+    fn from_input(input: ProtoEntityList, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
+        input
+            .0
+            .into_iter()
+            .map(|entity| {
+                let access: EntityAccess = entity.into();
+                tree.find_entity(&access)
+                    .unwrap_or_else(|| panic!("entity should exist at path {:?}", access.to_path()))
+            })
+            .collect()
+    }
+}
+
 impl Debug for EntityAccess {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.to_path())

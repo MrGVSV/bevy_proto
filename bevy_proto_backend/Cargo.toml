@@ -15,12 +15,14 @@ default = [
     # Bevy Features
     "bevy_animation",
     "bevy_audio",
+    "bevy_core_pipeline",
     "bevy_gltf",
     "bevy_pbr",
     "bevy_render",
     "bevy_scene",
     "bevy_sprite",
     "bevy_text",
+    "bevy_ui"
 ]
 
 # When enabled, entities will automatically use a prototype's ID as its `Name`
@@ -30,6 +32,8 @@ auto_name = []
 bevy_animation = ["bevy/bevy_animation"]
 # Enables registrations for types available with Bevy's bevy_audio feature
 bevy_audio = ["bevy/bevy_audio"]
+# Enables registrations for types available with Bevy's bevy_core_pipeline feature
+bevy_core_pipeline = ["bevy/bevy_core_pipeline"]
 # Enables registrations for types available with Bevy's bevy_gltf feature
 bevy_gltf = ["bevy/bevy_gltf"]
 # Enables registrations for types available with Bevy's bevy_pbr feature
@@ -42,6 +46,8 @@ bevy_scene = ["bevy/bevy_scene"]
 bevy_sprite = ["bevy/bevy_sprite"]
 # Enables registrations for types available with Bevy's bevy_text feature
 bevy_text = ["bevy/bevy_text"]
+# Enables registrations for types available with Bevy's bevy_ui feature
+bevy_ui = ["bevy/bevy_ui"]
 
 [dependencies]
 bevy_proto_derive = { version = "0.3.1", path = "../bevy_proto_derive" }
