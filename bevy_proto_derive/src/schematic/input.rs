@@ -2,6 +2,7 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::token::Pub;
 use syn::{Generics, Token, TypePath, Visibility};
+use to_phantom::ToPhantom;
 
 use crate::schematic::data::SchematicData;
 use crate::schematic::fields::SchematicField;
@@ -120,6 +121,7 @@ impl<'a> ToTokens for Input<'a> {
         let input_ty = quote!(#input_ident #impl_ty_generics);
         // Ex: Foo<T: Bar>
         let input_ty_def = quote!(#input_ident #impl_generics);
+        let phantom_ty = self.generics.to_phantom();
 
         let make_from_impl = |body: TokenStream| {
             quote! {
@@ -158,7 +160,9 @@ impl<'a> ToTokens for Input<'a> {
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis struct #input_ty_def (
-                        #(#filtered),*
+                        #(#filtered,)*
+                        #[reflect(ignore, default)]
+                        #phantom_ty
                     ) #where_clause;
 
                     #from_impl
@@ -178,7 +182,9 @@ impl<'a> ToTokens for Input<'a> {
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis struct #input_ty_def #where_clause {
-                        #(#filtered),*
+                        #(#filtered,)*
+                        #[reflect(ignore, default)]
+                        __phantom_ty__: #phantom_ty
                     }
 
                     #from_impl
@@ -191,14 +197,16 @@ impl<'a> ToTokens for Input<'a> {
 
                 let from_impl = make_from_impl(quote! {
                     match #INPUT_IDENT {
-                        #(#constructors),*
+                        #(#constructors,)*
+                        _ => unreachable!(),
                     }
                 });
 
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis enum #input_ty_def #where_clause {
-                        #(#variants),*
+                        #(#variants,)*
+                        _Phantom(#[reflect(ignore, default)] #phantom_ty)
                     }
 
                     #from_impl
