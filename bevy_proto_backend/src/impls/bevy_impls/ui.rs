@@ -4,11 +4,12 @@ use bevy::prelude::{BackgroundColor, Button, Color, Label};
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy::ui::{
     AlignContent, AlignItems, AlignSelf, CalculatedClip, CalculatedSize, Direction, Display,
-    FlexDirection, FlexWrap, FocusPolicy, Interaction, JustifyContent, Overflow, PositionType,
-    RelativeCursorPosition, Size, Style, UiImage, UiRect, Val, ZIndex,
+    FlexDirection, FlexWrap, FocusPolicy, Interaction, JustifyContent, Node, Overflow,
+    PositionType, RelativeCursorPosition, Size, Style, UiImage, UiRect, Val, ZIndex,
 };
 
 use crate::impls::macros::{from_to_default, register_schematic};
+use crate::proto::ProtoAsset;
 use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
@@ -21,6 +22,7 @@ pub(super) fn register(app: &mut App) {
         FocusPolicy,
         Interaction,
         Label,
+        Node,
         RelativeCursorPosition,
         Style,
         UiImage,
@@ -47,11 +49,11 @@ impl_external_schematic! {
     // ---
     #[derive(Reflect, FromReflect)]
     pub struct ButtonInput;
-    impl From<ButtonInput> for Button {
-        fn from(_: ButtonInput) -> Self {
-            Self
-        }
-    }
+    from_to_default!(
+        Button,
+        ButtonInput,
+        |_: Input| Self
+    );
 }
 
 impl_external_schematic! {
@@ -145,6 +147,19 @@ impl_external_schematic! {
             Self
         }
     }
+}
+
+impl_external_schematic! {
+    #[schematic(from = NodeInput)]
+    struct Node {}
+    // ---
+    #[derive(Reflect, FromReflect)]
+    pub struct NodeInput;
+    from_to_default!(
+        Node,
+        NodeInput,
+        |_: Input| Self::default()
+    );
 }
 
 impl_external_schematic! {
@@ -485,13 +500,25 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
+    #[schematic(input(vis = pub))]
     pub struct UiImage {
-        #[schematic(asset)]
+        #[schematic(asset(lazy))]
         pub texture: Handle<Image>,
         #[reflect(default)]
         pub flip_x: bool,
         #[reflect(default)]
         pub flip_y: bool,
+    }
+
+    impl Default for UiImageInput {
+        fn default() -> Self {
+            let base = UiImage::default();
+            Self {
+                texture: ProtoAsset::HandleId(base.texture.id()),
+                flip_x: base.flip_x,
+                flip_y: base.flip_y,
+            }
+        }
     }
 }
 

@@ -141,9 +141,9 @@ impl_external_schematic! {
 
 impl_external_schematic! {
     pub struct EnvironmentMapLight {
-        #[schematic(asset)]
+        #[schematic(asset(lazy))]
         pub diffuse_map: Handle<Image>,
-        #[schematic(asset)]
+        #[schematic(asset(lazy))]
         pub specular_map: Handle<Image>,
     }
 }

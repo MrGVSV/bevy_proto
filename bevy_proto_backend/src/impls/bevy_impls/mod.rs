@@ -1,23 +1,23 @@
 #[cfg(feature = "bevy_animation")]
-mod animation;
-mod asset;
-mod core;
+pub mod animation;
+pub mod asset;
+pub mod core;
 #[cfg(feature = "bevy_core_pipeline")]
-mod core_pipeline;
+pub mod core_pipeline;
 #[cfg(feature = "bevy_gltf")]
-mod gltf;
+pub mod gltf;
 #[cfg(feature = "bevy_pbr")]
-mod pbr;
+pub mod pbr;
 #[cfg(feature = "bevy_render")]
-mod render;
+pub mod render;
 #[cfg(feature = "bevy_sprite")]
-mod sprite;
+pub mod sprite;
 #[cfg(feature = "bevy_text")]
-mod text;
-mod transform;
+pub mod text;
+pub mod transform;
 #[cfg(feature = "bevy_ui")]
-mod ui;
-mod window;
+pub mod ui;
+pub mod window;
 
 pub(super) fn register_impls(app: &mut bevy::app::App) {
     asset::register(app);

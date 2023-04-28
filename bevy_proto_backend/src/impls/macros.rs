@@ -1,4 +1,6 @@
 /// Registers the given types along with their respective [`ReflectSchematic`].
+#[macro_export]
+#[doc(hidden)]
 macro_rules! register_schematic {
     ($app: ident, $($ty: ty),* $(,)?) => {{
         $(
@@ -13,10 +15,32 @@ macro_rules! register_schematic {
 
 pub(super) use register_schematic;
 
+/// Implements `From` going from `$real` to `$mock`.
+///
+/// The `$body` should be a closure that takes in a value of type `Input`
+/// and maps to `Self`.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! from {
+    ($real: ty, $mock: ty, $body: expr) => {
+        const _: () = {
+            type Input = $mock;
+
+            impl From<Input> for $real {
+                fn from(value: Input) -> Self {
+                    $body(value)
+                }
+            }
+        };
+    };
+}
+
 /// Implements `From` going from `$real` to `$mock` and vice-versa.
 ///
 /// The `$body` should be a closure that takes in a value of type `Input`
 /// and maps to `Self`.
+#[macro_export]
+#[doc(hidden)]
 macro_rules! from_to {
     ($real: ty, $mock: ty, $body: expr) => {
         const _: () = {
@@ -48,9 +72,11 @@ pub(super) use from_to;
 ///
 /// The `$body` should be a closure that takes in a value of type `Input`
 /// and maps to `Self`.
+#[macro_export]
+#[doc(hidden)]
 macro_rules! from_to_default {
     ($real: ty, $mock: ty, $body: expr) => {
-        $crate::impls::macros::from_to!($real, $mock, $body);
+        $crate::from_to!($real, $mock, $body);
 
         const _: () = {
             impl Default for $mock {

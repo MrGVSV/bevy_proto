@@ -5,6 +5,7 @@ use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy::sprite::{Anchor, Mesh2dHandle, Sprite, TextureAtlasSprite};
 
 use crate::impls::macros::{from_to_default, register_schematic};
+use crate::proto::ProtoAsset;
 use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
@@ -16,7 +17,15 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
+    #[schematic(input(vis = pub))]
     struct Mesh2dHandle(#[schematic(asset)] pub Handle<Mesh>);
+    // ---
+    impl Default for Mesh2dHandleInput {
+        fn default() -> Self {
+            let base = <Mesh2dHandle as Default>::default();
+            Self(ProtoAsset::HandleId(base.0.id()))
+        }
+    }
 }
 
 impl_external_schematic! {
