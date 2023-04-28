@@ -121,7 +121,11 @@ impl<'a> ToTokens for Input<'a> {
         let input_ty = quote!(#input_ident #impl_ty_generics);
         // Ex: Foo<T: Bar>
         let input_ty_def = quote!(#input_ident #impl_generics);
-        let phantom_ty = self.generics.to_phantom();
+        let phantom_ty = if self.generics.params.is_empty() {
+            None
+        } else {
+            Some(self.generics.to_phantom())
+        };
 
         let make_from_impl = |body: TokenStream| {
             quote! {
@@ -157,11 +161,17 @@ impl<'a> ToTokens for Input<'a> {
                     )
                 });
 
+                let phantom_ty = phantom_ty.map(|phantom_ty| {
+                    quote! {
+                        #[reflect(ignore, default)]
+                        #phantom_ty
+                    }
+                });
+
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis struct #input_ty_def (
                         #(#filtered,)*
-                        #[reflect(ignore, default)]
                         #phantom_ty
                     ) #where_clause;
 
@@ -179,12 +189,18 @@ impl<'a> ToTokens for Input<'a> {
                     }
                 });
 
+                let phantom_ty = phantom_ty.map(|phantom_ty| {
+                    quote! {
+                        #[reflect(ignore, default)]
+                        __phantom_ty__: #phantom_ty
+                    }
+                });
+
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis struct #input_ty_def #where_clause {
                         #(#filtered,)*
-                        #[reflect(ignore, default)]
-                        __phantom_ty__: #phantom_ty
+                        #phantom_ty
                     }
 
                     #from_impl
@@ -202,11 +218,17 @@ impl<'a> ToTokens for Input<'a> {
                     }
                 });
 
+                let phantom_ty = phantom_ty.map(|phantom_ty| {
+                    quote! {
+                        _Phantom(#[reflect(ignore, default)] #phantom_ty)
+                    }
+                });
+
                 tokens.extend(quote! {
                     #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
                     #vis enum #input_ty_def #where_clause {
                         #(#variants,)*
-                        _Phantom(#[reflect(ignore, default)] #phantom_ty)
+                        #phantom_ty
                     }
 
                     #from_impl
