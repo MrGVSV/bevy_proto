@@ -132,7 +132,8 @@ impl DeriveSchematic {
 
                 Some(quote! {
                     match #INPUT_IDENT {
-                        #(#arms),*
+                        #(#arms,)*
+                        _ => unreachable!(),
                     }
                 })
             }
