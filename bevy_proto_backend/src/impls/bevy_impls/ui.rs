@@ -8,7 +8,7 @@ use bevy::ui::{
     PositionType, RelativeCursorPosition, Size, Style, UiImage, UiRect, Val, ZIndex,
 };
 
-use crate::impls::macros::{from_to_default, register_schematic};
+use crate::impls::macros::{from_to, from_to_default, register_schematic};
 use crate::proto::ProtoAsset;
 use bevy_proto_derive::impl_external_schematic;
 
@@ -27,6 +27,21 @@ pub(super) fn register(app: &mut App) {
         Style,
         UiImage,
     );
+
+    // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
+    app.register_type::<AlignContentInput>()
+        .register_type::<AlignItemsInput>()
+        .register_type::<AlignSelfInput>()
+        .register_type::<DirectionInput>()
+        .register_type::<DisplayInput>()
+        .register_type::<FlexDirectionInput>()
+        .register_type::<FlexWrapInput>()
+        .register_type::<JustifyContentInput>()
+        .register_type::<PositionTypeInput>()
+        .register_type::<SizeInput>()
+        .register_type::<SizeInput>()
+        .register_type::<UiRectInput>()
+        .register_type::<ValInput>();
 }
 
 impl_external_schematic! {
@@ -155,11 +170,16 @@ impl_external_schematic! {
     // ---
     #[derive(Reflect, FromReflect)]
     pub struct NodeInput;
-    from_to_default!(
+    from_to!(
         Node,
         NodeInput,
         |_: Input| Self::default()
     );
+    impl Default for NodeInput {
+        fn default() -> Self {
+            Self
+        }
+    }
 }
 
 impl_external_schematic! {

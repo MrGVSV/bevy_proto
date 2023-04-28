@@ -23,6 +23,12 @@ pub(super) fn register(app: &mut App) {
         NormalPrepass,
         Tonemapping
     );
+
+    // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
+    app.register_type::<BloomPrefilterSettingsInput>()
+        .register_type::<BloomCompositeModeInput>()
+        .register_type::<ClearColorConfigInput>()
+        .register_type::<Camera3dDepthLoadOpInput>();
 }
 
 impl_external_schematic! {

@@ -8,6 +8,10 @@ use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
     register_schematic!(app, Text, Text2dBounds);
+
+    // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
+    app.register_type::<BreakLineOnInput>()
+        .register_type::<TextAlignmentInput>();
 }
 
 impl_external_schematic! {

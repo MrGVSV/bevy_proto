@@ -1,4 +1,4 @@
-/// Registers the given types along with their respective [`ReflectSchematic`].
+/// Registers the given types along with their respective input types and [`ReflectSchematic`].
 #[macro_export]
 #[doc(hidden)]
 macro_rules! register_schematic {
@@ -7,6 +7,7 @@ macro_rules! register_schematic {
             // Sanity check: ensure the type is actually registered
             // before actually registering the `ReflectSchematic` type data
             $app.register_type::<$ty>()
+                .register_type::<<$ty as $crate::schematics::Schematic>::Input>()
                 .register_type_data::<$ty, $crate::schematics::ReflectSchematic>();
 
         )*
