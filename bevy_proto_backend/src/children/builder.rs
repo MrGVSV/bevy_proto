@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use bevy::asset::{AssetIo, AssetPath, Handle, LoadedAsset};
+use bevy::asset::{AssetIo, Handle, LoadedAsset};
 
 use crate::load::ProtoLoadContext;
 use crate::path::{ProtoPath, ProtoPathContext};
@@ -11,7 +11,6 @@ use crate::proto::Prototypical;
 /// [prototype's]: Prototypical
 pub struct ProtoChildBuilder<'ctx, 'load_ctx, T: Prototypical> {
     pub(crate) context: ProtoLoadContext<'ctx, 'load_ctx, T>,
-    pub(crate) child_paths: Vec<AssetPath<'static>>,
     child_count: usize,
 }
 
@@ -19,7 +18,6 @@ impl<'ctx, 'load_ctx, T: Prototypical> ProtoChildBuilder<'ctx, 'load_ctx, T> {
     pub(crate) fn new(context: ProtoLoadContext<'ctx, 'load_ctx, T>) -> Self {
         Self {
             context,
-            child_paths: Vec::new(),
             child_count: 0,
         }
     }
@@ -40,7 +38,9 @@ impl<'ctx, 'load_ctx, T: Prototypical> ProtoChildBuilder<'ctx, 'load_ctx, T> {
 
     /// Add the child with the given path to the parent.
     pub fn add_child_path(&mut self, child_path: ProtoPath) -> Result<Handle<T>, T::Error> {
-        self.child_paths.push(child_path.asset_path().to_owned());
+        self.context
+            .child_paths_mut()
+            .push(child_path.asset_path().to_owned());
 
         self.child_count += 1;
 

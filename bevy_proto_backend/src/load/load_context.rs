@@ -59,7 +59,7 @@ impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
         &mut self,
         f: F,
     ) -> Result<(), E> {
-        let ctx = Self {
+        let mut ctx = Self {
             registry: self.registry,
             load_context: self.load_context.take(),
             extensions: self.extensions,
@@ -68,16 +68,15 @@ impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
             _phantom: Default::default(),
         };
 
+        std::mem::swap(&mut ctx.child_paths, &mut self.child_paths);
         self.depth += 1;
 
         let mut builder = ProtoChildBuilder::new(ctx);
         let result = f(&mut builder);
         self.load_context = builder.context.load_context;
-        let children = builder.child_paths;
+        self.child_paths = builder.context.child_paths;
 
         self.depth -= 1;
-
-        self.child_paths.extend(children);
 
         result
     }
