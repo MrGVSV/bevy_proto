@@ -1,7 +1,16 @@
 //! This example demonstrates the hot-reloading capabilities of prototypes.
 //!
-//! The implementation details of this example aren't important
-//! (except for enabling [`AssetPlugin::watch_for_changes`]).
+//! It's pretty easy to enable hot-reloading in Bevy— just enable [`AssetPlugin::watch_for_changes`].
+//! This allows changes to any prototype to be automatically picked up.
+//!
+//! This example also uses the [`ProtoAssetEvent`] event to reload an existing entity if
+//! its prototype changes, which can allow for faster development.
+//!
+//! Please note that hot-reloading is far from perfect.
+//! Changing the IDs of a prototype or its hierarchical structure may cause the
+//! reload to fail upon prototype re-registration.
+//! However, it can still be a great tool to use for fast prototyping.
+//!
 //! Just run the example and try it out for yourself!
 
 use bevy::prelude::*;
@@ -17,12 +26,7 @@ fn main() {
         }))
         .add_plugin(ProtoPlugin::default())
         .add_startup_systems((setup, load))
-        .add_systems((
-            spawn.run_if(
-                prototype_ready("ReloadableSprite").and_then(resource_changed::<Input<KeyCode>>()),
-            ),
-            inspect,
-        ))
+        .add_systems((spawn.run_if(prototype_ready("ReloadableSprite")), inspect))
         .run();
 }
 
@@ -34,15 +38,23 @@ fn spawn(
     mut commands: ProtoCommands,
     keyboard_input: Res<Input<KeyCode>>,
     mut previous: Local<Option<Entity>>,
+    mut proto_asset_events: EventReader<ProtoAssetEvent>,
 ) {
     if previous.is_none() || keyboard_input.just_pressed(KeyCode::Space) {
         *previous = Some(commands.spawn("ReloadableSprite").id());
     }
 
-    if keyboard_input.just_pressed(KeyCode::Z) {
-        commands
-            .entity(previous.unwrap())
-            .insert("ReloadableSprite");
+    // Listen for changes:
+    for proto_asset_event in proto_asset_events.iter() {
+        match proto_asset_event {
+            // Only trigger a re-insert of the prototype when modified and if IDs match
+            ProtoAssetEvent::Modified { id, .. } if id == "ReloadableSprite" => {
+                commands
+                    .entity(previous.unwrap())
+                    .insert("ReloadableSprite");
+            }
+            _ => {}
+        }
     }
 }
 
@@ -69,7 +81,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn(
                 TextBundle::from_sections([
                     TextSection::new(
-                        "Press <Space> to spawn a sprite prototype\n",
+                        "Modify the prototype file to see changes\n",
                         TextStyle {
                             font: asset_server.load("fonts/JetBrainsMono-Regular.ttf"),
                             font_size: 32.0,
@@ -77,15 +89,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                         },
                     ),
                     TextSection::new(
-                        "Or press <Z> to reload the previous one\n",
-                        TextStyle {
-                            font: asset_server.load("fonts/JetBrainsMono-Regular.ttf"),
-                            font_size: 28.0,
-                            color: Color::WHITE,
-                        },
-                    ),
-                    TextSection::new(
-                        "(try changing the prototype file between presses)",
+                        "(press <Space> to spawn a new prototype)",
                         TextStyle {
                             font: asset_server.load("fonts/JetBrainsMono-Regular.ttf"),
                             font_size: 16.0,

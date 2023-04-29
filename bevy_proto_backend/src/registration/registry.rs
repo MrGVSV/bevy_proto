@@ -50,7 +50,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
         handle: H,
         prototypes: &'w Assets<T>,
         config: &'w mut T::Config,
-    ) -> bool {
+    ) -> Option<T::Id> {
         let handle_id = handle.into();
 
         if let Some(id) = self.ids.remove(&handle_id) {
@@ -67,9 +67,9 @@ impl<T: Prototypical> ProtoRegistry<T> {
                     self.register(dependent, prototypes, config).ok();
                 }
             }
-            true
+            Some(id)
         } else {
-            false
+            None
         }
     }
 
@@ -144,7 +144,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
         }
 
         // If already registered -> unregister so we can update all the cached data
-        if self.unregister(&handle, prototypes, config) {
+        if self.unregister(&handle, prototypes, config).is_some() {
             config.on_unregister_prototype(prototype, handle.clone());
         }
 

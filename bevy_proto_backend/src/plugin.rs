@@ -6,7 +6,7 @@ use parking_lot::Mutex;
 
 use crate::impls;
 use crate::load::ProtoLoader;
-use crate::proto::{ProtoAsset, ProtoStorage, Prototypical};
+use crate::proto::{ProtoAsset, ProtoAssetEvent, ProtoStorage, Prototypical};
 use crate::registration::{on_proto_asset_event, ProtoRegistry};
 use crate::tree::{AccessOp, ChildAccess, EntityAccess, ProtoEntity};
 
@@ -51,6 +51,7 @@ impl<T: Prototypical> Plugin for ProtoBackendPlugin<T> {
             .init_resource::<ProtoStorage<T>>()
             .init_asset_loader::<ProtoLoader<T>>()
             .add_asset::<T>()
+            .add_event::<ProtoAssetEvent<T>>()
             .add_system(on_proto_asset_event::<T>);
 
         impls::register_impls(app);
