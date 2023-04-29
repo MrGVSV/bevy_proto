@@ -23,7 +23,7 @@ impl<'w, T: Prototypical> ProtoManager<'w, T> {
             .register(handle, &self.prototypes, &mut self.config)
     }
 
-    pub fn unregister<H: Into<HandleId>>(&mut self, handle: H) -> bool {
+    pub fn unregister<H: Into<HandleId>>(&mut self, handle: H) -> Option<T::Id> {
         self.registry
             .unregister(handle, &self.prototypes, &mut self.config)
     }

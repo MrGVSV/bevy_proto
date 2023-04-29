@@ -113,6 +113,16 @@ pub mod prelude {
     /// [prototypes]: Prototype
     pub type ProtoEntityCommands<'w, 's, 'a> =
         bevy_proto_backend::proto::ProtoEntityCommands<'w, 's, 'a, Prototype>;
+
+    /// Asset lifecycle events for [prototype] assets.
+    ///
+    /// This is analogous to [`AssetEvent`], but accounts for prototype
+    /// caching and registration.
+    /// This event should be preferred over using the `AssetEvent` directly.
+    ///
+    /// [prototype]: Prototype
+    /// [`AssetEvent`]: bevy::asset::AssetEvent
+    pub type ProtoAssetEvent = bevy_proto_backend::proto::ProtoAssetEvent<Prototype>;
 }
 
 /// Provides access to the [backend crate] that `bevy_proto` is built on.
