@@ -24,7 +24,16 @@ impl ProtoAsset {
     }
 
     /// Returns a [`ProtoAsset::HandleId`] containing a default [`Handle`] for `T`.
+    ///
+    /// This can be used as `#[reflect(default = "ProtoAsset::default_handle_id::<T>")]`
+    /// to denote a default value for a [`ProtoAsset`] field.
     pub fn default_handle_id<T: Asset>() -> Self {
         Self::HandleId(Handle::<T>::default().id())
+    }
+}
+
+impl<T: Asset> From<Handle<T>> for ProtoAsset {
+    fn from(value: Handle<T>) -> Self {
+        Self::HandleId(value.id())
     }
 }

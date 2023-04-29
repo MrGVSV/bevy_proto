@@ -72,7 +72,7 @@ impl_external_schematic! {
     impl<T: Asset> FromSchematicInput<ProtoAsset> for Handle<T> {
         fn from_input(input: ProtoAsset, entity: &mut EntityMut, _: &EntityTree) -> Self {
             match input {
-                ProtoAsset::AssetPath(path) => entity.world().resource::<AssetServer>().get_handle(path),
+                ProtoAsset::AssetPath(path) => entity.world().resource::<AssetServer>().load(path),
                 ProtoAsset::HandleId(handle_id) => entity.world().resource::<AssetServer>().get_handle(handle_id),
             }
         }

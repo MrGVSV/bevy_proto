@@ -68,6 +68,42 @@ macro_rules! from_to {
 
 pub(super) use from_to;
 
+#[macro_export]
+#[doc(hidden)]
+macro_rules! from_to_input {
+    ($real: ty, $mock: ty, $body: expr) => {
+        const _: () = {
+            type Input = $real;
+
+            impl $crate::schematics::FromSchematicInput<Input> for $mock {
+                fn from_input(
+                    input: Input,
+                    entity: &mut bevy::ecs::world::EntityMut,
+                    tree: &$crate::tree::EntityTree,
+                ) -> Self {
+                    $body(input, entity, tree)
+                }
+            }
+        };
+
+        const _: () = {
+            type Input = $mock;
+
+            impl $crate::schematics::FromSchematicInput<Input> for $real {
+                fn from_input(
+                    input: Input,
+                    entity: &mut bevy::ecs::world::EntityMut,
+                    tree: &$crate::tree::EntityTree,
+                ) -> Self {
+                    $body(input, entity, tree)
+                }
+            }
+        };
+    };
+}
+
+pub(super) use from_to_input;
+
 /// Implements `From` going from `$real` to `$mock` and vice-versa,
 /// as well as `Default` for `$mock` using `$real`.
 ///

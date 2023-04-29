@@ -154,6 +154,11 @@ name = "templates"
 path = "examples/templates.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite", "yaml"]
 
+[[example]]
+name = "bevy_ui"
+path = "examples/bevy/ui.rs"
+required-features = ["ron", "auto_name", "custom_schematics"]
+
 [[test]]
 name = "compile_tests"
 path = "tests/compile_tests.rs"

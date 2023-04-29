@@ -1,0 +1,79 @@
+(
+  name: "Left",
+  schematics: {
+    "bevy_proto::custom::NodeBundle": (
+      style: (
+        size: (
+          width: Px(200.0),
+          height: Auto,
+        ),
+        border: (
+          left: Px(2.0),
+          right: Px(2.0),
+          top: Px(2.0),
+          bottom: Px(2.0),
+        ),
+      ),
+      background_color: (Rgba(
+        red: 0.65,
+        green: 0.65,
+        blue: 0.65,
+        alpha: 1.0
+      )),
+    )
+  },
+  children: [(
+    value: Inline((
+      name: "Left-Content",
+      schematics: {
+        "bevy_proto::custom::NodeBundle": (
+          style: (
+            size: (
+              width: Percent(100.0),
+              height: Auto,
+            ),
+          ),
+          background_color: (Rgba(
+            red: 0.15,
+            green: 0.15,
+            blue: 0.15,
+            alpha: 1.0
+          )),
+        )
+      },
+      children: [(
+        value: Inline((
+          name: "Left-Content-Text",
+          schematics: {
+            "bevy_proto::custom::TextBundle": (
+              style: (
+                margin: (
+                  left: Px(5.0),
+                  right: Px(5.0),
+                  top: Px(5.0),
+                  bottom: Px(5.0),
+                ),
+              ),
+              text: (
+                sections: [(
+                  value: "Text Example",
+                  style: (
+                    font: AssetPath("fonts/JetBrainsMono-Regular.ttf"),
+                    font_size: 30.0,
+                    color: Rgba(
+                      red: 1.0,
+                      green: 1.0,
+                      blue: 1.0,
+                      alpha: 1.0
+                    ),
+                  )
+                )]
+              ),
+            ),
+            "bevy_ui::widget::label::Label": ()
+          }
+        ))
+      )]
+    ))
+  )]
+)

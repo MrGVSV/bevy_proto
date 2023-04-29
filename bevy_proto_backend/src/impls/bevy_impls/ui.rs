@@ -37,6 +37,7 @@ pub(super) fn register(app: &mut App) {
         .register_type::<FlexDirectionInput>()
         .register_type::<FlexWrapInput>()
         .register_type::<JustifyContentInput>()
+        .register_type::<OverflowInput>()
         .register_type::<PositionTypeInput>()
         .register_type::<SizeInput>()
         .register_type::<SizeInput>()

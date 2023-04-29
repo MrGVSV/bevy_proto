@@ -1,0 +1,143 @@
+(
+  name: "Red",
+  schematics: {
+    "bevy_proto::custom::NodeBundle": (
+      style: (
+        size: (
+          width: Percent(100.0),
+          height: Percent(100.0),
+        ),
+        position_type: Absolute,
+        align_items: Center,
+        justify_content: Center,
+      ),
+    )
+  },
+  children: [(
+    value: Inline((
+      name: "Red-Content",
+      schematics: {
+        "bevy_proto::custom::NodeBundle": (
+          style: (
+            size: (
+              width: Px(100.0),
+              height: Px(100.0),
+            ),
+          ),
+          background_color: (Rgba(
+            red: 1.0,
+            green: 0.0,
+            blue: 0.0,
+            alpha: 1.0
+          )),
+        )
+      },
+      children: [
+        (
+          value: Inline((
+            name: "Red-1",
+            schematics: {
+              "bevy_proto::custom::NodeBundle": (
+                style: (
+                  size: (
+                    width: Percent(100.0),
+                    height: Percent(100.0),
+                  ),
+                  position_type: Absolute,
+                  position: (
+                    left: Px(20.0),
+                    bottom: Px(20.0),
+                  ),
+                ),
+                background_color: (Rgba(
+                  red: 1.0,
+                  green: 0.3,
+                  blue: 0.3,
+                  alpha: 1.0
+                )),
+              )
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Red-2",
+            schematics: {
+              "bevy_proto::custom::NodeBundle": (
+                style: (
+                  size: (
+                    width: Percent(100.0),
+                    height: Percent(100.0),
+                  ),
+                  position_type: Absolute,
+                  position: (
+                    left: Px(40.0),
+                    bottom: Px(40.0),
+                  ),
+                ),
+                background_color: (Rgba(
+                  red: 1.0,
+                  green: 0.5,
+                  blue: 0.5,
+                  alpha: 1.0
+                )),
+              )
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Red-3",
+            schematics: {
+              "bevy_proto::custom::NodeBundle": (
+                style: (
+                  size: (
+                    width: Percent(100.0),
+                    height: Percent(100.0),
+                  ),
+                  position_type: Absolute,
+                  position: (
+                    left: Px(60.0),
+                    bottom: Px(60.0),
+                  ),
+                ),
+                background_color: (Rgba(
+                  red: 1.0,
+                  green: 0.7,
+                  blue: 0.7,
+                  alpha: 1.0
+                )),
+              )
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Red-4",
+            schematics: {
+              "bevy_proto::custom::NodeBundle": (
+                style: (
+                  size: (
+                    width: Percent(100.0),
+                    height: Percent(100.0),
+                  ),
+                  position_type: Absolute,
+                  position: (
+                    left: Px(80.0),
+                    bottom: Px(80.0),
+                  ),
+                ),
+                background_color: (Rgba(
+                  red: 1.0,
+                  green: 0.9,
+                  blue: 0.9,
+                  alpha: 0.4
+                )),
+              )
+            }
+          ))
+        ),
+      ]
+    ))
+  )]
+)

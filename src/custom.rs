@@ -11,7 +11,7 @@ use bevy::ecs::world::EntityMut;
 use bevy::prelude::{Component, GlobalTransform, Transform};
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy_proto_backend::impls::bevy_impls;
-use bevy_proto_backend::{from, from_to_default};
+use bevy_proto_backend::{from, from_to_default, from_to_input};
 
 use bevy_proto_backend::schematics::{FromSchematicInput, ReflectSchematic, Schematic};
 use bevy_proto_backend::tree::EntityTree;
@@ -478,17 +478,37 @@ pub struct Text2dBundle {
 }
 
 #[cfg(feature = "bevy_text")]
-from_to_default!(bevy::text::Text2dBundle, Text2dBundle, |value: Input| {
-    Self {
-        text: value.text.into(),
-        text_anchor: value.text_anchor,
-        text_2d_bounds: value.text_2d_bounds.into(),
-        transform: value.transform,
-        global_transform: value.global_transform,
-        visibility: value.visibility,
-        computed_visibility: value.computed_visibility,
+from_to_input!(
+    bevy::text::Text2dBundle,
+    Text2dBundle,
+    |input: Input, entity, tree| {
+        Self {
+            text: FromSchematicInput::from_input(input.text, entity, tree),
+            text_anchor: input.text_anchor,
+            text_2d_bounds: input.text_2d_bounds.into(),
+            transform: input.transform,
+            global_transform: input.global_transform,
+            visibility: input.visibility,
+            computed_visibility: input.computed_visibility,
+        }
     }
-});
+);
+
+#[cfg(feature = "bevy_text")]
+impl Default for Text2dBundle {
+    fn default() -> Self {
+        let base = bevy::text::Text2dBundle::default();
+        Self {
+            text: Default::default(),
+            text_anchor: base.text_anchor,
+            text_2d_bounds: base.text_2d_bounds.into(),
+            transform: base.transform,
+            global_transform: base.global_transform,
+            visibility: base.visibility,
+            computed_visibility: base.computed_visibility,
+        }
+    }
+}
 
 /// A [`Schematic`] implementation of [`ButtonBundle`].
 ///
@@ -655,23 +675,45 @@ pub struct TextBundle {
 }
 
 #[cfg(feature = "bevy_ui")]
-from_to_default!(
+from_to_input!(
     bevy::ui::node_bundles::TextBundle,
     TextBundle,
-    |value: Input| Self {
-        node: value.node.into(),
-        style: value.style.into(),
-        text: value.text.into(),
-        calculated_size: value.calculated_size.into(),
-        focus_policy: value.focus_policy.into(),
-        transform: value.transform,
-        global_transform: value.global_transform,
-        visibility: value.visibility,
-        computed_visibility: value.computed_visibility,
-        z_index: value.z_index.into(),
-        background_color: value.background_color.into(),
+    |input: Input, entity, tree| {
+        Self {
+            node: input.node.into(),
+            style: input.style.into(),
+            text: FromSchematicInput::from_input(input.text, entity, tree),
+            calculated_size: input.calculated_size.into(),
+            focus_policy: input.focus_policy.into(),
+            transform: input.transform,
+            global_transform: input.global_transform,
+            visibility: input.visibility,
+            computed_visibility: input.computed_visibility,
+            z_index: input.z_index.into(),
+            background_color: input.background_color.into(),
+        }
     }
 );
+
+#[cfg(feature = "bevy_ui")]
+impl Default for TextBundle {
+    fn default() -> Self {
+        let base = bevy::ui::node_bundles::TextBundle::default();
+        Self {
+            node: base.node.into(),
+            style: base.style.into(),
+            text: Default::default(),
+            calculated_size: base.calculated_size.into(),
+            focus_policy: base.focus_policy.into(),
+            transform: base.transform,
+            global_transform: base.global_transform,
+            visibility: base.visibility,
+            computed_visibility: base.computed_visibility,
+            z_index: base.z_index.into(),
+            background_color: base.background_color.into(),
+        }
+    }
+}
 
 /// A [`Schematic`] implementation of [`MaterialMeshBundle`].
 ///

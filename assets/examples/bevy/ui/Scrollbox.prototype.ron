@@ -1,0 +1,282 @@
+(
+  name: "Scrollbox",
+  schematics: {
+    "bevy_proto::custom::NodeBundle": (
+      style: (
+        flex_direction: Column,
+        align_self: Stretch,
+        size: (
+          width: Auto,
+          height: Percent(50.0),
+        ),
+        overflow: Hidden
+      ),
+      background_color: (Rgba(
+        red: 0.10,
+        green: 0.10,
+        blue: 0.10,
+        alpha: 1.0
+      )),
+    )
+  },
+  children: [(
+    value: Inline((
+      name: "Scrollbox-Panel",
+      schematics: {
+        "bevy_proto::custom::NodeBundle": (
+          style: (
+            flex_direction: Column,
+            max_size: (
+              width: Undefined,
+              height: Undefined,
+            ),
+            align_items: Center,
+          ),
+        ),
+        "bevy_ui::ScrollingList": ()
+      },
+      children: [
+        (
+          value: Inline((
+            name: "Scroll-Text-0",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 0"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-1",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 1"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-2",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 2"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-3",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 3"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-4",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 4"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-5",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 5"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-6",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 6"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-7",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 7"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-8",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 8"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-9",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 9"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-10",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 10"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-11",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 11"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-12",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 12"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-13",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 13"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-14",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 14"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-15",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 15"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-16",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 16"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-17",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 17"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-18",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 18"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-19",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 19"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-20",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 20"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-21",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 21"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-22",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 22"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-23",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 23"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-24",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 24"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-25",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 25"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-26",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 26"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-27",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 27"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-28",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 28"),
+            }
+          ))
+        ),
+        (
+          value: Inline((
+            name: "Scroll-Text-29",
+            schematics: {
+              "bevy_ui::ScrollText": ("Item 29"),
+            }
+          ))
+        ),
+      ]
+    ))
+  )]
+)
