@@ -21,6 +21,9 @@ pub enum ProtoError {
     /// [prototype]: crate::proto::Prototypical
     #[error("the prototype with handle {0:?} either doesn't exist or isn't fully loaded")]
     DoesNotExist(HandleUntyped),
+    /// Indicates that a prototype with the given handle is not registered.
+    #[error("the prototype with handle {0:?} is not registered")]
+    NotRegistered(HandleUntyped),
     /// Indicates that a prototype tried to be registered with an existing ID.
     #[error("attempted to register prototype with ID {id:?} (`{path:?}`), but one already exists with this ID (`{existing:?}`)")]
     AlreadyExists {

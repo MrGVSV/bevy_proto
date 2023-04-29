@@ -12,7 +12,8 @@ use bevy_proto_backend::tree::EntityTree;
 use crate::proto::Prototype;
 
 pub type OnRegisterPrototype = Box<dyn FnMut(&Prototype, Handle<Prototype>) + Send + Sync>;
-pub type OnUnregisterPrototype = Box<dyn FnMut(&Prototype, Handle<Prototype>) + Send + Sync>;
+pub type OnReloadPrototype = Box<dyn FnMut(&Prototype, Handle<Prototype>) + Send + Sync>;
+pub type OnUnregisterPrototype = Box<dyn FnMut(&String, Handle<Prototype>) + Send + Sync>;
 pub type OnBeforeApplyPrototype =
     Box<dyn FnMut(&Prototype, &mut EntityMut, &EntityTree) + Send + Sync>;
 pub type OnAfterApplyPrototype =

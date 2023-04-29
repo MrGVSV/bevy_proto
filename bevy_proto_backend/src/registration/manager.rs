@@ -1,8 +1,9 @@
-use bevy::asset::{Assets, HandleId};
+use bevy::asset::Handle;
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Res, ResMut};
+use bevy::prelude::ResMut;
 
 use crate::proto::{ProtoError, Prototypical};
+use crate::registration::params::RegistryParams;
 use crate::registration::ProtoRegistry;
 
 /// Manager [`SystemParam`] for [prototypes].
@@ -13,18 +14,19 @@ use crate::registration::ProtoRegistry;
 #[derive(SystemParam)]
 pub(crate) struct ProtoManager<'w, T: Prototypical> {
     registry: ResMut<'w, ProtoRegistry<T>>,
-    prototypes: Res<'w, Assets<T>>,
-    config: ResMut<'w, <T as Prototypical>::Config>,
+    registry_params: RegistryParams<'w, T>,
 }
 
 impl<'w, T: Prototypical> ProtoManager<'w, T> {
-    pub fn register<H: Into<HandleId>>(&mut self, handle: H) -> Result<&T, ProtoError> {
-        self.registry
-            .register(handle, &self.prototypes, &mut self.config)
+    pub fn register(&mut self, handle: &Handle<T>) -> Result<&'w T, ProtoError> {
+        self.registry.register(handle, &mut self.registry_params)
     }
 
-    pub fn unregister<H: Into<HandleId>>(&mut self, handle: H) -> Option<T::Id> {
-        self.registry
-            .unregister(handle, &self.prototypes, &mut self.config)
+    pub fn reload(&mut self, handle: &Handle<T>) -> Result<&'w T, ProtoError> {
+        self.registry.reload(handle, &mut self.registry_params)
+    }
+
+    pub fn unregister(&mut self, handle: &Handle<T>) -> Option<T::Id> {
+        self.registry.unregister(handle, &mut self.registry_params)
     }
 }

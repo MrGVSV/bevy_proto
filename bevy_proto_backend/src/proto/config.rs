@@ -47,23 +47,30 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
 
     /// Callback method that's triggered when a [prototype] is registered.
     ///
-    /// Prototypes are registered when they are either loaded or modified.
-    /// In the latter case, they will be unregistered and immediately re-registered.
+    /// Prototypes are registered when they are first loaded.
     ///
     /// This method will be given the registered prototype and its corresponding _strong_ [`Handle`].
     ///
     /// [prototype]: Prototypical
     fn on_register_prototype(&mut self, prototype: &T, handle: Handle<T>) {}
 
-    /// Callback method that's triggered when a [prototype] is unregistered.
+    /// Callback method that's triggered when a [prototype] is reloaded.
     ///
-    /// Prototypes are unregistered when they are either removed or modified.
-    /// In the latter case, they will be unregistered and immediately re-registered.
+    /// Prototypes are reloaded whenever they or one of their dependencies are modified.
     ///
-    /// This method will be given the unregistered prototype and its corresponding _strong_ [`Handle`].
+    /// This method will be given the reloaded prototype and its corresponding _strong_ [`Handle`].
     ///
     /// [prototype]: Prototypical
-    fn on_unregister_prototype(&mut self, prototype: &T, handle: Handle<T>) {}
+    fn on_reload_prototype(&mut self, prototype: &T, handle: Handle<T>) {}
+
+    /// Callback method that's triggered when a [prototype] is unregistered.
+    ///
+    /// Prototypes are unregistered when they are unloaded.
+    ///
+    /// This method will be given the unregistered prototype's ID and its corresponding _strong_ [`Handle`].
+    ///
+    /// [prototype]: Prototypical
+    fn on_unregister_prototype(&mut self, id: &T::Id, handle: Handle<T>) {}
 
     /// Callback method that's triggered _before_ a [prototype] is applied to an entity.
     ///

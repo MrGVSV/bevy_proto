@@ -14,7 +14,8 @@ use bevy_proto_backend::tree::EntityTree;
 use crate::hooks::{
     OnAfterApplyPrototype, OnAfterApplySchematic, OnAfterRemovePrototype, OnAfterRemoveSchematic,
     OnBeforeApplyPrototype, OnBeforeApplySchematic, OnBeforeRemovePrototype,
-    OnBeforeRemoveSchematic, OnCycle, OnRegisterPrototype, OnUnregisterPrototype,
+    OnBeforeRemoveSchematic, OnCycle, OnRegisterPrototype, OnReloadPrototype,
+    OnUnregisterPrototype,
 };
 use crate::proto::Prototype;
 
@@ -23,6 +24,7 @@ use crate::proto::Prototype;
 pub struct ProtoConfig {
     extensions: Vec<&'static str>,
     on_register_prototype: Option<OnRegisterPrototype>,
+    on_reload_prototype: Option<OnReloadPrototype>,
     on_unregister_prototype: Option<OnUnregisterPrototype>,
     on_before_apply_prototype: Option<OnBeforeApplyPrototype>,
     on_after_apply_prototype: Option<OnAfterApplyPrototype>,
@@ -39,6 +41,12 @@ impl ProtoConfig {
     /// Register a callback for [`Config::on_register_prototype`].
     pub fn on_register_prototype(mut self, callback: OnRegisterPrototype) -> Self {
         self.on_register_prototype = Some(callback);
+        self
+    }
+
+    /// Register a callback for [`Config::on_reload_prototype`].
+    pub fn on_reload_prototype(mut self, callback: OnReloadPrototype) -> Self {
+        self.on_reload_prototype = Some(callback);
         self
     }
 
@@ -118,6 +126,7 @@ impl Default for ProtoConfig {
         Self {
             extensions,
             on_register_prototype: None,
+            on_reload_prototype: None,
             on_unregister_prototype: None,
             on_before_apply_prototype: None,
             on_after_apply_prototype: None,
@@ -143,9 +152,15 @@ impl Config<Prototype> for ProtoConfig {
         }
     }
 
-    fn on_unregister_prototype(&mut self, prototype: &Prototype, handle: Handle<Prototype>) {
+    fn on_reload_prototype(&mut self, prototype: &Prototype, handle: Handle<Prototype>) {
+        if let Some(on_reload_prototype) = &mut self.on_reload_prototype {
+            on_reload_prototype(prototype, handle);
+        }
+    }
+
+    fn on_unregister_prototype(&mut self, id: &String, handle: Handle<Prototype>) {
         if let Some(on_unregister_prototype) = &mut self.on_unregister_prototype {
-            on_unregister_prototype(prototype, handle);
+            on_unregister_prototype(id, handle);
         }
     }
 

@@ -2,12 +2,14 @@ use std::borrow::Borrow;
 use std::hash::Hash;
 use std::sync::Arc;
 
-use bevy::asset::{Assets, Handle, HandleId};
+use crate::registration::params::RegistryParams;
+use bevy::asset::{Handle, HandleId};
 use bevy::prelude::Resource;
+
 use bevy::utils::{HashMap, HashSet};
 use parking_lot::RwLock;
 
-use crate::proto::{Config, ProtoError, Prototypical};
+use crate::proto::{Config, ProtoAssetEvent, ProtoError, Prototypical};
 use crate::tree::{ProtoTree, ProtoTreeBuilder};
 
 /// Resource used to track load states, store mappings, and generate cached data.
@@ -29,47 +31,72 @@ pub(crate) struct ProtoRegistry<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoRegistry<T> {
-    pub fn register<'w, H: Into<HandleId>>(
+    /// Registers a prototype.
+    ///
+    /// This will return an error if the prototype is already registered.
+    pub(super) fn register<'w>(
         &mut self,
-        handle: H,
-        prototypes: &'w Assets<T>,
-        config: &'w mut T::Config,
+        handle: &Handle<T>,
+        params: &mut RegistryParams<'w, T>,
     ) -> Result<&'w T, ProtoError> {
-        let handle_id = handle.into();
-        match self.register_internal(handle_id, prototypes, config) {
-            Err(error) => {
-                self.failed.insert(handle_id);
-                Err(error)
-            }
-            ok => ok,
-        }
+        let prototype = self.register_internal(handle, params, false)?;
+
+        params
+            .config_mut()
+            .on_register_prototype(prototype, handle.clone());
+
+        params.send_event(ProtoAssetEvent::Created {
+            handle: handle.clone_weak(),
+            id: prototype.id().clone(),
+        });
+
+        Ok(prototype)
     }
 
-    pub fn unregister<'w, H: Into<HandleId>>(
+    /// Removes a prototype from the registry.
+    ///
+    /// Returns the ID of the prototype if it was registered.
+    pub(super) fn unregister<'w>(
         &mut self,
-        handle: H,
-        prototypes: &'w Assets<T>,
-        config: &'w mut T::Config,
+        handle: &Handle<T>,
+        params: &mut RegistryParams<'w, T>,
     ) -> Option<T::Id> {
-        let handle_id = handle.into();
+        let id = self.unregister_internal(handle, params)?;
 
-        if let Some(id) = self.ids.remove(&handle_id) {
-            self.handles.remove(&id);
-            self.failed.remove(&handle_id);
-            self.trees.remove(&handle_id);
-            if let Some(dependents) = self.dependents.remove(&handle_id) {
-                for dependent in dependents {
-                    // This will return an error when a dependent is missing.
-                    // We allow it here because there are times when we expect a dependent to be missing.
-                    // For example, if a parent prototype is dropped then its child might be dropped as well.
-                    // If this happens, the child will unregister after the non-existent parent.
-                    // In the future, we can add better diffing strategies to reduce unnecessary unregistrations.
-                    self.register(dependent, prototypes, config).ok();
-                }
-            }
-            Some(id)
+        let strong_handle = params.get_strong_handle(handle);
+        params
+            .config_mut()
+            .on_unregister_prototype(&id, strong_handle);
+
+        params.send_event(ProtoAssetEvent::Removed {
+            handle: handle.clone_weak(),
+            id: id.clone(),
+        });
+
+        Some(id)
+    }
+
+    /// Reload a registered prototype.
+    ///
+    /// This will return an error if the prototype is not registered.
+    pub(super) fn reload<'w>(
+        &mut self,
+        handle: &Handle<T>,
+        params: &mut RegistryParams<'w, T>,
+    ) -> Result<&'w T, ProtoError> {
+        if self.unregister_internal(handle, params).is_some() {
+            let prototype = self.register_internal(handle, params, true)?;
+            let strong_handle = params.get_strong_handle(handle);
+            params
+                .config_mut()
+                .on_reload_prototype(prototype, strong_handle);
+            params.send_event(ProtoAssetEvent::Modified {
+                handle: handle.clone_weak(),
+                id: prototype.id().clone(),
+            });
+            Ok(prototype)
         } else {
-            None
+            Err(ProtoError::NotRegistered(handle.clone_weak_untyped()))
         }
     }
 
@@ -117,49 +144,75 @@ impl<T: Prototypical> ProtoRegistry<T> {
 
     fn register_internal<'w>(
         &mut self,
-        handle: HandleId,
-        prototypes: &'w Assets<T>,
-        config: &'w mut <T as Prototypical>::Config,
+        handle: &Handle<T>,
+        params: &mut RegistryParams<'w, T>,
+        is_reload: bool,
     ) -> Result<&'w T, ProtoError> {
-        let handle = prototypes.get_handle(handle);
-        let prototype = prototypes
-            .get(&handle)
-            .ok_or_else(|| ProtoError::DoesNotExist(handle.clone_weak_untyped()))?;
+        let handle = params.get_strong_handle(handle);
+        let prototype = params.get_prototype(&handle)?;
 
-        // Check if ID already exists
-        if let Some(existing_handle) = self.handles.get(prototype.id()) {
-            if existing_handle.id() != handle.id() {
-                let exiting_prototype = prototypes
-                    .get(&handle)
-                    .ok_or_else(|| ProtoError::DoesNotExist(handle.clone_weak_untyped()))?;
-                panic!(
-                    "{}",
-                    ProtoError::AlreadyExists {
+        if !is_reload {
+            // Check if handle already exists
+            if self.ids.contains_key(&handle.id()) {
+                return Err(ProtoError::AlreadyExists {
+                    id: prototype.id().to_string(),
+                    path: prototype.path().into(),
+                    existing: prototype.path().into(),
+                });
+            }
+
+            // Check if ID already exists
+            if let Some(existing_handle) = self.handles.get(prototype.id()) {
+                self.failed.insert(handle.id());
+                if existing_handle.id() != handle.id() {
+                    // Not the same asset!
+                    let exiting_prototype = params.get_prototype(&handle)?;
+                    return Err(ProtoError::AlreadyExists {
                         id: prototype.id().to_string(),
                         path: prototype.path().into(),
                         existing: exiting_prototype.path().into(),
-                    }
-                );
+                    });
+                }
             }
         }
 
-        // If already registered -> unregister so we can update all the cached data
-        if self.unregister(&handle, prototypes, config).is_some() {
-            config.on_unregister_prototype(prototype, handle.clone());
-        }
-
-        config.on_register_prototype(prototype, handle.clone());
-
-        ProtoTreeBuilder::new(self, prototypes, config).build(&handle)?;
+        ProtoTreeBuilder::new(self, params.prototypes(), params.config()).build(&handle)?;
 
         self.ids.insert(handle.id(), prototype.id().clone());
         self.handles
             .insert(prototype.id().clone(), handle.clone_weak());
+        self.failed.remove(&handle.id());
 
         // Complete load
         self.load_queue().write().deque(prototype.id());
 
         Ok(prototype)
+    }
+
+    fn unregister_internal<'w>(
+        &mut self,
+        handle: &Handle<T>,
+        params: &mut RegistryParams<'w, T>,
+    ) -> Option<T::Id> {
+        let handle_id = handle.id();
+
+        let id = self.ids.remove(&handle_id)?;
+        self.handles.remove(&id);
+        self.failed.remove(&handle_id);
+        self.trees.remove(&handle_id);
+        if let Some(dependents) = self.dependents.remove(&handle_id) {
+            for dependent in dependents {
+                let dependent_handle = Handle::weak(dependent);
+                // This will return an error when a dependent is missing.
+                // We allow it here because there are times when we expect a dependent to be missing.
+                // For example, if a parent prototype is dropped then its child might be dropped as well.
+                // If this happens, the child will unregister after the non-existent parent.
+                // In the future, we can add better diffing strategies to reduce unnecessary unregistrations.
+                self.reload(&dependent_handle, params).ok();
+            }
+        }
+
+        Some(id)
     }
 }
 

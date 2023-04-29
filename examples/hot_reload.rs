@@ -8,7 +8,7 @@
 //!
 //! Please note that hot-reloading is far from perfect.
 //! Changing the IDs of a prototype or its hierarchical structure may cause the
-//! reload to fail upon prototype re-registration.
+//! reload to fail or work unexpectedly upon prototype re-registration.
 //! However, it can still be a great tool to use for fast prototyping.
 //!
 //! Just run the example and try it out for yourself!
@@ -55,6 +55,9 @@ fn spawn(
             }
             _ => {}
         }
+
+        // Note: We could also have checked using the helper method:
+        // if proto_asset_event.is_modified("ReloadableSprite") { ... }
     }
 }
 
