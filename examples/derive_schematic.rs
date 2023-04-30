@@ -19,7 +19,6 @@
 //!
 //! For more details, check out the documentation on the derive macro.
 
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
 use std::marker::PhantomData;
 
@@ -80,15 +79,14 @@ struct EntityGroup(Vec<Entity>);
 // This implementation allows us to get a group of entities from the world
 // that all share the name provided by `String`.
 impl FromSchematicInput<String> for EntityGroup {
-    fn from_input(input: String, entity: &mut EntityMut, _tree: &EntityTree) -> Self {
-        let group = entity.world_scope(|world| {
-            let mut query = world.query::<(Entity, &Name)>();
-            query
-                .iter(world)
-                .filter(|(_, name)| name.as_str() == input)
-                .map(|(entity, _)| entity)
-                .collect()
-        });
+    fn from_input(input: String, context: &mut SchematicContext) -> Self {
+        let world = context.world_mut();
+        let mut query = world.query::<(Entity, &Name)>();
+        let group = query
+            .iter(world)
+            .filter(|(_, name)| name.as_str() == input)
+            .map(|(entity, _)| entity)
+            .collect();
 
         Self(group)
     }
@@ -123,59 +121,81 @@ impl<T: ToString> From<T> for Bar {
 // `#[schematic( input( name = MyCustomInput ) )]`.
 //
 // -----------------------------------------------------------------------
-//
 // const _: () = {
-//     #[derive(bevy::prelude::Reflect, bevy::prelude::FromReflect)]
+//     #[derive(::bevy::prelude::Reflect, ::bevy::prelude::FromReflect)]
 //     pub struct FooInput<T: Reflect> {
-//         lazy_asset: bevy_proto_backend::proto::ProtoAsset,
-//         preloaded_asset: bevy_proto_backend::proto::ProtoAsset,
-//         entity: bevy_proto_backend::tree::EntityAccess,
-//         optional_entity: bevy_proto_backend::tree::EntityAccess,
+//         lazy_asset: ::bevy_proto_backend::proto::ProtoAsset,
+//         preloaded_asset: ::bevy_proto_backend::proto::ProtoAsset,
+//         entity: ::bevy_proto_backend::tree::EntityAccess,
+//         optional_entity: ::bevy_proto_backend::tree::EntityAccess,
 //         simple_from: [f32; 3],
 //         complex_from: String,
 //         #[reflect(ignore, default)]
 //         _phantom: PhantomData<T>,
+//         #[reflect(ignore, default)]
+//         __phantom_ty__: ::core::marker::PhantomData<fn() -> (T)>,
 //     }
-//     impl<T: Reflect> FromSchematicInput<FooInput<T>> for Foo<T> {
+//     impl<T: Reflect> ::bevy_proto_backend::schematics::FromSchematicInput<FooInput<T>> for Foo<T> {
 //         fn from_input(
 //             __input__: FooInput<T>,
-//             __entity__: &mut EntityMut,
-//             __tree__: &EntityTree,
+//             __context__: &mut ::bevy_proto_backend::schematics::SchematicContext,
 //         ) -> Self {
 //             Self {
-//                 lazy_asset: __entity__.world().resource::<AssetServer>().load(__input__.lazy_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
-//                 preloaded_asset: __entity__.world().resource::<AssetServer>().load(__input__.preloaded_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
-//                 entity: <Entity as FromSchematicInput<bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.entity, __entity__, __tree__),
-//                 optional_entity: <Option<Entity> as FromSchematicInput<bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.optional_entity, __entity__, __tree__),
-//                 simple_from: <Color as FromSchematicInput<[f32; 3]>>::from_input(__input__.simple_from, __entity__, __tree__),
-//                 complex_from: <EntityGroup as FromSchematicInput<String>>::from_input(__input__.complex_from, __entity__, __tree__),
+//                 lazy_asset: __context__.world().resource::<::bevy::asset::AssetServer>().load(__input__.lazy_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
+//                 preloaded_asset: __context__.world().resource::<::bevy::asset::AssetServer>().load(__input__.preloaded_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
+//                 entity: <Entity as ::bevy_proto_backend::schematics::FromSchematicInput<::bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.entity, __context__),
+//                 optional_entity: <Option<Entity> as ::bevy_proto_backend::schematics::FromSchematicInput<::bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.optional_entity, __context__),
+//                 simple_from: <Color as ::bevy_proto_backend::schematics::FromSchematicInput<[f32; 3]>>::from_input(__input__.simple_from, __context__),
+//                 complex_from: <EntityGroup as ::bevy_proto_backend::schematics::FromSchematicInput<String>>::from_input(__input__.complex_from, __context__),
 //                 _phantom: __input__._phantom,
 //             }
 //         }
 //     }
-//     impl<T: Reflect> bevy_proto_backend::schematics::Schematic for Foo<T> {
+//     impl<T: Reflect> ::bevy_proto_backend::schematics::Schematic for Foo<T> {
 //         type Input = FooInput<T>;
-//         fn apply(__input__: &Self::Input, __entity__: &mut EntityMut, __tree__: &EntityTree) {
-//             let __input__ = <Self::Input as bevy::reflect::FromReflect>::from_reflect(
-//                 &*Reflect::clone_value(__input__),
+//         fn apply(
+//             __input__: &Self::Input,
+//             __context__: &mut ::bevy_proto_backend::schematics::SchematicContext,
+//         ) {
+//             let __input__ = <Self::Input as ::bevy::reflect::FromReflect>::from_reflect(
+//                 &*::bevy::reflect::Reflect::clone_value(__input__),
 //             )
-//             .unwrap_or_else(|| {
-//                 panic!(
-//                     "{} should have a functioning `FromReflect` impl",
-//                     std::any::type_name::<Self::Input>()
-//                 )
-//             });
-//             let __input__ = <Self as FromSchematicInput<Self::Input>>::from_input(
-//                 __input__, __entity__, __tree__,
-//             );
-//             __entity__.insert(__input__);
+//                 .unwrap_or_else(|| {
+//                     panic!(
+//                         "{} should have a functioning `FromReflect` impl",
+//                         std::any::type_name::<Self::Input>()
+//                     )
+//                 });
+//             let __input__ = <Self as ::bevy_proto_backend::schematics::FromSchematicInput<
+//                 Self::Input,
+//             >>::from_input(__input__, __context__);
+//             __context__
+//                 .entity_mut()
+//                 .unwrap_or_else(|| {
+//                     panic!(
+//                         "schematic `{}` expected entity",
+//                         std::any::type_name::<Self>()
+//                     )
+//                 })
+//                 .insert(__input__);
 //         }
-//         fn remove(__input__: &Self::Input, __entity__: &mut EntityMut, __tree__: &EntityTree) {
-//             __entity__.remove::<Self>();
+//         fn remove(
+//             __input__: &Self::Input,
+//             __context__: &mut ::bevy_proto_backend::schematics::SchematicContext,
+//         ) {
+//             __context__
+//                 .entity_mut()
+//                 .unwrap_or_else(|| {
+//                     panic!(
+//                         "schematic `{}` expected entity",
+//                         std::any::type_name::<Self>()
+//                     )
+//                 })
+//                 .remove::<Self>();
 //         }
 //         fn preload_dependencies(
 //             __input__: &mut Self::Input,
-//             __dependencies__: &mut DependenciesBuilder,
+//             __dependencies__: &mut ::bevy_proto_backend::deps::DependenciesBuilder,
 //         ) {
 //             let _: Handle<Image> = __dependencies__.add_dependency(
 //                 __input__
@@ -187,3 +207,4 @@ impl<T: ToString> From<T> for Bar {
 //         }
 //     }
 // };
+// -----------------------------------------------------------------------

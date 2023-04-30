@@ -3,13 +3,11 @@
 //! [prototypes]: Prototype
 
 use bevy::asset::Handle;
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::Resource;
 
 use bevy_proto_backend::cycles::{Cycle, CycleResponse};
 use bevy_proto_backend::proto::Config;
-use bevy_proto_backend::schematics::DynamicSchematic;
-use bevy_proto_backend::tree::EntityTree;
+use bevy_proto_backend::schematics::{DynamicSchematic, SchematicContext};
 
 use crate::hooks::{
     OnAfterApplyPrototype, OnAfterApplySchematic, OnAfterRemovePrototype, OnAfterRemoveSchematic,
@@ -164,91 +162,71 @@ impl Config<Prototype> for ProtoConfig {
         }
     }
 
-    fn on_before_apply_prototype(
-        &mut self,
-        prototype: &Prototype,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
+    fn on_before_apply_prototype(&mut self, prototype: &Prototype, context: &mut SchematicContext) {
         if let Some(on_before_apply_prototype) = &mut self.on_before_apply_prototype {
-            on_before_apply_prototype(prototype, entity, tree);
+            on_before_apply_prototype(prototype, context);
         }
     }
 
-    fn on_after_apply_prototype(
-        &mut self,
-        prototype: &Prototype,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
+    fn on_after_apply_prototype(&mut self, prototype: &Prototype, context: &mut SchematicContext) {
         if let Some(on_after_apply_prototype) = &mut self.on_after_apply_prototype {
-            on_after_apply_prototype(prototype, entity, tree);
+            on_after_apply_prototype(prototype, context);
         }
     }
 
     fn on_before_remove_prototype(
         &mut self,
         prototype: &Prototype,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
         if let Some(on_before_remove_prototype) = &mut self.on_before_remove_prototype {
-            on_before_remove_prototype(prototype, entity, tree);
+            on_before_remove_prototype(prototype, context);
         }
     }
 
-    fn on_after_remove_prototype(
-        &mut self,
-        prototype: &Prototype,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
+    fn on_after_remove_prototype(&mut self, prototype: &Prototype, context: &mut SchematicContext) {
         if let Some(on_after_remove_prototype) = &mut self.on_after_remove_prototype {
-            on_after_remove_prototype(prototype, entity, tree);
+            on_after_remove_prototype(prototype, context);
         }
     }
 
     fn on_before_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
         if let Some(on_before_apply_schematic) = &mut self.on_before_apply_schematic {
-            on_before_apply_schematic(schematic, entity, tree);
+            on_before_apply_schematic(schematic, context);
         }
     }
 
     fn on_after_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
         if let Some(on_after_apply_schematic) = &mut self.on_after_apply_schematic {
-            on_after_apply_schematic(schematic, entity, tree);
+            on_after_apply_schematic(schematic, context);
         }
     }
 
     fn on_before_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
         if let Some(on_before_remove_schematic) = &mut self.on_before_remove_schematic {
-            on_before_remove_schematic(schematic, entity, tree);
+            on_before_remove_schematic(schematic, context);
         }
     }
 
     fn on_after_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
         if let Some(on_after_remove_schematic) = &mut self.on_after_remove_schematic {
-            on_after_remove_schematic(schematic, entity, tree);
+            on_after_remove_schematic(schematic, context);
         }
     }
 

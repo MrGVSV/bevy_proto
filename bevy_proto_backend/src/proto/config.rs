@@ -1,11 +1,9 @@
 use bevy::asset::Handle;
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::{FromWorld, Resource};
 
 use crate::cycles::{Cycle, CycleResponse};
 use crate::proto::Prototypical;
-use crate::schematics::DynamicSchematic;
-use crate::tree::EntityTree;
+use crate::schematics::{DynamicSchematic, SchematicContext};
 
 /// Configuration for a [prototype].
 ///
@@ -79,13 +77,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     ///
     /// [prototype]: Prototypical
     /// [`ProtoCommands`]: crate::proto::ProtoCommands
-    fn on_before_apply_prototype(
-        &mut self,
-        prototype: &T,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
-    }
+    fn on_before_apply_prototype(&mut self, prototype: &T, context: &mut SchematicContext) {}
 
     /// Callback method that's triggered _after_ a [prototype] is applied to an entity.
     ///
@@ -94,13 +86,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     ///
     /// [prototype]: Prototypical
     /// [`ProtoCommands`]: crate::proto::ProtoCommands
-    fn on_after_apply_prototype(
-        &mut self,
-        prototype: &T,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
-    }
+    fn on_after_apply_prototype(&mut self, prototype: &T, context: &mut SchematicContext) {}
 
     /// Callback method that's triggered _before_ a [prototype] is removed from an entity.
     ///
@@ -109,13 +95,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     ///
     /// [prototype]: Prototypical
     /// [`ProtoCommands`]: crate::proto::ProtoCommands
-    fn on_before_remove_prototype(
-        &mut self,
-        prototype: &T,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
-    }
+    fn on_before_remove_prototype(&mut self, prototype: &T, context: &mut SchematicContext) {}
 
     /// Callback method that's triggered _after_ a [prototype] is removed from an entity.
     ///
@@ -124,13 +104,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     ///
     /// [prototype]: Prototypical
     /// [`ProtoCommands`]: crate::proto::ProtoCommands
-    fn on_after_remove_prototype(
-        &mut self,
-        prototype: &T,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) {
-    }
+    fn on_after_remove_prototype(&mut self, prototype: &T, context: &mut SchematicContext) {}
 
     /// Callback method that's triggered _before_ a [schematic] is applied to an entity.
     ///
@@ -142,8 +116,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_before_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
     }
 
@@ -157,8 +130,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_after_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
     }
 
@@ -172,8 +144,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_before_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
     }
 
@@ -187,8 +158,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_after_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
+        context: &mut SchematicContext,
     ) {
     }
 

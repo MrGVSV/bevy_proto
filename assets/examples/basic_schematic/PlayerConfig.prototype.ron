@@ -1,0 +1,9 @@
+(
+  name: "PlayerConfig",
+  // Since this prototype only contains a resource,
+  // we can mark it as not needing an entity to be spawned.
+  entity: false,
+  schematics: {
+    "basic_schematic::MaxPlayers": (1),
+  }
+)

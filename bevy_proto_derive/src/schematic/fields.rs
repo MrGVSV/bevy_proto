@@ -3,7 +3,7 @@ use quote::{quote, ToTokens};
 use syn::{Member, Type};
 
 use crate::schematic::field_attributes::{EntityConfig, FieldAttributes, ReplacementType};
-use crate::schematic::idents::{ENTITY_IDENT, INPUT_IDENT, TREE_IDENT};
+use crate::schematic::idents::{CONTEXT_IDENT, INPUT_IDENT};
 
 /// Field data for a `Schematic`.
 ///
@@ -81,14 +81,14 @@ impl SchematicField {
             ReplacementType::Asset(config) => {
                 if let Some(path) = config.path() {
                     quote!(
-                        #ENTITY_IDENT
+                        #CONTEXT_IDENT
                             .world()
                             .resource::<#bevy_crate::asset::AssetServer>()
                             .load(#path)
                     )
                 } else {
                     quote!(
-                        #ENTITY_IDENT
+                        #CONTEXT_IDENT
                             .world()
                             .resource::<#bevy_crate::asset::AssetServer>()
                             .load(
@@ -105,8 +105,7 @@ impl SchematicField {
                 quote! {
                      <#ty as #proto_crate::schematics::FromSchematicInput<#entity_ty>>::from_input(
                         #INPUT_IDENT.#member,
-                        #ENTITY_IDENT,
-                        #TREE_IDENT,
+                        #CONTEXT_IDENT,
                     )
                 }
             }
@@ -115,16 +114,14 @@ impl SchematicField {
                 quote! {
                     <#ty as #proto_crate::schematics::FromSchematicInput<#entity_ty>>::from_input(
                         #proto_crate::tree::EntityAccess::from(#path),
-                        #ENTITY_IDENT,
-                        #TREE_IDENT,
+                        #CONTEXT_IDENT,
                     )
                 }
             }
             ReplacementType::From(replacement_ty) => quote! {
                 <#ty as #proto_crate::schematics::FromSchematicInput<#replacement_ty>>::from_input(
                     #INPUT_IDENT.#member,
-                    #ENTITY_IDENT,
-                    #TREE_IDENT,
+                    #CONTEXT_IDENT,
                 )
             },
         }

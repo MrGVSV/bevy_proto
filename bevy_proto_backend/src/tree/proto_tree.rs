@@ -25,6 +25,8 @@ pub(crate) struct ProtoTree<T: Prototypical> {
     id_str: String,
     /// The asset handle ID of this prototype.
     handle: HandleId,
+    /// Whether or not this tree requires an entity to be spawned
+    requires_entity: bool,
     /// The set of template prototypes, in their reverse-application order.
     ///
     /// The first entry in the set should be this prototype itself.
@@ -44,10 +46,11 @@ pub(crate) struct ProtoTree<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoTree<T> {
-    pub fn new(handle: Handle<T>, merge_key: Option<MergeKey<T>>, id: &T::Id) -> Self {
+    pub fn new(handle: Handle<T>, merge_key: Option<MergeKey<T>>, prototype: &T) -> Self {
         Self {
-            id: id.clone(),
-            id_str: id.to_string(),
+            id: prototype.id().clone(),
+            id_str: prototype.id().to_string(),
+            requires_entity: prototype.requires_entity(),
             handle: handle.id(),
             prototypes: IndexSet::from([handle.id()]),
             merge_key,
@@ -62,6 +65,10 @@ impl<T: Prototypical> ProtoTree<T> {
 
     pub fn handle(&self) -> HandleId {
         self.handle
+    }
+
+    pub fn requires_entity(&self) -> bool {
+        self.requires_entity
     }
 
     /// Append the given tree as a new child of this one.
@@ -86,7 +93,10 @@ impl<T: Prototypical> ProtoTree<T> {
             self.prototypes.insert(prototype);
         }
 
-        // 2. Merge children
+        // 2. Update entity requirement
+        self.requires_entity |= tree.requires_entity;
+
+        // 3. Merge children
         for child in tree.children {
             self.append_child(child);
         }
@@ -103,7 +113,7 @@ impl<T: Prototypical> ProtoTree<T> {
     }
 
     /// Converts this tree to a corresponding [`EntityTree`], using the given root [`Entity`].
-    pub fn to_entity_tree(&self, root: Entity, world: &mut World) -> EntityTree<'_> {
+    pub fn to_entity_tree(&self, root: Option<Entity>, world: &mut World) -> EntityTree<'_> {
         EntityTree::new(self, root, world)
     }
 }
@@ -114,6 +124,7 @@ impl<T: Prototypical> Clone for ProtoTree<T> {
             id: self.id.clone(),
             id_str: self.id_str.clone(),
             handle: self.handle,
+            requires_entity: self.requires_entity,
             prototypes: self.prototypes.clone(),
             merge_key: self.merge_key.clone(),
             children: self.children.clone(),
@@ -127,6 +138,7 @@ impl<T: Prototypical> Debug for ProtoTree<T> {
         f.debug_struct(&format!("ProtoTree<{}>", std::any::type_name::<T>()))
             .field("id", &self.id)
             .field("handle", &self.handle)
+            .field("requires_entity", &self.requires_entity)
             .field("prototypes", &self.prototypes)
             .field("merge_key", &self.merge_key)
             .field("children", &self.children)

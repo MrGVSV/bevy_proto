@@ -58,13 +58,19 @@ impl<'a, T: Prototypical> ProtoTreeBuilder<'a, T> {
             return Ok(Some(tree));
         }
 
-        let mut tree = ProtoTree::new(handle, merge_key, prototype.id());
+        let mut tree = ProtoTree::new(handle, merge_key, prototype);
 
         if let Some(children) = prototype.children() {
             self.recurse_children(children, &mut tree, checker)?;
         }
         if let Some(templates) = prototype.templates() {
             self.recurse_templates(templates, &mut tree, checker)?;
+        }
+
+        if !tree.requires_entity() && !tree.children().is_empty() {
+            return Err(ProtoError::RequiresEntity {
+                id: prototype.id().to_string(),
+            });
         }
 
         self.registry.insert_tree(handle_id, tree);

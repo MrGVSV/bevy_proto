@@ -1,7 +1,6 @@
 //! This example demonstrates how to manually implement `Schematic`
 //! for custom behavior.
 
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::*;
 
 use bevy_proto::prelude::*;
@@ -54,23 +53,23 @@ impl Schematic for Foo {
     // However, we decided to use `FooInput` so that can go here.
     type Input = FooInput;
 
-    fn apply(input: &Self::Input, entity: &mut EntityMut, _tree: &EntityTree) {
+    fn apply(input: &Self::Input, context: &mut SchematicContext) {
         // 1. Create a camera if one doesn't exist in the world
-        entity.world_scope(|world| {
-            let change_tick = world.change_tick();
-            let last_change_tick = world.last_change_tick();
-            let needs_camera =
-                world
-                    .query::<&Camera2d>()
-                    .is_empty(world, last_change_tick, change_tick);
-            if needs_camera {
-                world.spawn((Camera2dBundle::default(), FooCamera));
-            }
-        });
+        let world = context.world_mut();
+        let change_tick = world.change_tick();
+        let last_change_tick = world.last_change_tick();
+        let needs_camera =
+            world
+                .query::<&Camera2d>()
+                .is_empty(world, last_change_tick, change_tick);
+        if needs_camera {
+            world.spawn((Camera2dBundle::default(), FooCamera));
+        }
 
         // 2. Add a `SpriteBundle` to the entity with a user-defined image
-        entity.insert(SpriteBundle {
-            texture: entity.world().resource::<AssetServer>().load(&input.image),
+        let texture = world.resource::<AssetServer>().load(&input.image);
+        context.entity_mut().unwrap().insert(SpriteBundle {
+            texture,
             ..default()
         });
 
@@ -80,18 +79,16 @@ impl Schematic for Foo {
         }
     }
 
-    fn remove(_input: &Self::Input, entity: &mut EntityMut, _tree: &EntityTree) {
+    fn remove(_input: &Self::Input, context: &mut SchematicContext) {
         // It's important we handle any necessary cleanup when removing a schematic.
+        let world = context.world_mut();
+        let mut camera_query = world.query_filtered::<Entity, With<FooCamera>>();
+        let cameras = camera_query.iter(world).collect::<Vec<Entity>>();
+        for entity in cameras {
+            world.despawn(entity);
+        }
 
-        entity.world_scope(|world| {
-            let mut camera_query = world.query_filtered::<Entity, With<FooCamera>>();
-            let cameras = camera_query.iter(world).collect::<Vec<Entity>>();
-            for entity in cameras {
-                world.despawn(entity);
-            }
-        });
-
-        entity.remove::<SpriteBundle>();
+        context.entity_mut().unwrap().remove::<SpriteBundle>();
     }
 
     fn preload_dependencies(input: &mut Self::Input, dependencies: &mut DependenciesBuilder) {

@@ -2,13 +2,12 @@ use std::marker::PhantomData;
 
 use bevy::asset::Assets;
 use bevy::ecs::system::{Command, EntityCommands, SystemParam};
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::{Commands, Entity, Mut, World};
 
 use crate::proto::{Config, Prototypical};
 use crate::registration::ProtoRegistry;
-use crate::schematics::DynamicSchematic;
-use crate::tree::{EntityTree, EntityTreeNode};
+use crate::schematics::{DynamicSchematic, SchematicContext};
+use crate::tree::EntityTreeNode;
 
 /// A system parameter similar to [`Commands`], but catered towards [prototypes].
 ///
@@ -37,6 +36,29 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// This internally calls [`Commands::spawn_empty`].
     pub fn spawn_empty(&mut self) -> ProtoEntityCommands<'w, 's, '_, T> {
         ProtoEntityCommands::new(self.commands.spawn_empty().id(), self)
+    }
+
+    /// Apply the prototype with the given [ID] to the world.
+    ///
+    /// This should only be called on prototypes that do not [require an entity].
+    /// To spawn this prototype as a new entity, use [`spawn`] instead.
+    ///
+    /// [ID]: Prototypical::id
+    /// [require an entity]: Prototypical::require_entity
+    /// [`spawn`]: Self::spawn
+    pub fn apply<I: Into<T::Id>>(&mut self, id: I) {
+        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
+    }
+
+    /// Remove the prototype with the given [ID] from the world.
+    ///
+    /// This should only be called on prototypes that do not [require an entity].
+    /// To remove this prototype from an entity, use [`ProtoEntityCommands::remove`] instead.
+    ///
+    /// [ID]: Prototypical::id
+    /// [require an entity]: Prototypical::require_entity
+    pub fn remove<I: Into<T::Id>>(&mut self, id: I) {
+        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
     }
 
     /// Get the [`ProtoEntityCommands`] for the given entity.
@@ -118,7 +140,7 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn insert<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoInsertCommand::<T>::new(id, self.entity));
+            .add(ProtoInsertCommand::<T>::new(id, Some(self.entity)));
         self
     }
 
@@ -128,7 +150,7 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn remove<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoRemoveCommand::<T>::new(id, self.entity));
+            .add(ProtoRemoveCommand::<T>::new(id, Some(self.entity)));
         self
     }
 
@@ -152,7 +174,7 @@ pub struct ProtoInsertCommand<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoInsertCommand<T> {
-    pub fn new(id: T::Id, entity: Entity) -> Self {
+    pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
             data: ProtoCommandData { id, entity },
         }
@@ -164,8 +186,8 @@ impl<T: Prototypical> Command for ProtoInsertCommand<T> {
         self.data.assert_is_registered(world);
 
         self.data
-            .for_each_schematic(world, true, |schematic, entity, tree| {
-                schematic.apply(entity, tree).unwrap();
+            .for_each_schematic(world, true, |schematic, context| {
+                schematic.apply(context).unwrap();
             });
     }
 }
@@ -179,7 +201,7 @@ pub struct ProtoRemoveCommand<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoRemoveCommand<T> {
-    pub fn new(id: T::Id, entity: Entity) -> Self {
+    pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
             data: ProtoCommandData { id, entity },
         }
@@ -191,15 +213,15 @@ impl<T: Prototypical> Command for ProtoRemoveCommand<T> {
         self.data.assert_is_registered(world);
 
         self.data
-            .for_each_schematic(world, false, |schematic, entity, tree| {
-                schematic.remove(entity, tree).unwrap();
+            .for_each_schematic(world, false, |schematic, context| {
+                schematic.remove(context).unwrap();
             });
     }
 }
 
 struct ProtoCommandData<T: Prototypical> {
     id: T::Id,
-    entity: Entity,
+    entity: Option<Entity>,
 }
 
 impl<T: Prototypical> ProtoCommandData<T> {
@@ -225,7 +247,7 @@ impl<T: Prototypical> ProtoCommandData<T> {
 
     fn for_each_entity<F>(&self, world: &mut World, is_apply: bool, callback: F)
     where
-        F: Fn(&EntityTreeNode, &mut EntityMut, &EntityTree, &Assets<T>, &mut T::Config),
+        F: Fn(&EntityTreeNode, &mut SchematicContext, &Assets<T>, &mut T::Config),
     {
         world.resource_scope(|world: &mut World, registry: Mut<ProtoRegistry<T>>| {
             world.resource_scope(|world: &mut World, mut config: Mut<T::Config>| {
@@ -238,17 +260,19 @@ impl<T: Prototypical> ProtoCommandData<T> {
                     for node in entity_tree.iter() {
                         entity_tree.set_current(node);
 
-                        let mut entity = world.entity_mut(node.entity());
+                        let mut context = SchematicContext::new(world, &entity_tree);
 
                         #[cfg(feature = "auto_name")]
-                        if is_apply && !entity.contains::<bevy::core::Name>() {
-                            entity.insert(bevy::core::Name::new(format!(
-                                "{} (Prototype)",
-                                node.id()
-                            )));
+                        if let Some(mut entity) = context.entity_mut() {
+                            if is_apply && !entity.contains::<bevy::core::Name>() {
+                                entity.insert(bevy::core::Name::new(format!(
+                                    "{} (Prototype)",
+                                    node.id()
+                                )));
+                            }
                         }
 
-                        callback(node, &mut entity, &entity_tree, &prototypes, &mut config);
+                        callback(node, &mut context, &prototypes, &mut config);
                     }
                 })
             })
@@ -261,48 +285,51 @@ impl<T: Prototypical> ProtoCommandData<T> {
     /// [prototype]: Prototypical
     fn for_each_schematic<F>(&self, world: &mut World, is_apply: bool, callback: F)
     where
-        F: Fn(&DynamicSchematic, &mut EntityMut, &EntityTree),
+        F: Fn(&DynamicSchematic, &mut SchematicContext),
     {
-        self.for_each_entity(
-            world,
-            is_apply,
-            |node, entity, entity_tree, prototypes, config| {
-                let on_before_prototype = if is_apply {
-                    Config::<T>::on_before_apply_prototype
-                } else {
-                    Config::<T>::on_before_remove_prototype
-                };
-                let on_after_prototype = if is_apply {
-                    Config::<T>::on_after_apply_prototype
-                } else {
-                    Config::<T>::on_after_remove_prototype
-                };
-                let on_before_schematic = if is_apply {
-                    Config::<T>::on_before_apply_schematic
-                } else {
-                    Config::<T>::on_before_remove_schematic
-                };
-                let on_after_schematic = if is_apply {
-                    Config::<T>::on_after_apply_schematic
-                } else {
-                    Config::<T>::on_after_remove_schematic
-                };
+        self.for_each_entity(world, is_apply, |node, context, prototypes, config| {
+            let on_before_prototype = if is_apply {
+                Config::<T>::on_before_apply_prototype
+            } else {
+                Config::<T>::on_before_remove_prototype
+            };
+            let on_after_prototype = if is_apply {
+                Config::<T>::on_after_apply_prototype
+            } else {
+                Config::<T>::on_after_remove_prototype
+            };
+            let on_before_schematic = if is_apply {
+                Config::<T>::on_before_apply_schematic
+            } else {
+                Config::<T>::on_before_remove_schematic
+            };
+            let on_after_schematic = if is_apply {
+                Config::<T>::on_after_apply_schematic
+            } else {
+                Config::<T>::on_after_remove_schematic
+            };
 
-                for handle_id in node.prototypes() {
-                    let handle = prototypes.get_handle(*handle_id);
-                    let proto = prototypes.get(&handle).unwrap();
+            for handle_id in node.prototypes() {
+                let handle = prototypes.get_handle(*handle_id);
+                let proto = prototypes.get(&handle).unwrap();
 
-                    on_before_prototype(config, proto, entity, entity_tree);
-
-                    for (_, schematic) in proto.schematics().iter() {
-                        on_before_schematic(config, schematic, entity, entity_tree);
-                        callback(schematic, entity, entity_tree);
-                        on_after_schematic(config, schematic, entity, entity_tree);
-                    }
-
-                    on_after_prototype(config, proto, entity, entity_tree);
+                if proto.requires_entity() && !context.entity().is_some() {
+                    panic!(
+                        "could not apply command for prototype {:?}: requires entity",
+                        proto.id()
+                    );
                 }
-            },
-        );
+
+                on_before_prototype(config, proto, context);
+
+                for (_, schematic) in proto.schematics().iter() {
+                    on_before_schematic(config, schematic, context);
+                    callback(schematic, context);
+                    on_after_schematic(config, schematic, context);
+                }
+
+                on_after_prototype(config, proto, context);
+            }
+        });
     }
 }

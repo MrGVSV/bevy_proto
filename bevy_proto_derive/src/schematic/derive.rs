@@ -6,7 +6,7 @@ use syn::{DeriveInput, Generics, Visibility};
 use crate::schematic::container_attributes::{ContainerAttributes, SchematicKind};
 use crate::schematic::data::SchematicData;
 use crate::schematic::field_attributes::ReplacementType;
-use crate::schematic::idents::{DEPENDENCIES_IDENT, ENTITY_IDENT, INPUT_IDENT, TREE_IDENT};
+use crate::schematic::idents::{CONTEXT_IDENT, DEPENDENCIES_IDENT, INPUT_IDENT};
 use crate::schematic::input::{Input, InputType};
 use crate::schematic::self_type::SelfType;
 use crate::schematic::structs::SchematicStruct;
@@ -41,10 +41,6 @@ impl DeriveSchematic {
         &self.proto_crate
     }
 
-    pub fn bevy_crate(&self) -> &TokenStream {
-        &self.bevy_crate
-    }
-
     pub fn self_ty(&self) -> &SelfType {
         &self.self_ty
     }
@@ -65,9 +61,14 @@ impl DeriveSchematic {
         let construct_input = self.generate_from_reflect_input();
 
         let insert = if matches!(self.attrs.kind(), SchematicKind::Resource) {
-            quote!(#ENTITY_IDENT.world_scope(|world| world.insert_resource(#INPUT_IDENT));)
+            quote!(#CONTEXT_IDENT.world_mut().insert_resource(#INPUT_IDENT);)
         } else {
-            quote!(#ENTITY_IDENT.insert(#INPUT_IDENT);)
+            quote! {
+                #CONTEXT_IDENT
+                    .entity_mut()
+                    .unwrap_or_else(|| panic!("schematic `{}` expected entity", std::any::type_name::<Self>()))
+                    .insert(#INPUT_IDENT);
+            }
         };
 
         quote! {
@@ -85,9 +86,14 @@ impl DeriveSchematic {
         let self_ty = self.self_ty();
 
         if matches!(self.attrs.kind(), SchematicKind::Resource) {
-            quote!(#ENTITY_IDENT.world_scope(|world| world.remove_resource::<#self_ty>());)
+            quote!(#CONTEXT_IDENT.world_mut().remove_resource::<#self_ty>();)
         } else {
-            quote!(#ENTITY_IDENT.remove::<#self_ty>();)
+            quote!(
+                #CONTEXT_IDENT
+                    .entity_mut()
+                    .unwrap_or_else(|| panic!("schematic `{}` expected entity", std::any::type_name::<Self>()))
+                    .remove::<#self_ty>();
+            )
         }
     }
 
@@ -208,7 +214,6 @@ impl ToTokens for DeriveSchematic {
         let (impl_generics, ty_generics, where_clause) = self.generics().split_for_impl();
 
         let proto_crate = self.proto_crate();
-        let bevy_crate = self.bevy_crate();
 
         let attrs = self.attrs();
 
@@ -243,11 +248,11 @@ impl ToTokens for DeriveSchematic {
             impl #impl_generics #proto_crate::schematics::Schematic for #ident #ty_generics #where_clause {
                 type Input = #input_ty;
 
-                fn apply(#INPUT_IDENT: &Self::Input, #ENTITY_IDENT: &mut #bevy_crate::ecs::world::EntityMut, #TREE_IDENT: &#proto_crate::tree::EntityTree) {
+                fn apply(#INPUT_IDENT: &Self::Input, #CONTEXT_IDENT: &mut #proto_crate::schematics::SchematicContext) {
                     #apply_def
                 }
 
-                fn remove(#INPUT_IDENT: &Self::Input, #ENTITY_IDENT: &mut #bevy_crate::ecs::world::EntityMut, #TREE_IDENT: &#proto_crate::tree::EntityTree) {
+                fn remove(#INPUT_IDENT: &Self::Input, #CONTEXT_IDENT: &mut #proto_crate::schematics::SchematicContext) {
                     #remove_def
                 }
 

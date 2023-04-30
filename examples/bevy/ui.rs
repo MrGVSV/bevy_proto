@@ -9,7 +9,6 @@
 //!
 //! [`ui`]: https://github.com/bevyengine/bevy/blob/v0.10.1/examples/ui/ui.rs
 
-use bevy::ecs::world::EntityMut;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_proto::prelude::*;
@@ -71,22 +70,26 @@ fn mouse_scroll(
 impl Schematic for ScrollText {
     type Input = ScrollText;
 
-    fn apply(input: &Self::Input, entity: &mut EntityMut, _tree: &EntityTree) {
-        entity.insert(TextBundle::from_section(
-            input.0.clone(),
-            TextStyle {
-                font: entity
-                    .world()
-                    .resource::<AssetServer>()
-                    .load("fonts/JetBrainsMono-Regular.ttf"),
-                font_size: 20.,
-                color: Color::WHITE,
-            },
-        ));
+    fn apply(input: &Self::Input, context: &mut SchematicContext) {
+        let font = context
+            .world()
+            .resource::<AssetServer>()
+            .load("fonts/JetBrainsMono-Regular.ttf");
+        context
+            .entity_mut()
+            .unwrap()
+            .insert(TextBundle::from_section(
+                input.0.clone(),
+                TextStyle {
+                    font,
+                    font_size: 20.,
+                    color: Color::WHITE,
+                },
+            ));
     }
 
-    fn remove(_input: &Self::Input, entity: &mut EntityMut, _tree: &EntityTree) {
-        entity.remove::<TextBundle>();
+    fn remove(_input: &Self::Input, context: &mut SchematicContext) {
+        context.entity_mut().unwrap().remove::<TextBundle>();
     }
 }
 

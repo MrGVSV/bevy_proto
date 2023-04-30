@@ -18,6 +18,7 @@ use crate::proto::{ProtoChild, PrototypeDeserializer, PrototypeError};
 pub struct Prototype {
     pub(crate) id: String,
     pub(crate) path: ProtoPath,
+    pub(crate) requires_entity: bool,
     pub(crate) schematics: Schematics,
     pub(crate) templates: Option<Templates>,
     pub(crate) dependencies: Dependencies,
@@ -36,6 +37,10 @@ impl Prototypical for Prototype {
 
     fn path(&self) -> &ProtoPath {
         &self.path
+    }
+
+    fn requires_entity(&self) -> bool {
+        self.requires_entity
     }
 
     fn schematics(&self) -> &Schematics {
