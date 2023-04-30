@@ -107,18 +107,18 @@ This crate is mostly feature-complete.
 There are a few more things I think would be really nice to add. Below is a list of my current goals and what's been
 accomplished thus far:
 
-| Goal                                             | Status             |
-|--------------------------------------------------|--------------------|
-| Reflection support                               | :white_check_mark: |
-| Nested prototypes                                | :white_check_mark: |
-| Package-specifier                                | :construction:     |
-| Configurable schematics filtering and processing | :construction:     |
-| Prototype arguments                              | :construction:     |
-| Entity-less prototypes                           | :construction:     |
-| Value access                                     | :construction:     |
-| Custom file format support                       | :construction:     |
-| Improved documentation                           | :construction:     |
-| Benchmarks                                       | :construction:     |
+| Goal                                             | Status |
+|--------------------------------------------------|--------|
+| Reflection support                               | ✅      |
+| Nested prototypes                                | ✅      |
+| Package-specifier                                | 🚧     |
+| Configurable schematics filtering and processing | 🚧     |
+| Prototype arguments                              | 🚧     |
+| Entity-less prototypes                           | ✅      |
+| Value access                                     | 🚧     |
+| Custom file format support                       | 🚧     |
+| Improved documentation                           | 🚧     |
+| Benchmarks                                       | 🚧     |
 
 ## 🕰 Previous Versions
 
