@@ -7,14 +7,14 @@
 
 use bevy::app::App;
 use bevy::asset::Handle;
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::{Component, GlobalTransform, Transform};
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy_proto_backend::impls::bevy_impls;
 use bevy_proto_backend::{from, from_to_default, from_to_input};
 
-use bevy_proto_backend::schematics::{FromSchematicInput, ReflectSchematic, Schematic};
-use bevy_proto_backend::tree::EntityTree;
+use bevy_proto_backend::schematics::{
+    FromSchematicInput, ReflectSchematic, Schematic, SchematicContext,
+};
 
 pub(crate) fn register_custom_schematics(app: &mut App) {
     app.register_type::<TransformBundle>();
@@ -481,9 +481,9 @@ pub struct Text2dBundle {
 from_to_input!(
     bevy::text::Text2dBundle,
     Text2dBundle,
-    |input: Input, entity, tree| {
+    |input: Input, context| {
         Self {
-            text: FromSchematicInput::from_input(input.text, entity, tree),
+            text: FromSchematicInput::from_input(input.text, context),
             text_anchor: input.text_anchor,
             text_2d_bounds: input.text_2d_bounds.into(),
             transform: input.transform,
@@ -546,7 +546,7 @@ pub struct ButtonBundle {
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
-    fn from_input(input: ButtonBundle, entity: &mut EntityMut, tree: &EntityTree) -> Self {
+    fn from_input(input: ButtonBundle, context: &mut SchematicContext) -> Self {
         Self {
             node: input.node.into(),
             button: input.button.into(),
@@ -554,7 +554,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
             interaction: input.interaction.into(),
             focus_policy: input.focus_policy.into(),
             background_color: input.background_color.into(),
-            image: bevy::ui::UiImage::from_input(input.image, entity, tree),
+            image: bevy::ui::UiImage::from_input(input.image, context),
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
@@ -598,13 +598,13 @@ pub struct ImageBundle {
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
-    fn from_input(input: ImageBundle, entity: &mut EntityMut, tree: &EntityTree) -> Self {
+    fn from_input(input: ImageBundle, context: &mut SchematicContext) -> Self {
         Self {
             node: input.node.into(),
             style: input.style.into(),
             calculated_size: input.calculated_size.into(),
             background_color: input.background_color.into(),
-            image: bevy::ui::UiImage::from_input(input.image, entity, tree),
+            image: bevy::ui::UiImage::from_input(input.image, context),
             focus_policy: input.focus_policy.into(),
             transform: input.transform,
             global_transform: input.global_transform,
@@ -678,11 +678,11 @@ pub struct TextBundle {
 from_to_input!(
     bevy::ui::node_bundles::TextBundle,
     TextBundle,
-    |input: Input, entity, tree| {
+    |input: Input, context| {
         Self {
             node: input.node.into(),
             style: input.style.into(),
-            text: FromSchematicInput::from_input(input.text, entity, tree),
+            text: FromSchematicInput::from_input(input.text, context),
             calculated_size: input.calculated_size.into(),
             focus_policy: input.focus_policy.into(),
             transform: input.transform,
@@ -784,13 +784,9 @@ pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
 impl<M: bevy::sprite::Material2d> FromSchematicInput<MaterialMesh2dBundle<M>>
     for bevy::sprite::MaterialMesh2dBundle<M>
 {
-    fn from_input(
-        input: MaterialMesh2dBundle<M>,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) -> Self {
+    fn from_input(input: MaterialMesh2dBundle<M>, context: &mut SchematicContext) -> Self {
         Self {
-            mesh: bevy::sprite::Mesh2dHandle::from_input(input.mesh, entity, tree),
+            mesh: bevy::sprite::Mesh2dHandle::from_input(input.mesh, context),
             material: input.material,
             transform: input.transform,
             global_transform: input.global_transform,

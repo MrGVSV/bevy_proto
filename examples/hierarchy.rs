@@ -34,15 +34,15 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(ProtoPlugin::new(
-            ProtoConfig::default().on_before_apply_prototype(Box::new(|prototype, _, tree| {
+            ProtoConfig::default().on_before_apply_prototype(Box::new(|prototype, context| {
                 // To see the end result of our hierarchy, let's inspect the generated
                 // `EntityTree` for the `Parent` prototype.
                 if prototype.id() == "Parent" {
-                    println!("{:#?}", tree);
+                    println!("{:#?}", context.tree());
 
                     // We can also directly access the generated entities
                     // (check out the docs for `EntityAccess` for details):
-                    let key_entity = tree.find_entity(&EntityAccess::from("/OtherChild/@0"));
+                    let key_entity = context.find_entity(&EntityAccess::from("/OtherChild/@0"));
                     println!("🔑 Key Entity: {:?}", key_entity.unwrap());
                 }
             })),

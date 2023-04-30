@@ -4,7 +4,7 @@ use syn::Member;
 
 use crate::schematic::field_attributes::{EntityConfig, ReplacementType};
 use crate::schematic::fields::SchematicField;
-use crate::schematic::idents::{DEPENDENCIES_IDENT, ENTITY_IDENT, TREE_IDENT};
+use crate::schematic::idents::{CONTEXT_IDENT, DEPENDENCIES_IDENT};
 use crate::schematic::input::InputType;
 use crate::schematic::structs::SchematicStruct;
 
@@ -145,14 +145,14 @@ impl SchematicVariant {
             ReplacementType::Asset(config) => {
                 if let Some(path) = config.path() {
                     quote!(
-                        #ENTITY_IDENT
+                        #CONTEXT_IDENT
                             .world()
                             .resource::<#bevy_crate::asset::AssetServer>()
                             .load(#path)
                     )
                 } else {
                     quote!(
-                        #ENTITY_IDENT
+                        #CONTEXT_IDENT
                             .world()
                             .resource::<#bevy_crate::asset::AssetServer>()
                             .load(
@@ -164,20 +164,19 @@ impl SchematicVariant {
                 }
             }
             ReplacementType::Entity(EntityConfig::Undefined) => quote! {
-                #TREE_IDENT
+                #CONTEXT_IDENT
                     .find_entity(&#member)
                     .unwrap_or_else(|| panic!("entity should exist at path {:?}", &#member))
             },
             ReplacementType::Entity(EntityConfig::Path(path)) => quote! {
-                #TREE_IDENT
+                #CONTEXT_IDENT
                     .find_entity(&#proto_crate::tree::EntityAccess::from(#path))
                     .unwrap_or_else(|| panic!("entity should exist at path {:?}", #path))
             },
             ReplacementType::From(replacement_ty) => quote! {
                 <#ty as #proto_crate::schematics::FromSchematicInput<#replacement_ty>>::from_input(
                     #member,
-                    #ENTITY_IDENT,
-                    #TREE_IDENT
+                    #CONTEXT_IDENT,
                 )
             },
         }

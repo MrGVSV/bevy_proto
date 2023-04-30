@@ -1,13 +1,11 @@
 use std::fmt::{Debug, Formatter};
 
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::{FromReflect, Reflect};
 use bevy::reflect::{FromType, GetTypeRegistration, TypeInfo, TypeRegistration, Typed};
 
 use crate::deps::DependenciesBuilder;
 use crate::schematics::schematic::Schematic;
-use crate::schematics::SchematicError;
-use crate::tree::EntityTree;
+use crate::schematics::{SchematicContext, SchematicError};
 
 /// A dynamic representation of a [`Schematic`].
 ///
@@ -32,13 +30,13 @@ impl DynamicSchematic {
     }
 
     /// Dynamically call the corresponding [`Schematic::apply`] method.
-    pub fn apply(&self, entity: &mut EntityMut, tree: &EntityTree) -> Result<(), SchematicError> {
-        (self.reflect_schematic.apply)(&*self.input, entity, tree)
+    pub fn apply(&self, context: &mut SchematicContext) -> Result<(), SchematicError> {
+        (self.reflect_schematic.apply)(&*self.input, context)
     }
 
     /// Dynamically call the corresponding [`Schematic::remove`] method.
-    pub fn remove(&self, entity: &mut EntityMut, tree: &EntityTree) -> Result<(), SchematicError> {
-        (self.reflect_schematic.remove)(&*self.input, entity, tree)
+    pub fn remove(&self, context: &mut SchematicContext) -> Result<(), SchematicError> {
+        (self.reflect_schematic.remove)(&*self.input, context)
     }
 
     /// Dynamically call the corresponding [`Schematic::preload_dependencies`] method.
@@ -89,16 +87,8 @@ pub struct ReflectSchematic {
     input_registration: fn() -> TypeRegistration,
     create_dynamic:
         fn(Box<dyn Reflect>, ReflectSchematic) -> Result<DynamicSchematic, SchematicError>,
-    apply: fn(
-        input: &dyn Reflect,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) -> Result<(), SchematicError>,
-    remove: fn(
-        input: &dyn Reflect,
-        entity: &mut EntityMut,
-        tree: &EntityTree,
-    ) -> Result<(), SchematicError>,
+    apply: fn(input: &dyn Reflect, context: &mut SchematicContext) -> Result<(), SchematicError>,
+    remove: fn(input: &dyn Reflect, context: &mut SchematicContext) -> Result<(), SchematicError>,
     preload_dependencies: fn(
         input: &mut dyn Reflect,
         dependencies: &mut DependenciesBuilder,
@@ -145,24 +135,24 @@ impl<T: Reflect + Typed + Schematic> FromType<T> for ReflectSchematic {
                     reflect_schematic: data,
                 })
             },
-            apply: |reflect_input, entity, tree| {
+            apply: |reflect_input, context| {
                 let input = reflect_input.downcast_ref::<T::Input>().ok_or_else(|| {
                     SchematicError::TypeMismatch {
                         expected: std::any::type_name::<T::Input>(),
                         found: reflect_input.type_name().to_string(),
                     }
                 })?;
-                <T as Schematic>::apply(input, entity, tree);
+                <T as Schematic>::apply(input, context);
                 Ok(())
             },
-            remove: |reflect_input, entity, tree| {
+            remove: |reflect_input, context| {
                 let input = reflect_input.downcast_ref::<T::Input>().ok_or_else(|| {
                     SchematicError::TypeMismatch {
                         expected: std::any::type_name::<T::Input>(),
                         found: reflect_input.type_name().to_string(),
                     }
                 })?;
-                <T as Schematic>::remove(input, entity, tree);
+                <T as Schematic>::remove(input, context);
                 Ok(())
             },
             preload_dependencies: |reflect_input, dependencies| {

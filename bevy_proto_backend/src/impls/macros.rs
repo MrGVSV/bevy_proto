@@ -78,10 +78,9 @@ macro_rules! from_to_input {
             impl $crate::schematics::FromSchematicInput<Input> for $mock {
                 fn from_input(
                     input: Input,
-                    entity: &mut bevy::ecs::world::EntityMut,
-                    tree: &$crate::tree::EntityTree,
+                    context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
-                    $body(input, entity, tree)
+                    $body(input, context)
                 }
             }
         };
@@ -92,10 +91,9 @@ macro_rules! from_to_input {
             impl $crate::schematics::FromSchematicInput<Input> for $real {
                 fn from_input(
                     input: Input,
-                    entity: &mut bevy::ecs::world::EntityMut,
-                    tree: &$crate::tree::EntityTree,
+                    context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
-                    $body(input, entity, tree)
+                    $body(input, context)
                 }
             }
         };

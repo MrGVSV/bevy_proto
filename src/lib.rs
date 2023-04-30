@@ -80,8 +80,7 @@ mod schematics;
 pub mod prelude {
     pub use bevy_proto_backend::deps::DependenciesBuilder;
     pub use bevy_proto_backend::proto::Prototypical;
-    pub use bevy_proto_backend::schematics::{ReflectSchematic, Schematic};
-    pub use bevy_proto_backend::tree::EntityTree;
+    pub use bevy_proto_backend::schematics::{ReflectSchematic, Schematic, SchematicContext};
 
     pub use super::conditions::*;
     pub use super::plugin::ProtoPlugin;

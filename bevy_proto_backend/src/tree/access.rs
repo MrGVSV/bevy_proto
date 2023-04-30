@@ -4,13 +4,11 @@ use std::path::{Component, Path, PathBuf};
 use std::slice::Iter;
 use std::str::FromStr;
 
-use bevy::ecs::world::EntityMut;
 use bevy::prelude::Entity;
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect, ReflectDeserialize};
 use serde::Deserialize;
 
-use crate::schematics::FromSchematicInput;
-use crate::tree::EntityTree;
+use crate::schematics::{FromSchematicInput, SchematicContext};
 
 /// A deserializable prototype entity reference.
 ///
@@ -345,29 +343,31 @@ impl<T: AsRef<Path>> From<T> for EntityAccess {
 }
 
 impl FromSchematicInput<EntityAccess> for Entity {
-    fn from_input(input: EntityAccess, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
-        tree.find_entity(&input)
+    fn from_input(input: EntityAccess, context: &mut SchematicContext) -> Self {
+        context
+            .find_entity(&input)
             .unwrap_or_else(|| panic!("entity should exist at path {:?}", input.to_path()))
     }
 }
 
 impl FromSchematicInput<ProtoEntity> for Entity {
-    fn from_input(input: ProtoEntity, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
+    fn from_input(input: ProtoEntity, context: &mut SchematicContext) -> Self {
         let access: EntityAccess = input.into();
-        tree.find_entity(&access)
+        context
+            .find_entity(&access)
             .unwrap_or_else(|| panic!("entity should exist at path {:?}", access.to_path()))
     }
 }
 
 impl FromSchematicInput<EntityAccess> for Option<Entity> {
-    fn from_input(input: EntityAccess, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
-        tree.find_entity(&input)
+    fn from_input(input: EntityAccess, context: &mut SchematicContext) -> Self {
+        context.find_entity(&input)
     }
 }
 
 impl FromSchematicInput<ProtoEntity> for Option<Entity> {
-    fn from_input(input: ProtoEntity, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
-        tree.find_entity(&input.into())
+    fn from_input(input: ProtoEntity, context: &mut SchematicContext) -> Self {
+        context.find_entity(&input.into())
     }
 }
 
@@ -393,13 +393,14 @@ impl FromSchematicInput<ProtoEntity> for Option<Entity> {
 pub struct ProtoEntityList(pub Vec<ProtoEntity>);
 
 impl FromSchematicInput<ProtoEntityList> for Vec<Entity> {
-    fn from_input(input: ProtoEntityList, _entity: &mut EntityMut, tree: &EntityTree) -> Self {
+    fn from_input(input: ProtoEntityList, context: &mut SchematicContext) -> Self {
         input
             .0
             .into_iter()
             .map(|entity| {
                 let access: EntityAccess = entity.into();
-                tree.find_entity(&access)
+                context
+                    .find_entity(&access)
                     .unwrap_or_else(|| panic!("entity should exist at path {:?}", access.to_path()))
             })
             .collect()

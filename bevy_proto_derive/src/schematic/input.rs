@@ -6,7 +6,7 @@ use to_phantom::ToPhantom;
 
 use crate::schematic::data::SchematicData;
 use crate::schematic::fields::SchematicField;
-use crate::schematic::idents::{ENTITY_IDENT, INPUT_IDENT, TREE_IDENT};
+use crate::schematic::idents::{CONTEXT_IDENT, INPUT_IDENT};
 use crate::schematic::self_type::SelfType;
 use crate::schematic::structs::SchematicStruct;
 use crate::schematic::DeriveSchematic;
@@ -42,14 +42,14 @@ impl InputType {
             (InputType::Reflexive, SelfType::Reflexive) => None,
             (_, SelfType::Into(self_ty)) => Some(quote! {
                 let #INPUT_IDENT = <Self as #proto_crate::schematics::FromSchematicInput<Self::Input>>::from_input(
-                    #INPUT_IDENT, #ENTITY_IDENT, #TREE_IDENT
+                    #INPUT_IDENT, #CONTEXT_IDENT
                 );
                 let #INPUT_IDENT = <#self_ty as #proto_crate::schematics::FromSchematicInput<Self>>::from_input(
-                    #INPUT_IDENT, #ENTITY_IDENT, #TREE_IDENT
+                    #INPUT_IDENT, #CONTEXT_IDENT
                 );
             }),
             _ => Some(quote! {
-                let #INPUT_IDENT = <Self as #proto_crate::schematics::FromSchematicInput<Self::Input>>::from_input(#INPUT_IDENT, #ENTITY_IDENT, #TREE_IDENT);
+                let #INPUT_IDENT = <Self as #proto_crate::schematics::FromSchematicInput<Self::Input>>::from_input(#INPUT_IDENT, #CONTEXT_IDENT);
             }),
         }
     }
@@ -132,8 +132,7 @@ impl<'a> ToTokens for Input<'a> {
                 impl #impl_generics #proto_crate::schematics::FromSchematicInput<#input_ty> for #base_ty #impl_ty_generics #where_clause {
                     fn from_input(
                         #INPUT_IDENT: #input_ty,
-                        #ENTITY_IDENT: &mut #bevy_crate::ecs::world::EntityMut,
-                        #TREE_IDENT: &#proto_crate::tree::EntityTree
+                        #CONTEXT_IDENT: &mut #proto_crate::schematics::SchematicContext
                     ) -> Self {
                         #body
                     }
