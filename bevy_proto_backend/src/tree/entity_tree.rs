@@ -40,7 +40,7 @@ pub struct EntityTree<'a> {
 impl<'a> EntityTree<'a> {
     pub(crate) fn new<T: Prototypical>(
         tree: &'a ProtoTree<T>,
-        root: Entity,
+        root: Option<Entity>,
         world: &mut World,
     ) -> Self {
         let mut nodes = vec![EntityTreeNode {
@@ -64,11 +64,15 @@ impl<'a> EntityTree<'a> {
                 let child_index = entity_children.insert(index, child.id_str());
                 parents.insert(index, parent_index);
 
-                let entity = Self::init_entity(
-                    ProtoInstance::new(child.handle(), child_index),
-                    Some(parent_entity),
-                    world,
-                );
+                let entity = if child.requires_entity() {
+                    Some(Self::init_entity(
+                        ProtoInstance::new(child.handle(), child_index),
+                        parent_entity,
+                        world,
+                    ))
+                } else {
+                    None
+                };
 
                 nodes.push(EntityTreeNode {
                     id: child.id_str(),
@@ -91,14 +95,14 @@ impl<'a> EntityTree<'a> {
         }
     }
 
-    /// Get the current entity being processed.
-    pub fn entity(&self) -> Entity {
+    /// Get the current entity being processed, if any.
+    pub fn entity(&self) -> Option<Entity> {
         self.current().entity
     }
 
     /// Find an entity in the tree using the given [`EntityAccess`].
     pub fn find_entity(&self, access: &EntityAccess) -> Option<Entity> {
-        self.get(access).map(EntityTreeNode::entity)
+        self.get(access).and_then(EntityTreeNode::entity)
     }
 
     pub(crate) fn get(&self, access: &EntityAccess) -> Option<&EntityTreeNode<'a>> {
@@ -250,11 +254,7 @@ impl<'a> Debug for EntityTree<'a> {
             smart_write!(f, depth - 1, "EntityTree {{")?;
             smart_write!(f, depth, "id: {:?}, ", node.id)?;
 
-            if f.alternate() {
-                smart_write!(f, depth, "entity: {:#?}, ", node.entity)?;
-            } else {
-                smart_write!(f, depth, "entity: {:?}, ", node.entity)?;
-            }
+            smart_write!(f, depth, "entity: {:?}, ", node.entity)?;
 
             match tree.children.get(&node.index) {
                 None => {
@@ -293,7 +293,7 @@ impl<'a> Debug for EntityTree<'a> {
 pub(crate) struct EntityTreeNode<'a> {
     id: &'a str,
     index: usize,
-    entity: Entity,
+    entity: Option<Entity>,
     prototypes: &'a IndexSet<HandleId>,
 }
 
@@ -303,8 +303,8 @@ impl<'a> EntityTreeNode<'a> {
         self.id
     }
 
-    /// The corresponding [`Entity`].
-    pub fn entity(&self) -> Entity {
+    /// The corresponding [`Entity`], if any.
+    pub fn entity(&self) -> Option<Entity> {
         self.entity
     }
 

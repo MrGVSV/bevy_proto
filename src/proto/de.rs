@@ -18,6 +18,7 @@ const NAME: &str = "name";
 const TEMPLATES: &str = "templates";
 const SCHEMATICS: &str = "schematics";
 const CHILDREN: &str = "children";
+const ENTITY: &str = "entity";
 
 #[derive(Deserialize, Debug)]
 #[serde(field_identifier, rename_all = "snake_case")]
@@ -26,6 +27,7 @@ enum PrototypeField {
     Templates,
     Schematics,
     Children,
+    Entity,
 }
 
 pub(crate) struct PrototypeDeserializer<'a, 'ctx, 'load_ctx> {
@@ -64,6 +66,7 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a
                 let mut templates: Option<Templates> = None;
                 let mut schematics: Option<Schematics> = None;
                 let mut children: Option<Children<Prototype>> = None;
+                let mut requires_entity: Option<bool> = None;
 
                 while let Some(key) = map.next_key::<PrototypeField>()? {
                     match key {
@@ -115,12 +118,19 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a
                                 })
                                 .map_err(Error::custom)?;
                         }
+                        PrototypeField::Entity => {
+                            if requires_entity.is_some() {
+                                return Err(Error::duplicate_field(ENTITY));
+                            }
+                            requires_entity = Some(map.next_value::<bool>()?)
+                        }
                     }
                 }
 
                 Ok(Prototype {
                     id: id.ok_or_else(|| Error::missing_field(NAME))?,
                     path: self.context.base_path().into(),
+                    requires_entity: requires_entity.unwrap_or(true),
                     templates,
                     schematics: schematics.unwrap_or_default(),
                     children,
@@ -131,7 +141,7 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a
 
         deserializer.deserialize_struct(
             std::any::type_name::<Prototype>(),
-            &[NAME, TEMPLATES, SCHEMATICS, CHILDREN],
+            &[NAME, TEMPLATES, SCHEMATICS, CHILDREN, ENTITY],
             PrototypeVisitor {
                 context: self.context,
             },

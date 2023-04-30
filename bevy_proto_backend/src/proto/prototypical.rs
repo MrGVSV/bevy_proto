@@ -53,6 +53,12 @@ pub trait Prototypical: Asset + Sized {
     fn id(&self) -> &Self::Id;
     /// The path to this prototype's asset file.
     fn path(&self) -> &ProtoPath;
+    /// Whether or not this prototype requires an entity to be spawned.
+    ///
+    /// Defaults to `true`.
+    fn requires_entity(&self) -> bool {
+        true
+    }
     /// An immutable reference to the collection of [`Schematics`] contained in this prototype.
     fn schematics(&self) -> &Schematics;
     /// A mutable reference to the collection of [`Schematics`] contained in this prototype.

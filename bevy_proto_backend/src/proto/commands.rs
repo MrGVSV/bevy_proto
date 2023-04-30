@@ -38,6 +38,29 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
         ProtoEntityCommands::new(self.commands.spawn_empty().id(), self)
     }
 
+    /// Apply the prototype with the given [ID] to the world.
+    ///
+    /// This should only be called on prototypes that do not [require an entity].
+    /// To spawn this prototype as a new entity, use [`spawn`] instead.
+    ///
+    /// [ID]: Prototypical::id
+    /// [require an entity]: Prototypical::require_entity
+    /// [`spawn`]: Self::spawn
+    pub fn apply<I: Into<T::Id>>(&mut self, id: I) {
+        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
+    }
+
+    /// Remove the prototype with the given [ID] from the world.
+    ///
+    /// This should only be called on prototypes that do not [require an entity].
+    /// To remove this prototype from an entity, use [`ProtoEntityCommands::remove`] instead.
+    ///
+    /// [ID]: Prototypical::id
+    /// [require an entity]: Prototypical::require_entity
+    pub fn remove<I: Into<T::Id>>(&mut self, id: I) {
+        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
+    }
+
     /// Get the [`ProtoEntityCommands`] for the given entity.
     ///
     /// This internally calls [`Commands::entity`].
@@ -117,7 +140,7 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn insert<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoInsertCommand::<T>::new(id, self.entity));
+            .add(ProtoInsertCommand::<T>::new(id, Some(self.entity)));
         self
     }
 
@@ -127,7 +150,7 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn remove<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoRemoveCommand::<T>::new(id, self.entity));
+            .add(ProtoRemoveCommand::<T>::new(id, Some(self.entity)));
         self
     }
 
@@ -151,7 +174,7 @@ pub struct ProtoInsertCommand<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoInsertCommand<T> {
-    pub fn new(id: T::Id, entity: Entity) -> Self {
+    pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
             data: ProtoCommandData { id, entity },
         }
@@ -178,7 +201,7 @@ pub struct ProtoRemoveCommand<T: Prototypical> {
 }
 
 impl<T: Prototypical> ProtoRemoveCommand<T> {
-    pub fn new(id: T::Id, entity: Entity) -> Self {
+    pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
             data: ProtoCommandData { id, entity },
         }
@@ -198,7 +221,7 @@ impl<T: Prototypical> Command for ProtoRemoveCommand<T> {
 
 struct ProtoCommandData<T: Prototypical> {
     id: T::Id,
-    entity: Entity,
+    entity: Option<Entity>,
 }
 
 impl<T: Prototypical> ProtoCommandData<T> {
@@ -289,6 +312,13 @@ impl<T: Prototypical> ProtoCommandData<T> {
             for handle_id in node.prototypes() {
                 let handle = prototypes.get_handle(*handle_id);
                 let proto = prototypes.get(&handle).unwrap();
+
+                if proto.requires_entity() && !context.entity().is_some() {
+                    panic!(
+                        "could not apply command for prototype {:?}: requires entity",
+                        proto.id()
+                    );
+                }
 
                 on_before_prototype(config, proto, context);
 

@@ -31,4 +31,9 @@ pub enum ProtoError {
         path: AssetPath<'static>,
         existing: AssetPath<'static>,
     },
+    /// Indicates that an operation that requires an entity was attempted on a prototype that doesn't require one.
+    ///
+    /// This includes attempting to register children on an entity-less prototype.
+    #[error("expected prototype with ID {id:?} to require an entity")]
+    RequiresEntity { id: String },
 }

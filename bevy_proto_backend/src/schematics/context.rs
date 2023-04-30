@@ -25,12 +25,14 @@ impl<'a, 'b> SchematicContext<'a, 'b> {
 
     /// Returns a reference to the entity this schematic is being applied to, if any.
     pub fn entity(&self) -> Option<EntityRef> {
-        Some(self.world.entity(self.tree.entity()))
+        self.tree.entity().map(|entity| self.world.entity(entity))
     }
 
     /// Returns a mutable reference to the entity this schematic is being applied to, if any.
     pub fn entity_mut(&mut self) -> Option<EntityMut> {
-        Some(self.world.entity_mut(self.tree.entity()))
+        self.tree
+            .entity()
+            .map(|entity| self.world.entity_mut(entity))
     }
 
     /// Find an entity in the tree using the given [`EntityAccess`].
