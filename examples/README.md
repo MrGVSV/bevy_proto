@@ -16,6 +16,12 @@ The recommended order is:
 7. [hierarchy.rs](./hierarchy.rs) - Defining complex prototype hierarchies with children
 8. [cycles.rs](./cycles.rs) - How prototype cycles are handled
 
+### Bevy Examples
+
+The [`bevy`](./bevy) folder contains examples based on
+the [official Bevy examples](https://github.com/bevyengine/bevy/tree/latest/examples).
+These examples are meant to show how we can modify the Bevy examples to make use of prototypes.
+
 ## Example Prototypes
 
 Most examples use their own set of defined prototypes. These all exist within

@@ -42,6 +42,9 @@ impl<T: Prototypical> Plugin for ProtoBackendPlugin<T> {
             app.init_resource::<T::Config>();
         }
 
+        #[cfg(feature = "bevy_render")]
+        app.register_type::<crate::proto::ProtoColor>();
+
         app.register_type::<ProtoAsset>()
             .register_type::<ProtoEntity>()
             .register_type::<EntityAccess>()

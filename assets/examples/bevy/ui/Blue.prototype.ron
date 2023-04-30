@@ -1,0 +1,51 @@
+(
+  name: "Blue",
+  schematics: {
+    "bevy_proto::custom::NodeBundle": (
+      style: (
+        size: (
+          width: Px(200.0),
+          height: Px(200.0),
+        ),
+        position_type: Absolute,
+        position: (
+          left: Px(210.0),
+          bottom: Px(10.0),
+        ),
+        border: (
+          left: Px(20.0),
+          right: Px(20.0),
+          top: Px(20.0),
+          bottom: Px(20.0),
+        ),
+      ),
+      background_color: (Rgba(
+        red: 0.4,
+        green: 0.4,
+        blue: 1.0,
+        alpha: 1.0
+      )),
+    )
+  },
+  children: [(
+    value: Inline((
+      name: "Blue-Inner",
+      schematics: {
+        "bevy_proto::custom::NodeBundle": (
+          style: (
+            size: (
+              width: Percent(100.0),
+              height: Percent(100.0),
+            ),
+          ),
+          background_color: (Rgba(
+            red: 0.8,
+            green: 0.8,
+            blue: 1.0,
+            alpha: 1.0
+          )),
+        )
+      }
+    ))
+  )]
+)

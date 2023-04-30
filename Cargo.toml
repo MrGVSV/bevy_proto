@@ -22,12 +22,14 @@ default = [
     # Bevy Features
     "bevy_animation",
     "bevy_audio",
+    "bevy_core_pipeline",
     "bevy_gltf",
     "bevy_pbr",
     "bevy_render",
     "bevy_scene",
     "bevy_sprite",
     "bevy_text",
+    "bevy_ui",
 ]
 
 # When enabled, entities will automatically use a prototype's ID as its `Name`
@@ -43,18 +45,58 @@ yaml = ["dep:serde_yaml"]
 bevy_animation = ["bevy/bevy_animation", "bevy_proto_backend/bevy_animation"]
 # Enables registrations for types available with Bevy's bevy_audio feature
 bevy_audio = ["bevy/bevy_audio", "bevy_proto_backend/bevy_audio"]
+# Enables registrations for types available with Bevy's bevy_core_pipeline feature
+bevy_core_pipeline = [
+    "bevy/bevy_core_pipeline",
+    "bevy_proto_backend/bevy_core_pipeline",
+    "bevy_render",
+]
 # Enables registrations for types available with Bevy's bevy_gltf feature
-bevy_gltf = ["bevy/bevy_gltf", "bevy_proto_backend/bevy_gltf"]
+bevy_gltf = [
+    "bevy/bevy_gltf",
+    "bevy_proto_backend/bevy_gltf",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_scene",
+]
 # Enables registrations for types available with Bevy's bevy_pbr feature
-bevy_pbr = ["bevy/bevy_pbr", "bevy_proto_backend/bevy_pbr"]
+bevy_pbr = [
+    "bevy/bevy_pbr",
+    "bevy_proto_backend/bevy_pbr",
+    "bevy_core_pipeline",
+]
 # Enables registrations for types available with Bevy's bevy_render feature
 bevy_render = ["bevy/bevy_render", "bevy_proto_backend/bevy_render"]
 # Enables registrations for types available with Bevy's bevy_scene feature
-bevy_scene = ["bevy/bevy_scene", "bevy_proto_backend/bevy_scene"]
+bevy_scene = [
+    "bevy/bevy_scene",
+    "bevy_proto_backend/bevy_scene",
+    "bevy_render",
+]
 # Enables registrations for types available with Bevy's bevy_sprite feature
-bevy_sprite = ["bevy/bevy_sprite", "bevy_proto_backend/bevy_sprite"]
+bevy_sprite = [
+    "bevy/bevy_sprite",
+    "bevy_proto_backend/bevy_sprite",
+    "bevy_render",
+    "bevy_core_pipeline",
+]
 # Enables registrations for types available with Bevy's bevy_text feature
-bevy_text = ["bevy/bevy_text", "bevy_proto_backend/bevy_text"]
+bevy_text = [
+    "bevy/bevy_text",
+    "bevy_proto_backend/bevy_text",
+    "bevy_sprite",
+    "bevy_render",
+]
+# Enables registrations for types available with Bevy's bevy_ui feature
+bevy_ui = [
+    "bevy/bevy_ui",
+    "bevy_proto_backend/bevy_ui",
+    "bevy_sprite",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_text",
+]
 
 [dependencies]
 bevy_proto_backend = { version = "0.1.1", path = "./bevy_proto_backend" }
@@ -111,6 +153,11 @@ required-features = ["ron", "auto_name"]
 name = "templates"
 path = "examples/templates.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite", "yaml"]
+
+[[example]]
+name = "bevy_ui"
+path = "examples/bevy/ui.rs"
+required-features = ["ron", "auto_name", "custom_schematics"]
 
 [[test]]
 name = "compile_tests"
