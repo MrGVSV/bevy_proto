@@ -1,12 +1,11 @@
 use bevy::app::App;
 use bevy::ecs::world::EntityMut;
 use bevy::math::Vec2;
-use bevy::prelude::Color;
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy::text::{BreakLineOn, Text, Text2dBounds, TextAlignment, TextSection, TextStyle};
 
 use crate::impls::macros::{from_to, from_to_default, from_to_input, register_schematic};
-use crate::proto::ProtoAsset;
+use crate::proto::{ProtoAsset, ProtoColor};
 use crate::schematics::FromSchematicInput;
 use bevy_proto_derive::impl_external_schematic;
 
@@ -77,7 +76,7 @@ impl_external_schematic! {
     pub struct TextStyleInput {
         pub font: ProtoAsset,
         pub font_size: f32,
-        pub color: Color,
+        pub color: ProtoColor,
     }
     from_to_input! {
         TextStyle,
@@ -85,7 +84,7 @@ impl_external_schematic! {
         |input: Input, entity, tree| Self {
             font: FromSchematicInput::from_input(input.font, entity, tree),
             font_size: input.font_size,
-            color: input.color,
+            color: input.color.into(),
         }
     }
 

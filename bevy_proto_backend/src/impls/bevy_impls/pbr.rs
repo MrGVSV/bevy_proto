@@ -6,10 +6,10 @@ use bevy::pbr::{
     DirectionalLight, EnvironmentMapLight, FogFalloff, FogSettings, NotShadowCaster,
     NotShadowReceiver, PointLight, SpotLight,
 };
-use bevy::prelude::Color;
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
+use crate::proto::ProtoColor;
 use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
@@ -123,7 +123,7 @@ impl_external_schematic! {
     #[derive(Reflect, FromReflect)]
     #[reflect(Default)]
     pub struct DirectionalLightInput {
-        pub color: Color,
+        pub color: ProtoColor,
         pub illuminance: f32,
         pub shadows_enabled: bool,
         pub shadow_depth_bias: f32,
@@ -133,7 +133,7 @@ impl_external_schematic! {
         DirectionalLight,
         DirectionalLightInput,
         |value: Input| Self {
-            color: value.color,
+            color: value.color.into(),
             illuminance: value.illuminance,
             shadows_enabled: value.shadows_enabled,
             shadow_depth_bias: value.shadow_depth_bias,
@@ -158,8 +158,8 @@ impl_external_schematic! {
     #[derive(Reflect, FromReflect)]
     #[reflect(Default)]
     pub struct FogSettingsInput {
-        pub color: Color,
-        pub directional_light_color: Color,
+        pub color: ProtoColor,
+        pub directional_light_color: ProtoColor,
         pub directional_light_exponent: f32,
         pub falloff: FogFalloffInput,
     }
@@ -167,8 +167,8 @@ impl_external_schematic! {
         FogSettings,
         FogSettingsInput,
         |value: Input| Self {
-            color: value.color,
-            directional_light_color: value.directional_light_color,
+            color: value.color.into(),
+            directional_light_color: value.directional_light_color.into(),
             directional_light_exponent: value.directional_light_exponent,
             falloff: value.falloff.into(),
         }
@@ -236,7 +236,7 @@ impl_external_schematic! {
     #[derive(Reflect, FromReflect)]
     #[reflect(Default)]
     pub struct PointLightInput {
-        pub color: Color,
+        pub color: ProtoColor,
         pub intensity: f32,
         pub range: f32,
         pub radius: f32,
@@ -248,7 +248,7 @@ impl_external_schematic! {
         PointLight,
         PointLightInput,
         |value: Input| Self {
-            color: value.color,
+            color: value.color.into(),
             intensity: value.intensity,
             range: value.range,
             radius: value.radius,
@@ -266,7 +266,7 @@ impl_external_schematic! {
     #[derive(Reflect, FromReflect)]
     #[reflect(Default)]
     pub struct SpotLightInput {
-        pub color: Color,
+        pub color: ProtoColor,
         pub intensity: f32,
         pub range: f32,
         pub radius: f32,
@@ -280,7 +280,7 @@ impl_external_schematic! {
         SpotLight,
         SpotLightInput,
         |value: Input| Self {
-            color: value.color,
+            color: value.color.into(),
             intensity: value.intensity,
             range: value.range,
             radius: value.radius,

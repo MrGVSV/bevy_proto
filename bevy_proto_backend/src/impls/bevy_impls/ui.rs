@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::math::{Rect, Vec2};
-use bevy::prelude::{BackgroundColor, Button, Color, Label};
+use bevy::prelude::{BackgroundColor, Button, Label};
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
 use bevy::ui::{
     AlignContent, AlignItems, AlignSelf, CalculatedClip, CalculatedSize, Direction, Display,
@@ -9,7 +9,7 @@ use bevy::ui::{
 };
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
-use crate::proto::ProtoAsset;
+use crate::proto::{ProtoAsset, ProtoColor};
 use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
@@ -51,11 +51,11 @@ impl_external_schematic! {
     // ---
     #[derive(Reflect, FromReflect)]
     #[reflect(Default)]
-    pub struct BackgroundColorInput(pub Color);
+    pub struct BackgroundColorInput(pub ProtoColor);
     from_to_default! {
         BackgroundColor,
         BackgroundColorInput,
-        |value: Input| Self(value.0)
+        |value: Input| Self(value.0.into())
     }
 }
 

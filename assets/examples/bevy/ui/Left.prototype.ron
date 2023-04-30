@@ -60,12 +60,7 @@
                   style: (
                     font: AssetPath("fonts/JetBrainsMono-Regular.ttf"),
                     font_size: 30.0,
-                    color: Rgba(
-                      red: 1.0,
-                      green: 1.0,
-                      blue: 1.0,
-                      alpha: 1.0
-                    ),
+                    color: White,
                   )
                 )]
               ),
