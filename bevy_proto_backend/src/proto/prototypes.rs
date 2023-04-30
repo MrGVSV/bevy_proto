@@ -1,6 +1,6 @@
 use std::borrow::{Borrow, Cow};
 
-use bevy::asset::{Handle, HandleId, LoadState};
+use bevy::asset::{AssetServerError, Handle, HandleId, LoadState};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{AssetServer, Res, ResMut};
 use std::hash::Hash;
@@ -46,6 +46,25 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
         let handle = self.asset_server.load(path.as_ref());
         self.storage.insert(path, handle.clone());
         handle
+    }
+
+    /// Load the prototypes at the given path.
+    ///
+    /// This will also store strong handles to the prototypes in order to keep them loaded.
+    ///
+    /// To load without automatically storing the handles, try using [`AssetServer::load_folder`].
+    pub fn load_folder<P: Into<Cow<'static, str>>>(&mut self, path: P) -> Result<Vec<Handle<T>>, AssetServerError> {
+        let path = path.into();
+        let handles: Vec<_> = self.asset_server.load_folder(path.as_ref())?
+            .into_iter().map(|handle| handle.typed::<T>()).collect();
+
+        handles.iter().for_each(|handle| {
+            let path = self.asset_server.get_handle_path(handle).unwrap().path().to_str().unwrap().to_string();
+
+            self.storage.insert(path, handle.clone());
+        });
+
+        Ok(handles)
     }
 
     /// Remove the stored handle for the given prototype path.
