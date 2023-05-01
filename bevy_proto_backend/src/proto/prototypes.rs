@@ -1,10 +1,10 @@
-use std::borrow::{Borrow, Cow};
+use std::borrow::Borrow;
 
-use crate::path::PathError;
 use bevy::asset::{AssetServerError, Handle, HandleId, HandleUntyped, LoadState};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{AssetServer, Res, ResMut};
 use std::hash::Hash;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use crate::proto::{ProtoStorage, Prototypical};
@@ -15,9 +15,6 @@ pub enum ProtoLoadError {
     /// Indicates that the [`AssetServer`] encountered an error.
     #[error(transparent)]
     AssetServerError(#[from] AssetServerError),
-    /// Indicates that there was a path error.
-    #[error(transparent)]
-    PathError(#[from] PathError),
 }
 
 /// A helper [`SystemParam`] for managing [prototypes].
@@ -53,9 +50,9 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
     /// To later remove this handle, call [`PrototypesMut::remove`] with the same path.
     ///
     /// To load without automatically storing the handle, try using [`AssetServer::load`].
-    pub fn load<P: Into<Cow<'static, str>>>(&mut self, path: P) -> Handle<T> {
+    pub fn load<P: Into<PathBuf>>(&mut self, path: P) -> Handle<T> {
         let path = path.into();
-        let handle = self.asset_server.load(path.as_ref());
+        let handle = self.asset_server.load(path.as_path());
         self.storage.insert(path, handle.clone());
         handle
     }
@@ -65,22 +62,20 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
     /// This will also store strong handles to the prototypes in order to keep them loaded.
     ///
     /// To load without automatically storing the handles, try using [`AssetServer::load_folder`].
-    pub fn load_folder<P: Into<Cow<'static, str>>>(
+    pub fn load_folder<P: Into<PathBuf>>(
         &mut self,
         path: P,
     ) -> Result<Vec<HandleUntyped>, ProtoLoadError> {
         let path = path.into();
-        let handles: Vec<_> = self.asset_server.load_folder(path.as_ref())?;
+        let handles: Vec<_> = self.asset_server.load_folder(&path)?;
 
         for handle in &handles {
             let path = self
                 .asset_server
                 .get_handle_path(handle)
-                .unwrap()
+                .expect("handles loaded by path should return a path")
                 .path()
-                .to_str()
-                .ok_or(PathError::ConversionError)?
-                .to_string();
+                .to_owned();
 
             self.storage.insert(path, handle.clone().typed::<T>());
         }
@@ -92,7 +87,7 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
     ///
     /// This allows the asset to be unloaded if the handle is dropped and no other
     /// strong handles exist.
-    pub fn remove(&mut self, path: &str) -> Option<Handle<T>> {
+    pub fn remove<P: AsRef<Path>>(&mut self, path: P) -> Option<Handle<T>> {
         self.storage.remove(path)
     }
 
@@ -163,14 +158,14 @@ macro_rules! impl_prototypes {
             }
 
             /// Returns true if a prototype with the given path is currently stored.
-            pub fn contains(&self, path: &str) -> bool {
+            pub fn contains<P: AsRef<Path>>(&self, path: P) -> bool {
                 self.storage.contains(path)
             }
 
             /// Get a reference to the strong handle for the prototype at the given path.
             ///
             /// Returns `None` if no matching prototype is currently stored.
-            pub fn get(&self, path: &str) -> Option<&Handle<T>> {
+            pub fn get<P: AsRef<Path>>(&self, path: P) -> Option<&Handle<T>> {
                 self.storage.get(path)
             }
 
