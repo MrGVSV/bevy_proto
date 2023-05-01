@@ -73,6 +73,16 @@ struct Foo<T: Reflect> {
     _phantom: PhantomData<T>,
 }
 
+#[derive(Component, Schematic, Reflect)]
+#[reflect(Schematic)]
+enum Foob {
+    Bar(#[schematic(asset(preload))] Handle<Image>),
+    Baz {
+        #[schematic(asset(preload))]
+        image: Handle<Image>,
+    },
+}
+
 #[derive(Reflect, FromReflect)]
 struct EntityGroup(Vec<Entity>);
 

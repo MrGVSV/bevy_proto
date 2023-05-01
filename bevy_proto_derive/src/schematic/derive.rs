@@ -99,6 +99,7 @@ impl DeriveSchematic {
 
     /// Generates the logic for `Schematic::preload`.
     pub fn preload_def(&self) -> Option<TokenStream> {
+        let proto_crate = &self.proto_crate;
         match &self.data {
             SchematicData::Struct(SchematicStruct::Unit) => None,
             SchematicData::Struct(
@@ -110,6 +111,7 @@ impl DeriveSchematic {
                         ReplacementType::Asset(config) if config.is_preload() => {
                             let ty = field.defined_ty();
                             let member = field.member();
+                            let name_str = field.member().to_token_stream().to_string();
 
                             Some(if let Some(path) = config.path() {
                                 quote!(
@@ -117,12 +119,18 @@ impl DeriveSchematic {
                                 )
                             } else {
                                 quote!(
-                                    let _: #ty = #DEPENDENCIES_IDENT.add_dependency(
-                                        #INPUT_IDENT.#member
-                                            .to_asset_path()
-                                            .expect("ProtoAsset should contain an asset path")
-                                            .to_owned()
-                                    );
+                                    match #INPUT_IDENT.#member {
+                                        #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
+                                            let _: #ty = #DEPENDENCIES_IDENT.add_dependency(path.to_owned());
+                                        }
+                                        #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
+                                            panic!(
+                                                "expected `ProtoAsset::AssetPath` in field `{}` of `{}`, but found `ProtoAsset::HandleId`",
+                                                #name_str,
+                                                ::core::any::type_name::<Self::Input>()
+                                            );
+                                        }
+                                    }
                                 )
                             })
                         }
