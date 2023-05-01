@@ -1,11 +1,11 @@
 use std::borrow::{Borrow, Cow};
 
+use crate::path::PathError;
 use bevy::asset::{AssetServerError, Handle, HandleId, HandleUntyped, LoadState};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{AssetServer, Res, ResMut};
 use std::hash::Hash;
 use thiserror::Error;
-use crate::path::PathError;
 
 use crate::proto::{ProtoStorage, Prototypical};
 use crate::registration::ProtoRegistry;
@@ -65,12 +65,16 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
     /// This will also store strong handles to the prototypes in order to keep them loaded.
     ///
     /// To load without automatically storing the handles, try using [`AssetServer::load_folder`].
-    pub fn load_folder<P: Into<Cow<'static, str>>>(&mut self, path: P) -> Result<Vec<HandleUntyped>, ProtoLoadError> {
+    pub fn load_folder<P: Into<Cow<'static, str>>>(
+        &mut self,
+        path: P,
+    ) -> Result<Vec<HandleUntyped>, ProtoLoadError> {
         let path = path.into();
         let handles: Vec<_> = self.asset_server.load_folder(path.as_ref())?;
 
         for handle in &handles {
-            let path = self.asset_server
+            let path = self
+                .asset_server
                 .get_handle_path(handle)
                 .unwrap()
                 .path()
