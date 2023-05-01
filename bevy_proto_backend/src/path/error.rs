@@ -27,4 +27,7 @@ pub enum PathError {
     /// [`Config`]: crate::proto::Config
     #[error("invalid extension {0:?}")]
     InvalidExtension(PathBuf),
+    /// The path cannot be converted to a string.
+    #[error("cannot convert path to a string")]
+    ConversionError
 }
