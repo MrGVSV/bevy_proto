@@ -11,14 +11,16 @@ pub(crate) fn on_proto_asset_event<T: Prototypical>(
 ) {
     for event in events.iter() {
         match event {
-            AssetEvent::Created { handle } => match manager.register(handle) {
-                Err(err) => error!("could not register prototype: {}", err),
-                _ => {}
-            },
-            AssetEvent::Modified { handle } => match manager.reload(handle) {
-                Err(err) => error!("could not reload modified prototype: {}", err),
-                _ => {}
-            },
+            AssetEvent::Created { handle } => {
+                if let Err(err) = manager.register(handle) {
+                    error!("could not register prototype: {}", err);
+                }
+            }
+            AssetEvent::Modified { handle } => {
+                if let Err(err) = manager.reload(handle) {
+                    error!("could not reload modified prototype: {}", err);
+                }
+            }
             AssetEvent::Removed { handle } => {
                 manager.unregister(handle);
             }

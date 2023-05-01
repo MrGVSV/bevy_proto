@@ -28,8 +28,8 @@ pub enum ProtoError {
     #[error("attempted to register prototype with ID {id:?} (`{path:?}`), but one already exists with this ID (`{existing:?}`)")]
     AlreadyExists {
         id: String,
-        path: AssetPath<'static>,
-        existing: AssetPath<'static>,
+        path: Box<AssetPath<'static>>,
+        existing: Box<AssetPath<'static>>,
     },
     /// Indicates that an operation that requires an entity was attempted on a prototype that doesn't require one.
     ///

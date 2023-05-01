@@ -1,5 +1,3 @@
-#![cfg(not(test))]
-
 use std::cmp::Reverse;
 use std::marker::PhantomData;
 use std::sync::Arc;
