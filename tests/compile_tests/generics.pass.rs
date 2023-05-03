@@ -6,7 +6,7 @@ use std::borrow::Cow;
 #[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct TupleStructWithGenerics<'a: 'static, T: Asset, const N: usize>(
-    #[schematic(asset)] Handle<T>,
+    #[schematic(asset(preload))] Handle<T>,
     Cow<'a, str>,
     [i32; N],
 );
@@ -14,7 +14,7 @@ struct TupleStructWithGenerics<'a: 'static, T: Asset, const N: usize>(
 #[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct StructWithGenerics<'a: 'static, T: Asset, const N: usize> {
-    #[schematic(asset)]
+    #[schematic(asset(preload))]
     asset: Handle<T>,
     string: Cow<'a, str>,
     array: [i32; N],
@@ -24,9 +24,13 @@ struct StructWithGenerics<'a: 'static, T: Asset, const N: usize> {
 #[reflect(Schematic)]
 enum EnumWithGenerics<'a: 'static, T: Asset, const N: usize> {
     Unit,
-    Tuple(#[schematic(asset)] Handle<T>, Cow<'a, str>, [i32; N]),
+    Tuple(
+        #[schematic(asset(preload))] Handle<T>,
+        Cow<'a, str>,
+        [i32; N],
+    ),
     Struct {
-        #[schematic(asset)]
+        #[schematic(asset(preload))]
         asset: Handle<T>,
         string: Cow<'a, str>,
         array: [i32; N],

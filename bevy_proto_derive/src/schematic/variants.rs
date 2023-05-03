@@ -53,6 +53,7 @@ impl SchematicVariant {
 
     pub fn generate_preload_arm(&self, input_ty: &InputType) -> TokenStream {
         let ident = &self.ident;
+        let ident_str = ident.to_string();
         match &self.data {
             SchematicStruct::Unit => quote! {
                 #input_ty::#ident => {}
@@ -60,33 +61,43 @@ impl SchematicVariant {
             SchematicStruct::Unnamed(fields) => {
                 let (pat, stmt): (Vec<_>, Vec<_>) = fields
                     .iter()
-                    .filter_map(|field| {
-                        match field.attrs().replacement_ty() {
-                            ReplacementType::Asset(config) if config.is_preload() => {
-                                let ty = field.defined_ty();
-                                let member = field.member();
-                                let name = format_ident!("field_{}", member);
+                    .filter_map(|field| match field.attrs().replacement_ty() {
+                        ReplacementType::Asset(config) if config.is_preload() => {
+                            let proto_crate = field.proto_crate();
+                            let ty = field.defined_ty();
+                            let member = field.member();
+                            let name = format_ident!("field_{}", member);
+                            let name_str = member.to_token_stream().to_string();
 
-                                Some(if let Some(path) = config.path() {
-                                    (
-                                        None,
-                                        quote! {
-                                            let _: #ty = #DEPENDENCIES_IDENT.add_dependency(#path);
-                                        },
-                                    )
-                                } else {
-                                    (
-                                        Some(quote!(#member: #name,)),
-                                        quote! {
-                                            let _: #ty = #DEPENDENCIES_IDENT.add_dependency(
-                                                #name.to_asset_path().expect("ProtoAsset should contain an asset path")
-                                            );
-                                        },
-                                    )
-                                })
-                            },
-                            _ => None
+                            Some(if let Some(path) = config.path() {
+                                (
+                                    None,
+                                    quote! {
+                                        let _: #ty = #DEPENDENCIES_IDENT.add_dependency(#path);
+                                    },
+                                )
+                            } else {
+                                (
+                                    Some(quote!(#member: #name,)),
+                                    quote! {
+                                        match #name {
+                                            #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
+                                                let _: #ty = #DEPENDENCIES_IDENT.add_dependency(path.to_owned());
+                                            }
+                                            #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
+                                                panic!(
+                                                    "expected `ProtoAsset::AssetPath` in field `{}` of `{}::{}`, but found `ProtoAsset::HandleId`",
+                                                    #name_str,
+                                                    ::core::any::type_name::<Self::Input>(),
+                                                    #ident_str
+                                                );
+                                            }
+                                        }
+                                    },
+                                )
+                            })
                         }
+                        _ => None,
                     })
                     .unzip();
 
@@ -99,8 +110,10 @@ impl SchematicVariant {
                     .iter()
                     .filter_map(|field| match field.attrs().replacement_ty() {
                         ReplacementType::Asset(config) if config.is_preload() => {
+                            let proto_crate = field.proto_crate();
                             let ty = field.defined_ty();
                             let member = field.member();
+                            let name_str = member.to_token_stream().to_string();
 
                             Some(if let Some(path) = config.path() {
                                 (
@@ -113,12 +126,19 @@ impl SchematicVariant {
                                 (
                                     Some(quote!(#member,)),
                                     quote! {
-                                        let _: #ty = #DEPENDENCIES_IDENT.add_dependency(
-                                            #member
-                                                .to_asset_path()
-                                                .expect("ProtoAsset should contain an asset path")
-                                                .to_owned()
-                                        );
+                                        match #member {
+                                            #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
+                                                let _: #ty = #DEPENDENCIES_IDENT.add_dependency(path.to_owned());
+                                            }
+                                            #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
+                                                panic!(
+                                                    "expected `ProtoAsset::AssetPath` in field `{}` of `{}::{}`, but found `ProtoAsset::HandleId`",
+                                                    #name_str,
+                                                    ::core::any::type_name::<Self::Input>(),
+                                                    #ident_str
+                                                );
+                                            }
+                                        }
                                     },
                                 )
                             })
@@ -152,14 +172,20 @@ impl SchematicVariant {
                     )
                 } else {
                     quote!(
-                        #CONTEXT_IDENT
-                            .world()
-                            .resource::<#bevy_crate::asset::AssetServer>()
-                            .load(
-                                #member
-                                    .to_asset_path()
-                                    .expect("ProtoAsset should contain an asset path")
-                            )
+                        match #member {
+                            #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
+                                #CONTEXT_IDENT
+                                    .world()
+                                    .resource::<#bevy_crate::asset::AssetServer>()
+                                    .load(path)
+                            }
+                            #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
+                                #CONTEXT_IDENT
+                                    .world()
+                                    .resource::<#bevy_crate::asset::AssetServer>()
+                                    .get_handle(handle_id)
+                            }
+                        }
                     )
                 }
             }

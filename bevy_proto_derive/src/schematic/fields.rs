@@ -88,15 +88,20 @@ impl SchematicField {
                     )
                 } else {
                     quote!(
-                        #CONTEXT_IDENT
-                            .world()
-                            .resource::<#bevy_crate::asset::AssetServer>()
-                            .load(
-                                #INPUT_IDENT
-                                    .#member
-                                    .to_asset_path()
-                                    .expect("ProtoAsset should contain an asset path")
-                            )
+                        match #INPUT_IDENT.#member {
+                            #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
+                                #CONTEXT_IDENT
+                                    .world()
+                                    .resource::<#bevy_crate::asset::AssetServer>()
+                                    .load(path)
+                            }
+                            #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
+                                #CONTEXT_IDENT
+                                    .world()
+                                    .resource::<#bevy_crate::asset::AssetServer>()
+                                    .get_handle(handle_id)
+                            }
+                        }
                     )
                 }
             }
