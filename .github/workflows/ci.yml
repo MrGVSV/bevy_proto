@@ -4,10 +4,10 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ main ]
   push:
-    branches: [main]
-    
+    branches: [ main ]
+
 env:
   CARGO_TERM_COLOR: always
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
@@ -17,17 +17,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      - uses: Leafwing-Studios/cargo-cache@v1
-      - run: cargo fmt --check
+      - name: 📦 Cache cargo
+        uses: Leafwing-Studios/cargo-cache@v1
+      - name: 📥 Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: 🧪 Run rustfmt
+        run: cargo fmt --check
   clippy-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - uses: Leafwing-Studios/cargo-cache@v1
-      - run: cargo clippy --workspace --examples --all-targets --all-features -- -D warnings
+      - name: 📦 Cache cargo
+        uses: Leafwing-Studios/cargo-cache@v1
+      - name: 📥 Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: 🧪 Run clippy
+        run: cargo clippy --workspace --examples --all-targets --all-features -- -D warnings
