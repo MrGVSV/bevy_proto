@@ -1,0 +1,33 @@
+# partially adopted from https://github.com/Leafwing-Studios/Emergence/blob/main/.github/workflows/ci.yml
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Leafwing-Studios/cargo-cache@v1
+      - run: cargo fmt --check
+  clippy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Leafwing-Studios/cargo-cache@v1
+      - run: cargo clippy --workspace --examples --all-targets --all-features -- -D warnings
