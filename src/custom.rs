@@ -422,7 +422,7 @@ from!(
     bevy::scene::DynamicSceneBundle,
     DynamicSceneBundle,
     |value: Input| Self {
-        scene: value.scene.into(),
+        scene: value.scene,
         transform: value.transform,
         global_transform: value.global_transform,
         visibility: value.visibility,
@@ -452,7 +452,7 @@ pub struct SceneBundle {
 
 #[cfg(feature = "bevy_scene")]
 from!(bevy::scene::SceneBundle, SceneBundle, |value: Input| Self {
-    scene: value.scene.into(),
+    scene: value.scene,
     transform: value.transform,
     global_transform: value.global_transform,
     visibility: value.visibility,

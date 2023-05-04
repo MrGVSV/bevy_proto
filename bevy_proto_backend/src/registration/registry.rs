@@ -56,10 +56,10 @@ impl<T: Prototypical> ProtoRegistry<T> {
     /// Removes a prototype from the registry.
     ///
     /// Returns the ID of the prototype if it was registered.
-    pub(super) fn unregister<'w>(
+    pub(super) fn unregister(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<'w, T>,
+        params: &mut RegistryParams<T>,
     ) -> Option<T::Id> {
         let id = self.unregister_internal(handle, params)?;
 
@@ -156,8 +156,8 @@ impl<T: Prototypical> ProtoRegistry<T> {
             if self.ids.contains_key(&handle.id()) {
                 return Err(ProtoError::AlreadyExists {
                     id: prototype.id().to_string(),
-                    path: prototype.path().into(),
-                    existing: prototype.path().into(),
+                    path: Box::new(prototype.path().into()),
+                    existing: Box::new(prototype.path().into()),
                 });
             }
 
@@ -169,8 +169,8 @@ impl<T: Prototypical> ProtoRegistry<T> {
                     let exiting_prototype = params.get_prototype(&handle)?;
                     return Err(ProtoError::AlreadyExists {
                         id: prototype.id().to_string(),
-                        path: prototype.path().into(),
-                        existing: exiting_prototype.path().into(),
+                        path: Box::new(prototype.path().into()),
+                        existing: Box::new(exiting_prototype.path().into()),
                     });
                 }
             }
@@ -189,10 +189,10 @@ impl<T: Prototypical> ProtoRegistry<T> {
         Ok(prototype)
     }
 
-    fn unregister_internal<'w>(
+    fn unregister_internal(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<'w, T>,
+        params: &mut RegistryParams<T>,
     ) -> Option<T::Id> {
         let handle_id = handle.id();
 

@@ -1,0 +1,43 @@
+# partially adopted from https://github.com/Leafwing-Studios/Emergence/blob/main/.github/workflows/ci.yml
+
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: 📦 Cache cargo
+        uses: Leafwing-Studios/cargo-cache@v1
+      - name: 📥 Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: 🧪 Run rustfmt
+        run: cargo fmt --check
+  clippy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: 🦀 Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: 📦 Cache cargo
+        uses: Leafwing-Studios/cargo-cache@v1
+      - name: 📥 Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: 🧪 Run clippy
+        run: cargo clippy --workspace --examples --all-targets --all-features -- -D warnings

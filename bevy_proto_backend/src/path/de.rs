@@ -16,7 +16,7 @@ impl<'a> ProtoPathDeserializer<'a> {
     }
 }
 
-impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for ProtoPathDeserializer<'a> {
+impl<'a, 'de> DeserializeSeed<'de> for ProtoPathDeserializer<'a> {
     type Value = ProtoPath;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
@@ -27,7 +27,7 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for ProtoPathDeserializer<'a
             context: &'a dyn ProtoPathContext,
         }
 
-        impl<'a, 'ctx, 'load_ctx, 'de> Visitor<'de> for PathVisitor<'a> {
+        impl<'a, 'de> Visitor<'de> for PathVisitor<'a> {
             type Value = ProtoPath;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

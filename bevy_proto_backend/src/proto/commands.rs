@@ -313,7 +313,7 @@ impl<T: Prototypical> ProtoCommandData<T> {
                 let handle = prototypes.get_handle(*handle_id);
                 let proto = prototypes.get(&handle).unwrap();
 
-                if proto.requires_entity() && !context.entity().is_some() {
+                if proto.requires_entity() && context.entity().is_none() {
                     panic!(
                         "could not apply command for prototype {:?}: requires entity",
                         proto.id()
