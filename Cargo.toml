@@ -99,7 +99,7 @@ bevy_ui = [
 ]
 
 [dependencies]
-bevy_proto_backend = { version = "0.2", path = "./bevy_proto_backend" }
+bevy_proto_backend = { version = "0.2", path = "./bevy_proto_backend", default-features = false }
 bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
 anyhow = "1.0"
 serde = "1.0"
