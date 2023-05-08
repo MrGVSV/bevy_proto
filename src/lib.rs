@@ -93,29 +93,30 @@ pub mod prelude {
     /// For the mutable version, see [`PrototypesMut`].
     ///
     /// [prototypes]: Prototype
-    pub type Prototypes<'w> = bevy_proto_backend::proto::Prototypes<'w, Prototype, ProtoConfig>;
+    pub type Prototypes<'w, C = ProtoConfig> =
+        bevy_proto_backend::proto::Prototypes<'w, Prototype, C>;
 
     /// A helper SystemParam for managing [prototypes].
     ///
     /// For the immutable version, see [`Prototypes`].
     ///
     /// [prototypes]: Prototype
-    pub type PrototypesMut<'w> =
-        bevy_proto_backend::proto::PrototypesMut<'w, Prototype, ProtoConfig>;
+    pub type PrototypesMut<'w, C = ProtoConfig> =
+        bevy_proto_backend::proto::PrototypesMut<'w, Prototype, C>;
 
     /// A system parameter similar to [`Commands`], but catered towards [prototypes].
     ///
     /// [`Commands`]: bevy::prelude::Commands
     /// [prototypes]: Prototype
-    pub type ProtoCommands<'w, 's> =
-        bevy_proto_backend::proto::ProtoCommands<'w, 's, Prototype, ProtoConfig>;
+    pub type ProtoCommands<'w, 's, C = ProtoConfig> =
+        bevy_proto_backend::proto::ProtoCommands<'w, 's, Prototype, C>;
 
     /// A struct similar to [`EntityCommands`], but catered towards [prototypes].
     ///
     /// [`EntityCommands`]: bevy::ecs::system::EntityCommands
     /// [prototypes]: Prototype
-    pub type ProtoEntityCommands<'w, 's, 'a> =
-        bevy_proto_backend::proto::ProtoEntityCommands<'w, 's, 'a, Prototype, ProtoConfig>;
+    pub type ProtoEntityCommands<'w, 's, 'a, C = ProtoConfig> =
+        bevy_proto_backend::proto::ProtoEntityCommands<'w, 's, 'a, Prototype, C>;
 
     /// Asset lifecycle events for [prototype] assets.
     ///
