@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::hash::Hash;
+use std::marker::PhantomData;
 use std::sync::Arc;
 
 use crate::registration::params::RegistryParams;
@@ -14,7 +15,7 @@ use crate::tree::{ProtoTree, ProtoTreeBuilder};
 
 /// Resource used to track load states, store mappings, and generate cached data.
 #[derive(Resource)]
-pub(crate) struct ProtoRegistry<T: Prototypical> {
+pub(crate) struct ProtoRegistry<T: Prototypical, C: Config<T>> {
     ids: HashMap<HandleId, T::Id>,
     handles: HashMap<T::Id, Handle<T>>,
     trees: HashMap<HandleId, ProtoTree<T>>,
@@ -28,16 +29,17 @@ pub(crate) struct ProtoRegistry<T: Prototypical> {
     load_queue: Arc<RwLock<LoadQueue<T>>>,
     /// Set of prototypes that failed to be registered.
     failed: HashSet<HandleId>,
+    _phantom: PhantomData<C>,
 }
 
-impl<T: Prototypical> ProtoRegistry<T> {
+impl<T: Prototypical, C: Config<T>> ProtoRegistry<T, C> {
     /// Registers a prototype.
     ///
     /// This will return an error if the prototype is already registered.
     pub(super) fn register<'w>(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<'w, T>,
+        params: &mut RegistryParams<'w, T, C>,
     ) -> Result<&'w T, ProtoError> {
         let prototype = self.register_internal(handle, params, false)?;
 
@@ -59,7 +61,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
     pub(super) fn unregister(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<T>,
+        params: &mut RegistryParams<T, C>,
     ) -> Option<T::Id> {
         let id = self.unregister_internal(handle, params)?;
 
@@ -82,7 +84,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
     pub(super) fn reload<'w>(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<'w, T>,
+        params: &mut RegistryParams<'w, T, C>,
     ) -> Result<&'w T, ProtoError> {
         if self.unregister_internal(handle, params).is_some() {
             let prototype = self.register_internal(handle, params, true)?;
@@ -145,7 +147,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
     fn register_internal<'w>(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<'w, T>,
+        params: &mut RegistryParams<'w, T, C>,
         is_reload: bool,
     ) -> Result<&'w T, ProtoError> {
         let handle = params.get_strong_handle(handle);
@@ -192,7 +194,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
     fn unregister_internal(
         &mut self,
         handle: &Handle<T>,
-        params: &mut RegistryParams<T>,
+        params: &mut RegistryParams<T, C>,
     ) -> Option<T::Id> {
         let handle_id = handle.id();
 
@@ -216,7 +218,7 @@ impl<T: Prototypical> ProtoRegistry<T> {
     }
 }
 
-impl<T: Prototypical> Default for ProtoRegistry<T> {
+impl<T: Prototypical, C: Config<T>> Default for ProtoRegistry<T, C> {
     fn default() -> Self {
         Self {
             ids: HashMap::new(),
@@ -225,6 +227,7 @@ impl<T: Prototypical> Default for ProtoRegistry<T> {
             dependents: HashMap::new(),
             load_queue: Default::default(),
             failed: HashSet::new(),
+            _phantom: PhantomData,
         }
     }
 }

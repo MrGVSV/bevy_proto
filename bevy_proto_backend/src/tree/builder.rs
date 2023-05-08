@@ -10,17 +10,17 @@ use crate::templates::Templates;
 use crate::tree::ProtoTree;
 
 /// Cache object used to create [`ProtoTree`] objects.
-pub(crate) struct ProtoTreeBuilder<'a, T: Prototypical> {
-    registry: &'a mut ProtoRegistry<T>,
+pub(crate) struct ProtoTreeBuilder<'a, T: Prototypical, C: Config<T>> {
+    registry: &'a mut ProtoRegistry<T, C>,
     prototypes: &'a Assets<T>,
-    config: &'a T::Config,
+    config: &'a C,
 }
 
-impl<'a, T: Prototypical> ProtoTreeBuilder<'a, T> {
+impl<'a, T: Prototypical, C: Config<T>> ProtoTreeBuilder<'a, T, C> {
     pub fn new(
-        registry: &'a mut ProtoRegistry<T>,
+        registry: &'a mut ProtoRegistry<T, C>,
         prototypes: &'a Assets<T>,
-        config: &'a T::Config,
+        config: &'a C,
     ) -> Self {
         Self {
             registry,

@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // The `ProtoPlugin` adds all the necessary systems and resources
         // to load and spawn prototype assets.
-        .add_plugin(ProtoPlugin::default())
+        .add_plugin(ProtoPlugin::new())
         .add_startup_systems((setup, load))
         .add_systems((
             spawn.run_if(prototype_ready("Player").and_then(run_once())),

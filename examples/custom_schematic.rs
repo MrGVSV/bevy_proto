@@ -8,7 +8,7 @@ use bevy_proto::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::default())
+        .add_plugin(ProtoPlugin::new())
         // =============== //
         // Make sure to register your types!
         .register_type::<Foo>()

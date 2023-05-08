@@ -17,7 +17,7 @@ fn main() {
         .register_type::<MaxPlayers>()
         .register_type_data::<MaxPlayers, ReflectSchematic>()
         // =============== //
-        .add_plugin(ProtoPlugin::default())
+        .add_plugin(ProtoPlugin::new())
         .add_startup_systems((setup, load))
         .add_systems((
             spawn.run_if(

@@ -3,23 +3,25 @@ use std::fmt::Formatter;
 use serde::de::{DeserializeSeed, SeqAccess, Visitor};
 use serde::Deserializer;
 
-use crate::load::ProtoLoadContext;
+use crate::load::{Loader, ProtoLoadContext};
 use crate::path::{ProtoPath, ProtoPathDeserializer};
 use crate::proto::Prototypical;
 
 /// Deserializer for a sequence of [`ProtoPath`]s.
-pub struct ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T: Prototypical> {
-    context: &'a ProtoLoadContext<'ctx, 'load_ctx, T>,
+pub struct ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T: Prototypical, L: Loader<T>> {
+    context: &'a ProtoLoadContext<'ctx, 'load_ctx, T, L>,
 }
 
-impl<'a, 'ctx, 'load_ctx, T: Prototypical> ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T> {
-    pub fn new(context: &'a ProtoLoadContext<'ctx, 'load_ctx, T>) -> Self {
+impl<'a, 'ctx, 'load_ctx, T: Prototypical, L: Loader<T>>
+    ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T, L>
+{
+    pub fn new(context: &'a ProtoLoadContext<'ctx, 'load_ctx, T, L>) -> Self {
         Self { context }
     }
 }
 
-impl<'a, 'ctx, 'load_ctx, 'de, T: Prototypical> DeserializeSeed<'de>
-    for ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T>
+impl<'a, 'ctx, 'load_ctx, 'de, T: Prototypical, L: Loader<T>> DeserializeSeed<'de>
+    for ProtoPathListDeserializer<'a, 'ctx, 'load_ctx, T, L>
 {
     type Value = Vec<ProtoPath>;
 
@@ -27,12 +29,12 @@ impl<'a, 'ctx, 'load_ctx, 'de, T: Prototypical> DeserializeSeed<'de>
     where
         D: Deserializer<'de>,
     {
-        struct PathListVisitor<'a, 'ctx, 'load_ctx, T: Prototypical> {
-            context: &'a ProtoLoadContext<'ctx, 'load_ctx, T>,
+        struct PathListVisitor<'a, 'ctx, 'load_ctx, T: Prototypical, L: Loader<T>> {
+            context: &'a ProtoLoadContext<'ctx, 'load_ctx, T, L>,
         }
 
-        impl<'a, 'ctx, 'load_ctx, 'de, T: Prototypical> Visitor<'de>
-            for PathListVisitor<'a, 'ctx, 'load_ctx, T>
+        impl<'a, 'ctx, 'load_ctx, 'de, T: Prototypical, L: Loader<T>> Visitor<'de>
+            for PathListVisitor<'a, 'ctx, 'load_ctx, T, L>
         {
             type Value = Vec<ProtoPath>;
 

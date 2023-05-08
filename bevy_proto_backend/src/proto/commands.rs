@@ -13,19 +13,19 @@ use crate::tree::EntityTreeNode;
 ///
 /// [prototypes]: Prototypical
 #[derive(SystemParam)]
-pub struct ProtoCommands<'w, 's, T: Prototypical> {
+pub struct ProtoCommands<'w, 's, T: Prototypical, C: Config<T>> {
     commands: Commands<'w, 's>,
     #[system_param(ignore)]
-    _phantom: PhantomData<T>,
+    _phantom: PhantomData<(T, C)>,
 }
 
-impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
+impl<'w, 's, T: Prototypical, C: Config<T>> ProtoCommands<'w, 's, T, C> {
     /// Spawn the prototype with the given [ID].
     ///
     /// This internally calls [`Commands::spawn`].
     ///
     /// [ID]: Prototypical::id
-    pub fn spawn<I: Into<T::Id>>(&mut self, id: I) -> ProtoEntityCommands<'w, 's, '_, T> {
+    pub fn spawn<I: Into<T::Id>>(&mut self, id: I) -> ProtoEntityCommands<'w, 's, '_, T, C> {
         let mut entity = ProtoEntityCommands::new(self.commands.spawn_empty().id(), self);
         entity.insert(id);
         entity
@@ -34,7 +34,7 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// Spawn an empty entity.
     ///
     /// This internally calls [`Commands::spawn_empty`].
-    pub fn spawn_empty(&mut self) -> ProtoEntityCommands<'w, 's, '_, T> {
+    pub fn spawn_empty(&mut self) -> ProtoEntityCommands<'w, 's, '_, T, C> {
         ProtoEntityCommands::new(self.commands.spawn_empty().id(), self)
     }
 
@@ -44,10 +44,10 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// To spawn this prototype as a new entity, use [`spawn`] instead.
     ///
     /// [ID]: Prototypical::id
-    /// [require an entity]: Prototypical::require_entity
+    /// [require an entity]: Prototypical::requires_entity
     /// [`spawn`]: Self::spawn
     pub fn apply<I: Into<T::Id>>(&mut self, id: I) {
-        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
+        self.add(ProtoInsertCommand::<T, C>::new(id.into(), None));
     }
 
     /// Remove the prototype with the given [ID] from the world.
@@ -56,9 +56,9 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// To remove this prototype from an entity, use [`ProtoEntityCommands::remove`] instead.
     ///
     /// [ID]: Prototypical::id
-    /// [require an entity]: Prototypical::require_entity
+    /// [require an entity]: Prototypical::requires_entity
     pub fn remove<I: Into<T::Id>>(&mut self, id: I) {
-        self.add(ProtoInsertCommand::<T>::new(id.into(), None));
+        self.add(ProtoInsertCommand::<T, C>::new(id.into(), None));
     }
 
     /// Get the [`ProtoEntityCommands`] for the given entity.
@@ -74,7 +74,7 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// [`get_entity`] for the non-panicking version.
     ///
     /// [`get_entity`]: Self::get_entity
-    pub fn entity(&mut self, entity: Entity) -> ProtoEntityCommands<'w, 's, '_, T> {
+    pub fn entity(&mut self, entity: Entity) -> ProtoEntityCommands<'w, 's, '_, T, C> {
         ProtoEntityCommands::new(self.commands.entity(entity).id(), self)
     }
 
@@ -87,7 +87,7 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// [`entity`] for the panicking version.
     ///
     /// [`entity`]: Self::entity
-    pub fn get_entity(&mut self, entity: Entity) -> Option<ProtoEntityCommands<'w, 's, '_, T>> {
+    pub fn get_entity(&mut self, entity: Entity) -> Option<ProtoEntityCommands<'w, 's, '_, T, C>> {
         self.commands
             .get_entity(entity)
             .as_ref()
@@ -99,7 +99,7 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
     /// spawning a new one if it doesn't exist.
     ///
     /// This internally calls [`Commands::get_or_spawn`].
-    pub fn get_or_spawn(&mut self, entity: Entity) -> ProtoEntityCommands<'w, 's, '_, T> {
+    pub fn get_or_spawn(&mut self, entity: Entity) -> ProtoEntityCommands<'w, 's, '_, T, C> {
         ProtoEntityCommands::new(self.commands.get_or_spawn(entity).id(), self)
     }
 
@@ -108,7 +108,7 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
         &mut self.commands
     }
 
-    fn add<C: Command>(&mut self, command: C) {
+    fn add<Cmd: Command>(&mut self, command: Cmd) {
         self.commands.add(command);
     }
 }
@@ -116,13 +116,13 @@ impl<'w, 's, T: Prototypical> ProtoCommands<'w, 's, T> {
 /// A struct similar to [`EntityCommands`], but catered towards [prototypes].
 ///
 /// [prototypes]: Prototypical
-pub struct ProtoEntityCommands<'w, 's, 'a, T: Prototypical> {
+pub struct ProtoEntityCommands<'w, 's, 'a, T: Prototypical, C: Config<T>> {
     entity: Entity,
-    proto_commands: &'a mut ProtoCommands<'w, 's, T>,
+    proto_commands: &'a mut ProtoCommands<'w, 's, T, C>,
 }
 
-impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
-    fn new(entity: Entity, proto_commands: &'a mut ProtoCommands<'w, 's, T>) -> Self {
+impl<'w, 's, 'a, T: Prototypical, C: Config<T>> ProtoEntityCommands<'w, 's, 'a, T, C> {
+    fn new(entity: Entity, proto_commands: &'a mut ProtoCommands<'w, 's, T, C>) -> Self {
         Self {
             entity,
             proto_commands,
@@ -140,7 +140,7 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn insert<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoInsertCommand::<T>::new(id, Some(self.entity)));
+            .add(ProtoInsertCommand::<T, C>::new(id, Some(self.entity)));
         self
     }
 
@@ -150,12 +150,12 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
     pub fn remove<I: Into<T::Id>>(&mut self, id: I) -> &mut Self {
         let id = id.into();
         self.proto_commands
-            .add(ProtoRemoveCommand::<T>::new(id, Some(self.entity)));
+            .add(ProtoRemoveCommand::<T, C>::new(id, Some(self.entity)));
         self
     }
 
     /// Returns the underlying [`ProtoCommands`].
-    pub fn commands(&mut self) -> &mut ProtoCommands<'w, 's, T> {
+    pub fn commands(&mut self) -> &mut ProtoCommands<'w, 's, T, C> {
         self.proto_commands
     }
 
@@ -169,19 +169,23 @@ impl<'w, 's, 'a, T: Prototypical> ProtoEntityCommands<'w, 's, 'a, T> {
 ///
 /// [command]: Command
 /// [prototype]: Prototypical
-pub struct ProtoInsertCommand<T: Prototypical> {
-    data: ProtoCommandData<T>,
+pub struct ProtoInsertCommand<T: Prototypical, C: Config<T>> {
+    data: ProtoCommandData<T, C>,
 }
 
-impl<T: Prototypical> ProtoInsertCommand<T> {
+impl<T: Prototypical, C: Config<T>> ProtoInsertCommand<T, C> {
     pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
-            data: ProtoCommandData { id, entity },
+            data: ProtoCommandData {
+                id,
+                entity,
+                _phantom: PhantomData,
+            },
         }
     }
 }
 
-impl<T: Prototypical> Command for ProtoInsertCommand<T> {
+impl<T: Prototypical, C: Config<T>> Command for ProtoInsertCommand<T, C> {
     fn write(self, world: &mut World) {
         self.data.assert_is_registered(world);
 
@@ -196,19 +200,23 @@ impl<T: Prototypical> Command for ProtoInsertCommand<T> {
 ///
 /// [command]: Command
 /// [prototype]: Prototypical
-pub struct ProtoRemoveCommand<T: Prototypical> {
-    data: ProtoCommandData<T>,
+pub struct ProtoRemoveCommand<T: Prototypical, C: Config<T>> {
+    data: ProtoCommandData<T, C>,
 }
 
-impl<T: Prototypical> ProtoRemoveCommand<T> {
+impl<T: Prototypical, C: Config<T>> ProtoRemoveCommand<T, C> {
     pub fn new(id: T::Id, entity: Option<Entity>) -> Self {
         Self {
-            data: ProtoCommandData { id, entity },
+            data: ProtoCommandData {
+                id,
+                entity,
+                _phantom: PhantomData,
+            },
         }
     }
 }
 
-impl<T: Prototypical> Command for ProtoRemoveCommand<T> {
+impl<T: Prototypical, C: Config<T>> Command for ProtoRemoveCommand<T, C> {
     fn write(self, world: &mut World) {
         self.data.assert_is_registered(world);
 
@@ -219,15 +227,16 @@ impl<T: Prototypical> Command for ProtoRemoveCommand<T> {
     }
 }
 
-struct ProtoCommandData<T: Prototypical> {
+struct ProtoCommandData<T: Prototypical, C: Config<T>> {
     id: T::Id,
     entity: Option<Entity>,
+    _phantom: PhantomData<C>,
 }
 
-impl<T: Prototypical> ProtoCommandData<T> {
+impl<T: Prototypical, C: Config<T>> ProtoCommandData<T, C> {
     /// Asserts that the given prototype is registered, panicking if it isn't.
     fn assert_is_registered(&self, world: &World) {
-        let registry = world.resource::<ProtoRegistry<T>>();
+        let registry = world.resource::<ProtoRegistry<T, C>>();
         let is_registered = registry.contains(&self.id);
 
         if !is_registered {
@@ -247,10 +256,10 @@ impl<T: Prototypical> ProtoCommandData<T> {
 
     fn for_each_entity<F>(&self, world: &mut World, is_apply: bool, callback: F)
     where
-        F: Fn(&EntityTreeNode, &mut SchematicContext, &Assets<T>, &mut T::Config),
+        F: Fn(&EntityTreeNode, &mut SchematicContext, &Assets<T>, &mut C),
     {
-        world.resource_scope(|world: &mut World, registry: Mut<ProtoRegistry<T>>| {
-            world.resource_scope(|world: &mut World, mut config: Mut<T::Config>| {
+        world.resource_scope(|world: &mut World, registry: Mut<ProtoRegistry<T, C>>| {
+            world.resource_scope(|world: &mut World, mut config: Mut<C>| {
                 world.resource_scope(|world, prototypes: Mut<Assets<T>>| {
                     let entity_tree = registry
                         .get_tree_by_id(&self.id)

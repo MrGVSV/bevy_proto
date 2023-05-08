@@ -1,5 +1,7 @@
+pub(crate) use asset_loader::*;
 pub use load_context::*;
-pub(crate) use loader::*;
+pub use loader::*;
 
+mod asset_loader;
 mod load_context;
 mod loader;

@@ -33,7 +33,7 @@ use bevy_proto_backend::tree::EntityAccess;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::new(
+        .add_plugin(ProtoPlugin::new().with_config(
             ProtoConfig::default().on_before_apply_prototype(Box::new(|prototype, context| {
                 // To see the end result of our hierarchy, let's inspect the generated
                 // `EntityTree` for the `Parent` prototype.

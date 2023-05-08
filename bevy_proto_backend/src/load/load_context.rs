@@ -8,31 +8,32 @@ use bevy::reflect::TypeRegistryInternal;
 
 use crate::children::ProtoChildBuilder;
 use crate::deps::DependenciesBuilder;
+use crate::load::Loader;
 use crate::path::ProtoPathContext;
 use crate::proto::Prototypical;
 
 /// The context when loading a [prototype].
 ///
 /// [prototype]: Prototypical
-pub struct ProtoLoadContext<'a, 'ctx, T: Prototypical> {
+pub struct ProtoLoadContext<'a, 'ctx, T: Prototypical, L: Loader<T>> {
     registry: &'a TypeRegistryInternal,
     load_context: Option<&'a mut LoadContext<'ctx>>,
-    extensions: &'a [&'static str],
+    loader: &'a L,
     child_paths: Vec<AssetPath<'static>>,
     depth: usize,
     _phantom: PhantomData<T>,
 }
 
-impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
+impl<'a, 'ctx, T: Prototypical, L: Loader<T>> ProtoLoadContext<'a, 'ctx, T, L> {
     pub(crate) fn new(
         registry: &'a TypeRegistryInternal,
         load_context: &'a mut LoadContext<'ctx>,
-        extensions: &'a [&'static str],
+        loader: &'a L,
     ) -> Self {
         Self {
             registry,
             load_context: Some(load_context),
-            extensions,
+            loader,
             child_paths: Vec::new(),
             depth: 0,
             _phantom: Default::default(),
@@ -55,14 +56,14 @@ impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
     }
 
     /// Creates a [`ProtoChildBuilder`] to allow for proper child processing.
-    pub fn with_children<E: Error, F: FnOnce(&mut ProtoChildBuilder<T>) -> Result<(), E>>(
+    pub fn with_children<E: Error, F: FnOnce(&mut ProtoChildBuilder<T, L>) -> Result<(), E>>(
         &mut self,
         f: F,
     ) -> Result<(), E> {
         let mut ctx = Self {
             registry: self.registry,
             load_context: self.load_context.take(),
-            extensions: self.extensions,
+            loader: self.loader,
             child_paths: Vec::new(),
             depth: self.depth + 1,
             _phantom: Default::default(),
@@ -103,7 +104,7 @@ impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
     pub(crate) fn preprocess_proto(
         &mut self,
         prototype: &mut T,
-    ) -> Result<Vec<AssetPath<'static>>, T::Error> {
+    ) -> Result<Vec<AssetPath<'static>>, L::Error> {
         let mut deps = DependenciesBuilder::new(self.load_context.as_mut().unwrap());
 
         // 1. Track schematic dependencies
@@ -130,7 +131,9 @@ impl<'a, 'ctx, T: Prototypical> ProtoLoadContext<'a, 'ctx, T> {
     }
 }
 
-impl<'a, 'ctx, T: Prototypical> ProtoPathContext for ProtoLoadContext<'a, 'ctx, T> {
+impl<'a, 'ctx, T: Prototypical, L: Loader<T>> ProtoPathContext
+    for ProtoLoadContext<'a, 'ctx, T, L>
+{
     fn base_path(&self) -> &Path {
         self.load_context.as_ref().unwrap().path()
     }
@@ -140,6 +143,6 @@ impl<'a, 'ctx, T: Prototypical> ProtoPathContext for ProtoLoadContext<'a, 'ctx, 
     }
 
     fn extensions(&self) -> &[&'static str] {
-        self.extensions
+        self.loader.extensions()
     }
 }
