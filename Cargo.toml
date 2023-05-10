@@ -121,6 +121,11 @@ path = "examples/basic_schematic.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite"]
 
 [[example]]
+name = "custom_config"
+path = "examples/custom_config.rs"
+required-features = ["ron", "auto_name"]
+
+[[example]]
 name = "custom_loader"
 path = "examples/custom_loader.rs"
 required-features = ["ron", "auto_name"]

@@ -80,7 +80,7 @@ mod schematics;
 /// use bevy_proto::prelude::*;
 /// ```
 pub mod prelude {
-    use crate::config::ProtoConfig;
+    pub use crate::config::ProtoConfig;
     pub use bevy_proto_backend::deps::DependenciesBuilder;
     pub use bevy_proto_backend::proto::Prototypical;
     pub use bevy_proto_backend::schematics::{ReflectSchematic, Schematic, SchematicContext};
