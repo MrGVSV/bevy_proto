@@ -39,11 +39,11 @@ impl<T: Prototypical, L: Loader<T>, C: Config<T>> AssetLoader for ProtoAssetLoad
     ) -> BoxedFuture<'a, anyhow::Result<(), anyhow::Error>> {
         Box::pin(async {
             let registry = self.registry.read();
-            let mut ctx = ProtoLoadContext::<T, L>::new(&registry, load_context, &self.loader);
+            let mut ctx = ProtoLoadContext::<T, L>::new(&registry, &self.loader, load_context);
 
             // 1. Deserialize the prototype
-            let mut prototype = L::deserialize(bytes, &mut ctx)?;
-            let mut dependency_paths = ctx.preprocess_proto(&mut prototype)?;
+            let prototype = L::deserialize(bytes, &mut ctx)?;
+            let (prototype, _, mut dependency_paths) = ctx.preprocess_proto(prototype)?;
             dependency_paths.append(ctx.child_paths_mut());
 
             // 2. Register

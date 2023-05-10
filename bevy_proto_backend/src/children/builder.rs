@@ -11,27 +11,23 @@ use crate::proto::Prototypical;
 /// [prototype's]: Prototypical
 pub struct ProtoChildBuilder<'ctx, 'load_ctx, T: Prototypical, L: Loader<T>> {
     pub(crate) context: ProtoLoadContext<'ctx, 'load_ctx, T, L>,
-    child_count: usize,
 }
 
 impl<'ctx, 'load_ctx, T: Prototypical, L: Loader<T>> ProtoChildBuilder<'ctx, 'load_ctx, T, L> {
     pub(crate) fn new(context: ProtoLoadContext<'ctx, 'load_ctx, T, L>) -> Self {
-        Self {
-            context,
-            child_count: 0,
-        }
+        Self { context }
     }
 
     /// Add the given child to the parent.
-    pub fn add_child(&mut self, mut child: T) -> Result<Handle<T>, L::Error> {
-        let deps = self.context.preprocess_proto(&mut child)?;
+    pub fn add_child(&mut self, child: T) -> Result<Handle<T>, L::Error> {
+        let (child, meta, deps) = self.context.preprocess_proto(child)?;
 
         let child_handle = self.context.set_labeled_asset(
-            &format!("{:0>3}--{:0>3}", self.context.depth(), self.child_count),
+            meta.path.label().expect("child should have an asset label"),
             LoadedAsset::new(child).with_dependencies(deps),
         );
 
-        self.child_count += 1;
+        self.context.increment_index();
 
         Ok(child_handle)
     }
@@ -42,7 +38,7 @@ impl<'ctx, 'load_ctx, T: Prototypical, L: Loader<T>> ProtoChildBuilder<'ctx, 'lo
             .child_paths_mut()
             .push(child_path.asset_path().to_owned());
 
-        self.child_count += 1;
+        self.context.increment_index();
 
         Ok(self.context.get_handle(child_path))
     }

@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::fmt::{Debug, Formatter};
 
-use bevy::utils::hashbrown::hash_map::{Iter, IterMut};
+use bevy::utils::hashbrown::hash_map::{IntoIter, Iter, IterMut};
 use bevy::utils::HashMap;
 
 use crate::schematics::DynamicSchematic;
@@ -91,5 +91,20 @@ impl Debug for Schematics {
         write!(f, "Schematics(")?;
         f.debug_list().entries(self.0.values()).finish()?;
         write!(f, ")")
+    }
+}
+
+impl FromIterator<(Cow<'static, str>, DynamicSchematic)> for Schematics {
+    fn from_iter<T: IntoIterator<Item = (Cow<'static, str>, DynamicSchematic)>>(iter: T) -> Self {
+        Self(HashMap::from_iter(iter))
+    }
+}
+
+impl IntoIterator for Schematics {
+    type Item = (Cow<'static, str>, DynamicSchematic);
+    type IntoIter = IntoIter<Cow<'static, str>, DynamicSchematic>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
