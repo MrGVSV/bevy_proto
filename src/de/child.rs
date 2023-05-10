@@ -4,15 +4,18 @@ use bevy::asset::Handle;
 use serde::de::{DeserializeSeed, Error, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
+use crate::de::ProtoChildValueDeserializer;
 use crate::loader::ProtoLoader;
 use bevy_proto_backend::children::ProtoChildBuilder;
 use bevy_proto_backend::load::Loader;
 use bevy_proto_backend::path::ProtoPath;
 
 use crate::prelude::Prototype;
-use crate::proto::child::de::value::ProtoChildValueDeserializer;
-use crate::proto::child::de::{PROTO_CHILD, PROTO_CHILD_MERGE_KEY, PROTO_CHILD_VALUE};
 use crate::proto::{ProtoChild, ProtoChildValue};
+
+pub(super) const PROTO_CHILD: &str = "ProtoChild";
+const PROTO_CHILD_MERGE_KEY: &str = "merge_key";
+const PROTO_CHILD_VALUE: &str = "value";
 
 #[derive(Deserialize, Debug)]
 #[serde(field_identifier, rename_all = "snake_case")]

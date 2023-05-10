@@ -60,7 +60,11 @@ pub trait Loader<T: Prototypical>: FromWorld + Clone + Send + Sync + 'static {
     ///
     /// By default, this will do nothing and return the prototype as-is.
     ///
+    /// Note: Currently, this logic can also be implemented in [`deserialize`], however,
+    /// this may change in the future so it's best to put this kind of logic here.
+    ///
     /// [prototype]: Prototypical
+    /// [`deserialize`]: Loader::deserialize
     fn on_load_prototype(&self, prototype: T, meta: &ProtoLoadMeta<T>) -> Result<T, Self::Error> {
         let _ = meta;
         Ok(prototype)

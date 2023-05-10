@@ -4,7 +4,7 @@ use std::fmt::{Debug, Formatter};
 use bevy::utils::hashbrown::hash_map::{IntoIter, Iter, IterMut};
 use bevy::utils::HashMap;
 
-use crate::schematics::DynamicSchematic;
+use crate::schematics::{DynamicSchematic, Schematic};
 
 /// A collection of [schematics] for a [prototype].
 ///
@@ -31,37 +31,64 @@ impl Schematics {
         Self(HashMap::with_capacity(capacity))
     }
 
+    /// Returns true if the given schematic is contained.
+    pub fn contains<T: Schematic>(&self) -> bool {
+        self.0.contains_key(std::any::type_name::<T>())
+    }
+
     /// Returns true if the given [type name] of a schematic is contained.
     ///
     /// [type name]: std::any::type_name
-    pub fn contains(&self, key: &str) -> bool {
+    pub fn contains_by_name(&self, key: &str) -> bool {
         self.0.contains_key(key)
+    }
+
+    /// Get a reference to the given schematic.
+    pub fn get<T: Schematic>(&self) -> Option<&DynamicSchematic> {
+        self.0.get(std::any::type_name::<T>())
     }
 
     /// Get a reference to the schematic with the given [type name].
     ///
     /// [type name]: std::any::type_name
-    pub fn get(&self, key: &str) -> Option<&DynamicSchematic> {
+    pub fn get_by_name(&self, key: &str) -> Option<&DynamicSchematic> {
         self.0.get(key)
+    }
+
+    /// Get a mutable reference to the given schematic.
+    pub fn get_mut<T: Schematic>(&mut self) -> Option<&mut DynamicSchematic> {
+        self.0.get_mut(std::any::type_name::<T>())
     }
 
     /// Get a mutable reference to the schematic with the given [type name].
     ///
     /// [type name]: std::any::type_name
-    pub fn get_mut(&mut self, key: &str) -> Option<&mut DynamicSchematic> {
+    pub fn get_mut_by_name(&mut self, key: &str) -> Option<&mut DynamicSchematic> {
         self.0.get_mut(key)
     }
 
     /// Insert a new schematic.
-    pub fn insert(&mut self, schematic: DynamicSchematic) -> Option<DynamicSchematic> {
+    pub fn insert<T: Schematic>(&mut self, input: T::Input) -> Option<DynamicSchematic> {
+        let schematic = DynamicSchematic::new::<T>(input);
+        let key = Cow::Borrowed(std::any::type_name::<T>());
+        self.0.insert(key, schematic)
+    }
+
+    /// Insert a new schematic dynamically.
+    pub fn insert_dynamic(&mut self, schematic: DynamicSchematic) -> Option<DynamicSchematic> {
         let key = Cow::Borrowed(schematic.type_info().type_name());
         self.0.insert(key, schematic)
+    }
+
+    /// Remove the given schematic.
+    pub fn remove<T: Schematic>(&mut self) -> Option<DynamicSchematic> {
+        self.0.remove(std::any::type_name::<T>())
     }
 
     /// Remove the schematic with the given [type name].
     ///
     /// [type name]: std::any::type_name
-    pub fn remove(&mut self, key: &str) -> Option<DynamicSchematic> {
+    pub fn remove_by_name(&mut self, key: &str) -> Option<DynamicSchematic> {
         self.0.remove(key)
     }
 

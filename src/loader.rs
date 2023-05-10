@@ -1,5 +1,5 @@
-use crate::prelude::Prototype;
-use crate::proto::{PrototypeDeserializer, PrototypeError};
+use crate::de::PrototypeDeserializer;
+use crate::proto::{Prototype, PrototypeError};
 use bevy_proto_backend::load::{Loader, ProtoLoadContext};
 use bevy_proto_backend::path::ProtoPathContext;
 use serde::de::DeserializeSeed;

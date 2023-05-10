@@ -66,6 +66,7 @@ mod conditions;
 pub mod config;
 #[cfg(feature = "custom_schematics")]
 pub mod custom;
+pub mod de;
 pub mod hooks;
 pub mod loader;
 mod plugin;
@@ -86,7 +87,7 @@ pub mod prelude {
 
     pub use super::conditions::*;
     pub use super::plugin::ProtoPlugin;
-    pub use super::proto::Prototype;
+    pub use super::proto::{Prototype, PrototypeError};
 
     /// A helper SystemParam for managing [prototypes].
     ///

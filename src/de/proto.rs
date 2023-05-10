@@ -10,8 +10,8 @@ use bevy_proto_backend::path::{ProtoPathContext, ProtoPathListDeserializer};
 use bevy_proto_backend::schematics::Schematics;
 use bevy_proto_backend::templates::Templates;
 
+use crate::de::ProtoChildrenDeserializer;
 use crate::prelude::Prototype;
-use crate::proto::ProtoChildrenDeserializer;
 use crate::schematics::SchematicsDeserializer;
 
 const NAME: &str = "name";
@@ -30,7 +30,7 @@ enum PrototypeField {
     Entity,
 }
 
-pub(crate) struct PrototypeDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> {
+pub struct PrototypeDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> {
     pub(crate) context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype, L>,
 }
 

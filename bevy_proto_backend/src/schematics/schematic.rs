@@ -1,5 +1,5 @@
 use bevy::prelude::{FromReflect, Reflect};
-use bevy::reflect::GetTypeRegistration;
+use bevy::reflect::{GetTypeRegistration, Typed};
 
 use crate::deps::DependenciesBuilder;
 use crate::schematics::SchematicContext;
@@ -37,7 +37,7 @@ use crate::schematics::SchematicContext;
 /// [world]: bevy::ecs::world::World
 /// [derived]: bevy_proto_derive::Schematic
 /// [module-level documentation]: crate::schematics
-pub trait Schematic: Reflect {
+pub trait Schematic: Reflect + Typed {
     /// The input type to this schematic.
     ///
     /// This acts as an intermediate between serialized schematic information

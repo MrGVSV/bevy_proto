@@ -6,12 +6,11 @@ use bevy_proto_backend::load::Loader;
 use serde::de::{DeserializeSeed, SeqAccess, Visitor};
 use serde::Deserializer;
 
-use crate::proto::child::de::child::ProtoChildDeserializer;
-use crate::proto::child::de::PROTO_CHILD;
+use crate::de::child::PROTO_CHILD;
+use crate::de::ProtoChildDeserializer;
 use crate::proto::{ProtoChild, Prototype};
 
-pub(crate) struct ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype> = ProtoLoader>
-{
+pub struct ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype> = ProtoLoader> {
     builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>,
 }
 
