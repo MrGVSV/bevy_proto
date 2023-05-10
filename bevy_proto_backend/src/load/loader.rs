@@ -29,7 +29,7 @@ pub trait Loader<T: Prototypical>: FromWorld + Clone + Send + Sync + 'static {
     /// # use bevy::prelude::Resource;
     /// # use bevy_proto_backend::proto::{Config, Prototypical};
     /// # use bevy_proto_backend::load::{Loader, ProtoLoadContext};
-    /// use bevy_proto_backend::schematics::SchematicError;
+    /// # use bevy_proto_backend::schematics::SchematicError;
     /// # #[derive(Default, Clone)]
     /// struct MyPrototypeLoader;
     /// impl<T: Prototypical> Loader<T> for MyPrototypeLoader {
