@@ -21,7 +21,7 @@ fn main() {
             watch_for_changes: true,
             ..default()
         }))
-        .add_plugin(ProtoPlugin::default())
+        .add_plugin(ProtoPlugin::new())
         // The original example sets the update mode to `desktop_app`,
         // but this doesn't play nice with hot-reloading.
         // .insert_resource(bevy::winit::WinitSettings::desktop_app())

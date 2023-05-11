@@ -5,13 +5,13 @@ use serde::de::{DeserializeSeed, Error, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
 use bevy_proto_backend::children::Children;
-use bevy_proto_backend::load::ProtoLoadContext;
+use bevy_proto_backend::load::{Loader, ProtoLoadContext};
 use bevy_proto_backend::path::{ProtoPathContext, ProtoPathListDeserializer};
 use bevy_proto_backend::schematics::Schematics;
 use bevy_proto_backend::templates::Templates;
 
+use crate::de::ProtoChildrenDeserializer;
 use crate::prelude::Prototype;
-use crate::proto::ProtoChildrenDeserializer;
 use crate::schematics::SchematicsDeserializer;
 
 const NAME: &str = "name";
@@ -30,28 +30,32 @@ enum PrototypeField {
     Entity,
 }
 
-pub(crate) struct PrototypeDeserializer<'a, 'ctx, 'load_ctx> {
-    pub(crate) context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype>,
+pub struct PrototypeDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> {
+    pub(crate) context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype, L>,
 }
 
-impl<'a, 'ctx, 'load_ctx> PrototypeDeserializer<'a, 'ctx, 'load_ctx> {
-    pub fn new(context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype>) -> Self {
+impl<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> PrototypeDeserializer<'a, 'ctx, 'load_ctx, L> {
+    pub fn new(context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype, L>) -> Self {
         Self { context }
     }
 }
 
-impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de> for PrototypeDeserializer<'a, 'ctx, 'load_ctx> {
+impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> DeserializeSeed<'de>
+    for PrototypeDeserializer<'a, 'ctx, 'load_ctx, L>
+{
     type Value = Prototype;
 
     fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
     where
         D: Deserializer<'de>,
     {
-        struct PrototypeVisitor<'a, 'ctx, 'load_ctx> {
-            context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype>,
+        struct PrototypeVisitor<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> {
+            context: &'a mut ProtoLoadContext<'ctx, 'load_ctx, Prototype, L>,
         }
 
-        impl<'a, 'ctx, 'load_ctx, 'de> Visitor<'de> for PrototypeVisitor<'a, 'ctx, 'load_ctx> {
+        impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> Visitor<'de>
+            for PrototypeVisitor<'a, 'ctx, 'load_ctx, L>
+        {
             type Value = Prototype;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

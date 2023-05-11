@@ -7,7 +7,7 @@ use std::hash::Hash;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::proto::{ProtoStorage, Prototypical};
+use crate::proto::{Config, ProtoStorage, Prototypical};
 use crate::registration::ProtoRegistry;
 
 #[derive(Debug, Error)]
@@ -23,9 +23,9 @@ pub enum ProtoLoadError {
 ///
 /// [prototypes]: Prototypical
 #[derive(SystemParam)]
-pub struct Prototypes<'w, T: Prototypical> {
-    registry: Res<'w, ProtoRegistry<T>>,
-    config: Res<'w, <T as Prototypical>::Config>,
+pub struct Prototypes<'w, T: Prototypical, C: Config<T>> {
+    registry: Res<'w, ProtoRegistry<T, C>>,
+    config: Res<'w, C>,
     asset_server: Res<'w, AssetServer>,
     storage: Res<'w, ProtoStorage<T>>,
 }
@@ -36,14 +36,14 @@ pub struct Prototypes<'w, T: Prototypical> {
 ///
 /// [prototypes]: Prototypical
 #[derive(SystemParam)]
-pub struct PrototypesMut<'w, T: Prototypical> {
-    registry: Res<'w, ProtoRegistry<T>>,
-    config: ResMut<'w, <T as Prototypical>::Config>,
+pub struct PrototypesMut<'w, T: Prototypical, C: Config<T>> {
+    registry: Res<'w, ProtoRegistry<T, C>>,
+    config: ResMut<'w, C>,
     asset_server: Res<'w, AssetServer>,
     storage: ResMut<'w, ProtoStorage<T>>,
 }
 
-impl<'w, T: Prototypical> PrototypesMut<'w, T> {
+impl<'w, T: Prototypical, C: Config<T>> PrototypesMut<'w, T, C> {
     /// Load the prototype at the given path.
     ///
     /// This will also store a strong handle to the prototype in order to keep it loaded.
@@ -100,15 +100,15 @@ impl<'w, T: Prototypical> PrototypesMut<'w, T> {
 
     /// Returns a mutable reference to the [`Config`] resource.
     ///
-    /// [`Config`]: crate::proto::Config
-    pub fn config_mut(&mut self) -> &mut T::Config {
+    /// [`Config`]: Config
+    pub fn config_mut(&mut self) -> &mut C {
         &mut self.config
     }
 }
 
 macro_rules! impl_prototypes {
     ($ident: ident) => {
-        impl<'w, T: Prototypical> $ident<'w, T> {
+        impl<'w, T: Prototypical, C: Config<T>> $ident<'w, T, C> {
             /// Returns the [`LoadState`] for the prototype with the given [`HandleId`].
             ///
             /// This method is preferred over [`AssetServer::get_load_state`] as it better
@@ -171,8 +171,8 @@ macro_rules! impl_prototypes {
 
             /// Returns a reference to the [`Config`] resource.
             ///
-            /// [`Config`]: crate::proto::Config
-            pub fn config(&self) -> &T::Config {
+            /// [`Config`]: Config
+            pub fn config(&self) -> &C {
                 &self.config
             }
         }

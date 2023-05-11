@@ -1,26 +1,27 @@
 use std::fmt::Formatter;
 
+use crate::loader::ProtoLoader;
+use bevy_proto_backend::children::ProtoChildBuilder;
+use bevy_proto_backend::load::Loader;
 use serde::de::{DeserializeSeed, SeqAccess, Visitor};
 use serde::Deserializer;
 
-use bevy_proto_backend::children::ProtoChildBuilder;
-
-use crate::proto::child::de::child::ProtoChildDeserializer;
-use crate::proto::child::de::PROTO_CHILD;
+use crate::de::child::PROTO_CHILD;
+use crate::de::ProtoChildDeserializer;
 use crate::proto::{ProtoChild, Prototype};
 
-pub(crate) struct ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx> {
-    builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>,
+pub struct ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype> = ProtoLoader> {
+    builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>,
 }
 
-impl<'a, 'ctx, 'load_ctx> ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx> {
-    pub fn new(builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>) -> Self {
+impl<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx, L> {
+    pub fn new(builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>) -> Self {
         Self { builder }
     }
 }
 
-impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de>
-    for ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx>
+impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> DeserializeSeed<'de>
+    for ProtoChildrenDeserializer<'a, 'ctx, 'load_ctx, L>
 {
     type Value = Vec<ProtoChild>;
 
@@ -28,10 +29,12 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de>
     where
         D: Deserializer<'de>,
     {
-        struct ProtoChildrenVisitor<'a, 'ctx, 'load_ctx> {
-            pub(crate) builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>,
+        struct ProtoChildrenVisitor<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> {
+            pub(crate) builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>,
         }
-        impl<'a, 'ctx, 'load_ctx, 'de> Visitor<'de> for ProtoChildrenVisitor<'a, 'ctx, 'load_ctx> {
+        impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> Visitor<'de>
+            for ProtoChildrenVisitor<'a, 'ctx, 'load_ctx, L>
+        {
             type Value = Vec<ProtoChild>;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

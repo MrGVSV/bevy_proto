@@ -1,11 +1,9 @@
 //! Items relating to the main [`Prototype`] struct.
 
 pub use child::*;
-pub(crate) use de::*;
 pub use error::*;
 pub use prototype::*;
 
-mod child;
-mod de;
+pub mod child;
 mod error;
 mod prototype;

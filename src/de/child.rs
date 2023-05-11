@@ -4,13 +4,18 @@ use bevy::asset::Handle;
 use serde::de::{DeserializeSeed, Error, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
+use crate::de::ProtoChildValueDeserializer;
+use crate::loader::ProtoLoader;
 use bevy_proto_backend::children::ProtoChildBuilder;
+use bevy_proto_backend::load::Loader;
 use bevy_proto_backend::path::ProtoPath;
 
 use crate::prelude::Prototype;
-use crate::proto::child::de::value::ProtoChildValueDeserializer;
-use crate::proto::child::de::{PROTO_CHILD, PROTO_CHILD_MERGE_KEY, PROTO_CHILD_VALUE};
 use crate::proto::{ProtoChild, ProtoChildValue};
+
+pub(super) const PROTO_CHILD: &str = "ProtoChild";
+const PROTO_CHILD_MERGE_KEY: &str = "merge_key";
+const PROTO_CHILD_VALUE: &str = "value";
 
 #[derive(Deserialize, Debug)]
 #[serde(field_identifier, rename_all = "snake_case")]
@@ -19,18 +24,18 @@ enum ProtoChildField {
     Value,
 }
 
-pub struct ProtoChildDeserializer<'a, 'ctx, 'load_ctx> {
-    builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>,
+pub struct ProtoChildDeserializer<'a, 'ctx, 'load_ctx, L: Loader<Prototype> = ProtoLoader> {
+    builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>,
 }
 
-impl<'a, 'ctx, 'load_ctx> ProtoChildDeserializer<'a, 'ctx, 'load_ctx> {
-    pub fn new(builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>) -> Self {
+impl<'a, 'ctx, 'load_ctx, L: Loader<Prototype>> ProtoChildDeserializer<'a, 'ctx, 'load_ctx, L> {
+    pub fn new(builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>) -> Self {
         Self { builder }
     }
 }
 
-impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de>
-    for ProtoChildDeserializer<'a, 'ctx, 'load_ctx>
+impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> DeserializeSeed<'de>
+    for ProtoChildDeserializer<'a, 'ctx, 'load_ctx, L>
 {
     type Value = ProtoChild;
 
@@ -38,10 +43,12 @@ impl<'a, 'ctx, 'load_ctx, 'de> DeserializeSeed<'de>
     where
         D: Deserializer<'de>,
     {
-        struct ProtoChildVisitor<'a, 'ctx, 'load_ctx> {
-            pub(crate) builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype>,
+        struct ProtoChildVisitor<'a, 'ctx, 'load_ctx, L: Loader<Prototype> = ProtoLoader> {
+            pub(crate) builder: &'a mut ProtoChildBuilder<'ctx, 'load_ctx, Prototype, L>,
         }
-        impl<'a, 'ctx, 'load_ctx, 'de> Visitor<'de> for ProtoChildVisitor<'a, 'ctx, 'load_ctx> {
+        impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> Visitor<'de>
+            for ProtoChildVisitor<'a, 'ctx, 'load_ctx, L>
+        {
             type Value = ProtoChild;
 
             fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

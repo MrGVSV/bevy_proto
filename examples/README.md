@@ -15,6 +15,8 @@ The recommended order is:
 6. [custom_schematic.rs](./custom_schematic.rs) - Creating a custom `Schematic`implementation
 7. [hierarchy.rs](./hierarchy.rs) - Defining complex prototype hierarchies with children
 8. [cycles.rs](./cycles.rs) - How prototype cycles are handled
+9. [custom_loader.rs](./custom_loader.rs) - How to create a custom loader
+10. [custom_config.rs](./custom_config.rs) - How to create a custom config
 
 ### Bevy Examples
 

@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::Debug;
 use std::hash::Hash;
 
@@ -6,10 +5,8 @@ use bevy::asset::Asset;
 
 use crate::children::{Children, PrototypicalChild};
 use crate::deps::Dependencies;
-use crate::load::ProtoLoadContext;
 use crate::path::ProtoPath;
-use crate::proto::config::Config;
-use crate::schematics::{SchematicError, Schematics};
+use crate::schematics::Schematics;
 use crate::templates::Templates;
 
 /// The trait used to define a prototype.
@@ -44,10 +41,6 @@ pub trait Prototypical: Asset + Sized {
     ///
     /// This is used to configure how a child is processed.
     type Child: PrototypicalChild<Self>;
-    /// The configuration type used for managing this prototype.
-    type Config: Config<Self>;
-    /// The error type used for deserializing.
-    type Error: Error + From<SchematicError> + Send + Sync;
 
     /// The ID of this prototype.
     fn id(&self) -> &Self::Id;
@@ -75,6 +68,4 @@ pub trait Prototypical: Asset + Sized {
     fn children(&self) -> Option<&Children<Self>>;
     /// A mutable reference to the collection of [`Children`] contained in this prototype, if any.
     fn children_mut(&mut self) -> Option<&mut Children<Self>>;
-    /// Deserialize the given slice of bytes into an instance of [`Self`].
-    fn deserialize(bytes: &[u8], ctx: &mut ProtoLoadContext<Self>) -> Result<Self, Self::Error>;
 }

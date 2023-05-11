@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::path::PathBuf;
 
 use thiserror::Error;
@@ -9,6 +10,8 @@ use bevy_proto_backend::schematics::SchematicError;
 /// [`Prototype`]: crate::prelude::Prototype
 #[derive(Debug, Error)]
 pub enum PrototypeError {
+    #[error("{0}")]
+    Custom(String),
     /// The path of the prototype being loaded is missing an extension.
     #[error("expected extension")]
     MissingExtension(PathBuf),
@@ -25,4 +28,10 @@ pub enum PrototypeError {
     YamlError(#[from] serde_yaml::Error),
     #[error(transparent)]
     SchematicError(#[from] SchematicError),
+}
+
+impl PrototypeError {
+    pub fn custom(msg: impl Display) -> Self {
+        Self::Custom(format!("{}", msg))
+    }
 }

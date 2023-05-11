@@ -1,25 +1,25 @@
-use crate::proto::{ProtoAssetEvent, ProtoError, Prototypical};
+use crate::proto::{Config, ProtoAssetEvent, ProtoError, Prototypical};
 use bevy::asset::{Assets, Handle, HandleId};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{EventWriter, Res, ResMut};
 
 #[derive(SystemParam)]
-pub(super) struct RegistryParams<'w, T: Prototypical> {
+pub(super) struct RegistryParams<'w, T: Prototypical, C: Config<T>> {
     prototypes: Res<'w, Assets<T>>,
-    config: ResMut<'w, <T as Prototypical>::Config>,
+    config: ResMut<'w, C>,
     proto_events: EventWriter<'w, ProtoAssetEvent<T>>,
 }
 
-impl<'w, T: Prototypical> RegistryParams<'w, T> {
+impl<'w, T: Prototypical, C: Config<T>> RegistryParams<'w, T, C> {
     pub fn prototypes(&self) -> &'w Assets<T> {
         Res::clone(&self.prototypes).into_inner()
     }
 
-    pub fn config(&self) -> &T::Config {
+    pub fn config(&self) -> &C {
         &self.config
     }
 
-    pub fn config_mut(&mut self) -> &mut T::Config {
+    pub fn config_mut(&mut self) -> &mut C {
         &mut self.config
     }
 

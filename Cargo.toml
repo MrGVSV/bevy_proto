@@ -110,6 +110,7 @@ serde_yaml = { version = "0.9", optional = true, default-features = false }
 
 [dev-dependencies]
 ron = "0.8"
+serde_yaml = "0.9"
 bevy = "0.10.1"
 bevy_prototype_lyon = "0.8.0"
 trybuild = "1.0.71"
@@ -118,6 +119,16 @@ trybuild = "1.0.71"
 name = "basic_schematic"
 path = "examples/basic_schematic.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite"]
+
+[[example]]
+name = "custom_config"
+path = "examples/custom_config.rs"
+required-features = ["ron", "auto_name"]
+
+[[example]]
+name = "custom_loader"
+path = "examples/custom_loader.rs"
+required-features = ["ron", "auto_name"]
 
 [[example]]
 name = "custom_schematic"

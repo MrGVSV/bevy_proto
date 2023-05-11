@@ -18,9 +18,8 @@ use crate::hooks::{
 use crate::proto::Prototype;
 
 /// The config resource for [`Prototype`].
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct ProtoConfig {
-    extensions: Vec<&'static str>,
     on_register_prototype: Option<OnRegisterPrototype>,
     on_reload_prototype: Option<OnReloadPrototype>,
     on_unregister_prototype: Option<OnUnregisterPrototype>,
@@ -109,41 +108,7 @@ impl ProtoConfig {
     }
 }
 
-impl Default for ProtoConfig {
-    fn default() -> Self {
-        let mut extensions = Vec::new();
-
-        if cfg!(feature = "yaml") {
-            extensions.push("prototype.yaml");
-        }
-
-        if cfg!(feature = "ron") {
-            extensions.push("prototype.ron");
-        }
-
-        Self {
-            extensions,
-            on_register_prototype: None,
-            on_reload_prototype: None,
-            on_unregister_prototype: None,
-            on_before_apply_prototype: None,
-            on_after_apply_prototype: None,
-            on_before_remove_prototype: None,
-            on_after_remove_prototype: None,
-            on_before_apply_schematic: None,
-            on_after_apply_schematic: None,
-            on_before_remove_schematic: None,
-            on_after_remove_schematic: None,
-            on_cycle: None,
-        }
-    }
-}
-
 impl Config<Prototype> for ProtoConfig {
-    fn extensions(&self) -> Box<[&'static str]> {
-        self.extensions.clone().into_boxed_slice()
-    }
-
     fn on_register_prototype(&mut self, prototype: &Prototype, handle: Handle<Prototype>) {
         if let Some(on_register_prototype) = &mut self.on_register_prototype {
             on_register_prototype(prototype, handle);

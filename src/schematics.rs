@@ -44,7 +44,7 @@ impl<'de, 'a> DeserializeSeed<'de> for SchematicsDeserializer<'a> {
                 while let Some(registration) =
                     map.next_key_seed(TypeRegistrationDeserializer::new(self.registry))?
                 {
-                    if schematics.contains(registration.type_name()) {
+                    if schematics.contains_by_name(registration.type_name()) {
                         return Err(Error::custom(format_args!(
                             "duplicate schematic: `{}`",
                             registration.type_name()
@@ -70,7 +70,7 @@ impl<'de, 'a> DeserializeSeed<'de> for SchematicsDeserializer<'a> {
                         .create_dynamic(input)
                         .map_err(Error::custom)?;
 
-                    schematics.insert(schematic);
+                    schematics.insert_dynamic(schematic);
                 }
 
                 Ok(schematics)
@@ -119,7 +119,7 @@ mod tests {
         assert_eq!(
             &MySchematic { foo: 123 },
             schematics
-                .get("bevy_proto::schematics::tests::MySchematic")
+                .get::<MySchematic>()
                 .unwrap()
                 .input()
                 .downcast_ref::<MySchematic>()

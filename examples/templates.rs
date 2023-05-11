@@ -29,7 +29,7 @@ use bevy_proto::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::default())
+        .add_plugin(ProtoPlugin::new())
         .register_type::<Colored>()
         .register_type::<Scaled>()
         .add_startup_systems((load, setup))

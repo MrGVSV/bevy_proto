@@ -1,13 +1,13 @@
 use bevy::asset::AssetEvent;
 use bevy::prelude::{error, EventReader};
 
-use crate::proto::Prototypical;
+use crate::proto::{Config, Prototypical};
 use crate::registration::ProtoManager;
 
 /// Handles the registration of loaded, modified, and removed prototypes.
-pub(crate) fn on_proto_asset_event<T: Prototypical>(
+pub(crate) fn on_proto_asset_event<T: Prototypical, C: Config<T>>(
     mut events: EventReader<AssetEvent<T>>,
-    mut manager: ProtoManager<T>,
+    mut manager: ProtoManager<T, C>,
 ) {
     for event in events.iter() {
         match event {

@@ -22,11 +22,25 @@ pub struct DynamicSchematic {
 }
 
 impl DynamicSchematic {
-    /// Get the reflected [schematic input] data.
+    pub fn new<T: Schematic>(input: T::Input) -> Self {
+        Self {
+            input: Box::new(input),
+            reflect_schematic: <ReflectSchematic as FromType<T>>::from_type(),
+        }
+    }
+
+    /// Get a reference to the reflected [schematic input] data.
     ///
     /// [schematic input]: Schematic::Input
     pub fn input(&self) -> &dyn Reflect {
         &*self.input
+    }
+
+    /// Get a mutable reference to the reflected [schematic input] data.
+    ///
+    /// [schematic input]: Schematic::Input
+    pub fn input_mut(&mut self) -> &mut dyn Reflect {
+        &mut *self.input
     }
 
     /// Dynamically call the corresponding [`Schematic::apply`] method.
@@ -121,7 +135,7 @@ impl ReflectSchematic {
     }
 }
 
-impl<T: Reflect + Typed + Schematic> FromType<T> for ReflectSchematic {
+impl<T: Schematic> FromType<T> for ReflectSchematic {
     fn from_type() -> Self {
         Self {
             type_info: <T as Typed>::type_info(),

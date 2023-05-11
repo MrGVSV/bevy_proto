@@ -1,0 +1,11 @@
+name: Player
+schematics:
+  custom_loader::Player:
+  # Comment out the `Health` component below to have this prototype
+  # be rejected by our custom loader.
+  custom_loader::Health:
+    - 100
+  # Comment out the `Mana` component below to have a default instance
+  # of it be inserted by our custom loader.
+  custom_loader::Mana:
+    - 100

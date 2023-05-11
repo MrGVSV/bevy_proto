@@ -14,35 +14,6 @@ use crate::schematics::{DynamicSchematic, SchematicContext};
 /// [`ProtoBackendPlugin`]: crate::ProtoBackendPlugin
 #[allow(unused_variables)]
 pub trait Config<T: Prototypical>: Resource + FromWorld {
-    /// A list of supported extensions.
-    ///
-    /// Extensions should be in order of most-specific to least specific,
-    /// and should not be prepended by a dot (`.`).
-    /// Generally, this means it should be in order of longest to shortest.
-    ///
-    /// For example, this could return:
-    ///
-    /// ```
-    /// # use bevy::prelude::Resource;
-    /// # use bevy_proto_backend::proto::{Config, Prototypical};
-    /// # #[derive(Default)]
-    /// struct Foo;
-    /// # impl Resource for Foo {}
-    /// impl<T: Prototypical> Config<T> for Foo {
-    ///   fn extensions(&self) -> Box<[&'static str]> {
-    ///     vec![
-    ///       // Most Specific (Longest) //
-    ///       "prototype.yaml",
-    ///       "prototype.ron",
-    ///       "yaml"
-    ///       "ron",
-    ///       // Least Specific (Shortest) //
-    ///     ].into_boxed_slice()
-    ///   }
-    /// }
-    /// ```
-    fn extensions(&self) -> Box<[&'static str]>;
-
     /// Callback method that's triggered when a [prototype] is registered.
     ///
     /// Prototypes are registered when they are first loaded.
