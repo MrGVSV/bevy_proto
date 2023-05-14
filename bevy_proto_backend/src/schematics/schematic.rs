@@ -33,7 +33,7 @@ use crate::schematics::SchematicContext;
 /// ```
 ///
 /// [prototype]: crate::proto::Prototypical
-/// [entity]: EntityMut
+/// [entity]: bevy::ecs::world::EntityMut
 /// [world]: bevy::ecs::world::World
 /// [derived]: bevy_proto_derive::Schematic
 /// [module-level documentation]: crate::schematics

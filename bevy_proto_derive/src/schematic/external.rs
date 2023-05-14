@@ -17,7 +17,7 @@ use crate::schematic::DeriveSchematic;
 /// }
 /// ```
 ///
-/// [`impl_external_schematic`]: crate::impl_external_schematic
+/// [`impl_external_schematic`]: crate::impl_external_schematic!
 pub(crate) struct ExternalSchematic {
     schematic_data: DeriveSchematic,
     other_content: TokenStream,

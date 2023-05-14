@@ -166,7 +166,7 @@ pub(crate) enum AccessOp {
 /// | `./~2:foo`, `~2:foo` | [`SiblingAccess::Id`] (nth occurrence) |
 ///
 ///
-/// [`EntityTree`]: EntityTree
+/// [`EntityTree`]: crate::tree::EntityTree
 #[derive(Default, Clone, Eq, PartialEq, Reflect, FromReflect, Deserialize)]
 #[reflect(Default, Deserialize)]
 #[serde(from = "ProtoEntity")]
