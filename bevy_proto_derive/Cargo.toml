@@ -1,6 +1,6 @@
 [package]
 name = "bevy_proto_derive"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 authors = ["Gino Valente <gino.valente.code@gmail.com>"]
 description = "Derive macro for use with bevy_proto"

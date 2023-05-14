@@ -78,7 +78,7 @@ This crate can be used for:
 Add the following to your `[dependencies]` section in `Cargo.toml`:
 
 ```rust
-bevy_proto = "0.9"
+bevy_proto = "0.10"
 ```
 
 Or use `cargo add`:
@@ -96,7 +96,7 @@ using the crate.
 
 | bevy   | bevy_proto |
 |--------|------------|
-| 0.10.1 | 0.9.0      |
+| 0.10.1 | 0.10.0     |
 
 For previous versions of this crate, see the [Previous Versions](#-previous-versions) section below.
 
@@ -112,11 +112,11 @@ accomplished thus far:
 | Reflection support                               | ✅      |
 | Nested prototypes                                | ✅      |
 | Package-specifier                                | 🚧     |
-| Configurable schematics filtering and processing | 🚧     |
+| Configurable schematics filtering and processing | ✅      |
 | Prototype arguments                              | 🚧     |
 | Entity-less prototypes                           | ✅      |
 | Value access                                     | 🚧     |
-| Custom file format support                       | 🚧     |
+| Custom file format support                       | ✅     |
 | Improved documentation                           | 🚧     |
 | Benchmarks                                       | 🚧     |
 
