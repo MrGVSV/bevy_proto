@@ -136,7 +136,7 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum InteractionInput {
-        Clicked,
+        Pressed,
         Hovered,
         None,
     }
@@ -144,7 +144,7 @@ impl_external_schematic! {
         Interaction,
         InteractionInput,
         |value: Input| match value {
-            Input::Clicked => Self::Clicked,
+            Input::Pressed => Self::Pressed,
             Input::Hovered => Self::Hovered,
             Input::None => Self::None,
         }
