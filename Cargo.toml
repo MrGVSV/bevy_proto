@@ -99,8 +99,8 @@ bevy_ui = [
 ]
 
 [dependencies]
-bevy_proto_backend = { version = "0.3", path = "./bevy_proto_backend", default-features = false }
-bevy = { version = ">=0.10.1", default-features = false, features = ["bevy_asset"] }
+bevy_proto_backend = { version = "0.4", path = "./bevy_proto_backend", default-features = false }
+bevy = { version = ">=0.11.0", default-features = false, features = ["bevy_asset"] }
 anyhow = "1.0"
 serde = "1.0"
 thiserror = "1.0"
@@ -111,8 +111,8 @@ serde_yaml = { version = "0.9", optional = true, default-features = false }
 [dev-dependencies]
 ron = "0.8"
 serde_yaml = "0.9"
-bevy = "0.10.1"
-bevy_prototype_lyon = "0.8.0"
+bevy = "0.11.0"
+bevy_prototype_lyon = "0.9.0"
 trybuild = "1.0.71"
 
 [[example]]
