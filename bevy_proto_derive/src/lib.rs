@@ -173,7 +173,7 @@ pub fn derive_schematic(input: TokenStream) -> TokenStream {
 ///     // since we're using a custom input type
 ///   }
 ///
-///   #[derive(Reflect, FromReflect)]
+///   #[derive(Reflect)]
 ///   pub struct SomeExternalTypeInput(usize);
 ///   impl From<SomeExternalTypeInput> for SomeExternalType {
 ///     fn from(input: SomeExternalTypeInput) -> Self {

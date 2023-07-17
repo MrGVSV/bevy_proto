@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::gltf::GltfExtras;
-use bevy::reflect::{FromReflect, Reflect};
+use bevy::reflect::Reflect;
 
 use crate::impls::macros::{from_to_default, register_schematic};
 use bevy_proto_derive::impl_external_schematic;
@@ -13,7 +13,7 @@ impl_external_schematic! {
     #[schematic(from = GltfExtrasInput)]
     struct GltfExtras {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct GltfExtrasInput{
         pub value: String,
     }

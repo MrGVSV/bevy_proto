@@ -17,7 +17,7 @@ impl_external_schematic! {
     #[schematic(from = PrimaryWindowInput)]
     struct PrimaryWindow;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct PrimaryWindowInput;
     impl From<PrimaryWindowInput> for PrimaryWindow {
         fn from(_: PrimaryWindowInput) -> Self {

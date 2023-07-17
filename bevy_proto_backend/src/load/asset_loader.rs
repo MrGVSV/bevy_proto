@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use bevy::app::AppTypeRegistry;
+use bevy::ecs::reflect::AppTypeRegistry;
 use bevy::asset::{AssetLoader, AssetPath, BoxedFuture, LoadContext, LoadedAsset};
 use bevy::prelude::{Handle, World};
 use parking_lot::RwLock;

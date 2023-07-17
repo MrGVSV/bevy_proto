@@ -1,11 +1,11 @@
 use bevy::app::App;
 use bevy::math::{Rect, Vec2};
 use bevy::prelude::{BackgroundColor, Button, Label};
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::{
-    AlignContent, AlignItems, AlignSelf, CalculatedClip, CalculatedSize, Direction, Display,
+    AlignContent, AlignItems, AlignSelf, CalculatedClip, Direction, Display,
     FlexDirection, FlexWrap, FocusPolicy, Interaction, JustifyContent, Node, Overflow,
-    PositionType, RelativeCursorPosition, Size, Style, UiImage, UiRect, Val, ZIndex,
+    PositionType, RelativeCursorPosition, Style, UiImage, UiRect, Val, ZIndex,
 };
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
@@ -18,7 +18,6 @@ pub(super) fn register(app: &mut App) {
         BackgroundColor,
         Button,
         CalculatedClip,
-        CalculatedSize,
         FocusPolicy,
         Interaction,
         Label,
@@ -49,7 +48,7 @@ impl_external_schematic! {
     #[schematic(from = BackgroundColorInput)]
     struct BackgroundColor();
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct BackgroundColorInput(pub ProtoColor);
     from_to_default! {
@@ -63,7 +62,7 @@ impl_external_schematic! {
     #[schematic(from = ButtonInput)]
     struct Button;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct ButtonInput;
     from_to_default!(
         Button,
@@ -76,7 +75,7 @@ impl_external_schematic! {
     #[schematic(from = CalculatedClipInput)]
     struct CalculatedClip {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct CalculatedClipInput {
         pub clip: Rect,
@@ -91,30 +90,10 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
-    #[schematic(from = CalculatedSizeInput)]
-    struct CalculatedSize {}
-    // ---
-    #[derive(Reflect, FromReflect)]
-    #[reflect(Default)]
-    pub struct CalculatedSizeInput {
-        pub size: Vec2,
-        pub preserve_aspect_ratio: bool,
-    }
-    from_to_default! {
-        CalculatedSize,
-        CalculatedSizeInput,
-        |value: Input| Self {
-            size: value.size,
-            preserve_aspect_ratio: value.preserve_aspect_ratio,
-        }
-    }
-}
-
-impl_external_schematic! {
     #[schematic(from = FocusPolicyInput)]
     enum FocusPolicy {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum FocusPolicyInput {
         Block,
@@ -134,7 +113,7 @@ impl_external_schematic! {
     #[schematic(from = InteractionInput)]
     enum Interaction {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum InteractionInput {
         Clicked,
@@ -156,7 +135,7 @@ impl_external_schematic! {
     #[schematic(from = LabelInput)]
     struct Label;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct LabelInput;
     impl From<LabelInput> for Label {
         fn from(_: LabelInput) -> Self {
@@ -169,7 +148,7 @@ impl_external_schematic! {
     #[schematic(from = NodeInput)]
     struct Node {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct NodeInput;
     from_to!(
         Node,
@@ -187,7 +166,7 @@ impl_external_schematic! {
     #[schematic(from = RelativeCursorPositionInput)]
     struct RelativeCursorPosition {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct RelativeCursorPositionInput {
         pub normalized: Option<Vec2>,
@@ -205,7 +184,7 @@ impl_external_schematic! {
     #[schematic(from = StyleInput)]
     struct Style {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct StyleInput {
         pub display: DisplayInput,
@@ -260,7 +239,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum AlignContentInput {
         Start,
@@ -289,7 +268,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum AlignItemsInput {
         Start,
@@ -314,7 +293,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum AlignSelfInput {
         Auto,
@@ -341,7 +320,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum DirectionInput {
         Inherit,
@@ -358,7 +337,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum DisplayInput {
         None,
@@ -373,7 +352,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum FlexWrapInput {
         NoWrap,
@@ -390,7 +369,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum FlexDirectionInput {
         Row,
@@ -409,7 +388,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum JustifyContentInput {
         Start,
@@ -436,7 +415,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum OverflowInput {
         Visible,
@@ -451,7 +430,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum PositionTypeInput {
         Relative,
@@ -466,7 +445,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct SizeInput {
         pub width: ValInput,
@@ -481,7 +460,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct UiRectInput {
         pub left: ValInput,
@@ -500,7 +479,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum ValInput {
         Undefined,
@@ -547,7 +526,7 @@ impl_external_schematic! {
     #[schematic(from = ZIndexInput)]
     enum ZIndex {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum ZIndexInput {
         Local(i32),

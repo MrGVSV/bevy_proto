@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::math::Vec2;
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::sprite::{Anchor, Mesh2dHandle, Sprite, TextureAtlasSprite};
 
 use crate::impls::macros::{from_to_default, register_schematic};
@@ -35,7 +35,7 @@ impl_external_schematic! {
     #[schematic(from = TextureAtlasSpriteInput)]
     struct TextureAtlasSprite {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct TextureAtlasSpriteInput {
         pub color: ProtoColor,

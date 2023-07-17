@@ -5,7 +5,7 @@ use std::slice::Iter;
 use std::str::FromStr;
 
 use bevy::prelude::Entity;
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect, ReflectDeserialize};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect, ReflectDeserialize};
 use serde::Deserialize;
 
 use crate::schematics::{FromSchematicInput, SchematicContext};
@@ -13,7 +13,7 @@ use crate::schematics::{FromSchematicInput, SchematicContext};
 /// A deserializable prototype entity reference.
 ///
 /// [prototype]: crate::proto::Prototypical
-#[derive(Clone, Debug, PartialEq, Reflect, FromReflect, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Reflect, Deserialize)]
 #[reflect(Deserialize)]
 pub enum ProtoEntity {
     /// Access the entity from the given access path.
@@ -31,7 +31,7 @@ pub enum ProtoEntity {
 }
 
 /// Determines how a child entity is accessed.
-#[derive(Debug, Clone, Eq, PartialEq, Reflect, FromReflect, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Reflect, Deserialize)]
 #[reflect(Deserialize)]
 pub enum ChildAccess {
     /// Access the child with the given ID.
@@ -81,7 +81,7 @@ impl From<(String, NonZeroIsize)> for ChildAccess {
 }
 
 /// Determines how a sibling entity is accessed.
-#[derive(Debug, Clone, Eq, PartialEq, Reflect, FromReflect, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Reflect, Deserialize)]
 pub enum SiblingAccess {
     /// Access the sibling with the given ID.
     ///
@@ -132,7 +132,7 @@ impl From<(String, NonZeroIsize)> for SiblingAccess {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Reflect, FromReflect)]
+#[derive(Debug, Clone, Eq, PartialEq, Reflect)]
 pub(crate) enum AccessOp {
     /// Access the root entity.
     Root,
@@ -167,7 +167,7 @@ pub(crate) enum AccessOp {
 ///
 ///
 /// [`EntityTree`]: crate::tree::EntityTree
-#[derive(Default, Clone, Eq, PartialEq, Reflect, FromReflect, Deserialize)]
+#[derive(Default, Clone, Eq, PartialEq, Reflect, Deserialize)]
 #[reflect(Default, Deserialize)]
 #[serde(from = "ProtoEntity")]
 pub struct EntityAccess {
@@ -376,10 +376,10 @@ impl FromSchematicInput<ProtoEntity> for Option<Entity> {
 /// # Example
 ///
 /// ```ignore
-/// # use bevy::prelude::{Entity, FromReflect, Reflect};
+/// # use bevy::prelude::{Entity, Reflect};
 /// # use bevy_proto_backend::tree::ProtoEntityList;
 /// # use bevy_proto_backend::schematics::{Schematic, ReflectSchematic};
-/// #[derive(Reflect, FromReflect, Schematic)]
+/// #[derive(Reflect, Schematic)]
 /// #[reflect(Schematic)]
 /// struct EntityGroup {
 ///   #[from = ProtoEntityList]
@@ -387,7 +387,7 @@ impl FromSchematicInput<ProtoEntity> for Option<Entity> {
 /// }
 /// ```
 ///
-#[derive(Default, Clone, PartialEq, Reflect, FromReflect, Deserialize)]
+#[derive(Default, Clone, PartialEq, Reflect, Deserialize)]
 #[reflect(Default, Deserialize)]
 #[serde(transparent)]
 pub struct ProtoEntityList(pub Vec<ProtoEntity>);
