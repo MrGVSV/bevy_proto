@@ -27,8 +27,8 @@ fn main() {
         // .insert_resource(bevy::winit::WinitSettings::desktop_app())
         .register_type::<ScrollingList>()
         .register_type::<ScrollText>()
-        .add_startup_systems((setup, load))
-        .add_systems((spawn.run_if(prototype_ready(ROOT)), inspect, mouse_scroll))
+        .add_systems(Startup, (setup, load))
+        .add_systems(Update, (spawn.run_if(prototype_ready(ROOT)), inspect, mouse_scroll))
         .run();
 }
 

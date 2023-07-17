@@ -51,8 +51,8 @@ fn main() {
         .register_type::<Opens>()
         .register_type::<DrawRelations>()
         .register_type::<HasHat>()
-        .add_startup_systems((setup, load))
-        .add_systems((
+        .add_systems(Startup, (setup, load))
+        .add_systems(Update, (
             spawn.run_if(prototype_ready("Parent").and_then(run_once())),
             inspect,
             draw_relations,

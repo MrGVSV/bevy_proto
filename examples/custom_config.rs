@@ -32,8 +32,8 @@ fn main() {
         // )
         //
         // =============== //
-        .add_startup_system(load)
-        .add_systems((
+        .add_systems(Startup, load)
+        .add_systems(Update, (
             // =============== //
             // For custom configs we also need to use `ProtoCondition::<MyConfig>::prototype_ready`
             // instead of the default `prototype_ready` for our run condition:

@@ -83,7 +83,7 @@ enum Foob {
     },
 }
 
-#[derive(Reflect, FromReflect)]
+#[derive(Reflect)]
 struct EntityGroup(Vec<Entity>);
 
 // This implementation allows us to get a group of entities from the world

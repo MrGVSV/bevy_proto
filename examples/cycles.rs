@@ -35,8 +35,8 @@ fn main() {
                 CycleResponse::Panic
             }))),
         )
-        .add_startup_system(load)
-        .add_systems((
+        .add_systems(Startup, load)
+        .add_systems(Update, (
             spawn.run_if(prototype_ready("CycleA").and_then(run_once())),
             inspect,
         ))

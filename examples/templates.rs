@@ -32,8 +32,8 @@ fn main() {
         .add_plugin(ProtoPlugin::new())
         .register_type::<Colored>()
         .register_type::<Scaled>()
-        .add_startup_systems((load, setup))
-        .add_systems((
+        .add_systems(Startup, (load, setup))
+        .add_systems(Update, (
             spawn.run_if(prototype_ready("Player").and_then(run_once())),
             on_spawn,
             inspect,

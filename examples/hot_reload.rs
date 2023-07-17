@@ -25,8 +25,8 @@ fn main() {
             ..default()
         }))
         .add_plugin(ProtoPlugin::new())
-        .add_startup_systems((setup, load))
-        .add_systems((spawn.run_if(prototype_ready("ReloadableSprite")), inspect))
+        .add_systems(Startup, (setup, load))
+        .add_systems(Update, (spawn.run_if(prototype_ready("ReloadableSprite")), inspect))
         .run();
 }
 

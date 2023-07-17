@@ -18,8 +18,8 @@ fn main() {
         .register_type_data::<MaxPlayers, ReflectSchematic>()
         // =============== //
         .add_plugin(ProtoPlugin::new())
-        .add_startup_systems((setup, load))
-        .add_systems((
+        .add_systems(Startup, (setup, load))
+        .add_systems(Update, (
             spawn.run_if(
                 prototype_ready("Player")
                     .and_then(prototype_ready("PlayerConfig"))

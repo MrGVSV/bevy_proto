@@ -13,8 +13,8 @@ fn main() {
         // Make sure to register your types!
         .register_type::<Foo>()
         // ================ //
-        .add_startup_system(load)
-        .add_systems((
+        .add_systems(Startup, load)
+        .add_systems(Update, (
             spawn.run_if(prototype_ready("CustomSchematic").and_then(run_once())),
             inspect,
         ))
@@ -39,7 +39,7 @@ struct Foo;
 
 // This struct provides configuration for `Foo` in the prototype file.
 // Input types must implement `FromReflect`
-#[derive(Reflect, FromReflect)]
+#[derive(Reflect)]
 struct FooInput {
     /// The asset path of the image to load.
     image: String,

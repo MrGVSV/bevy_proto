@@ -27,8 +27,8 @@ fn main() {
         .register_type::<Player>()
         .register_type::<Health>()
         .register_type::<Mana>()
-        .add_startup_system(load)
-        .add_systems((
+        .add_systems(Startup, load)
+        .add_systems(Update, (
             spawn.run_if(prototype_ready("Player").and_then(run_once())),
             inspect,
         ))
