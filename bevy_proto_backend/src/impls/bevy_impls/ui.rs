@@ -3,9 +3,10 @@ use bevy::math::{Rect, Vec2};
 use bevy::prelude::{BackgroundColor, Button, Label};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::{
-    AlignContent, AlignItems, AlignSelf, CalculatedClip, Direction, Display,
-    FlexDirection, FlexWrap, FocusPolicy, Interaction, JustifyContent, Node, Overflow,
-    PositionType, RelativeCursorPosition, Style, UiImage, UiRect, Val, ZIndex,
+    AlignContent, AlignItems, AlignSelf, CalculatedClip, ContentSize, Direction, Display,
+    FlexDirection, FlexWrap, FocusPolicy, GridAutoFlow, GridPlacement, GridTrack, Interaction,
+    JustifyContent, JustifyItems, JustifySelf, Node, Overflow, PositionType,
+    RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
 };
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
@@ -18,6 +19,7 @@ pub(super) fn register(app: &mut App) {
         BackgroundColor,
         Button,
         CalculatedClip,
+        ContentSize,
         FocusPolicy,
         Interaction,
         Label,
@@ -38,8 +40,6 @@ pub(super) fn register(app: &mut App) {
         .register_type::<JustifyContentInput>()
         .register_type::<OverflowInput>()
         .register_type::<PositionTypeInput>()
-        .register_type::<SizeInput>()
-        .register_type::<SizeInput>()
         .register_type::<UiRectInput>()
         .register_type::<ValInput>();
 }
@@ -85,6 +85,26 @@ impl_external_schematic! {
         CalculatedClipInput,
         |value: Input| Self {
             clip: value.clip,
+        }
+    }
+}
+
+impl_external_schematic! {
+    #[schematic(from = ContentSizeInput)]
+    struct ContentSize {}
+    // ---
+    #[derive(Reflect)]
+    #[reflect(Default)]
+    pub struct ContentSizeInput {
+        pub size: Vec2,
+        pub preserve_aspect_ratio: bool,
+    }
+    from_to_default! {
+        ContentSize,
+        ContentSizeInput,
+        |value: Input| Self {
+            size: value.size,
+            preserve_aspect_ratio: value.preserve_aspect_ratio,
         }
     }
 }
@@ -189,6 +209,7 @@ impl_external_schematic! {
     pub struct StyleInput {
         pub display: DisplayInput,
         pub position_type: PositionTypeInput,
+        pub overflow: OverflowInput,
         pub direction: DirectionInput,
         pub flex_direction: FlexDirectionInput,
         pub flex_wrap: FlexWrapInput,
@@ -196,19 +217,34 @@ impl_external_schematic! {
         pub align_self: AlignSelfInput,
         pub align_content: AlignContentInput,
         pub justify_content: JustifyContentInput,
-        pub position: UiRectInput,
+        pub justify_self: JustifySelf,
+        pub justify_items: JustifyItems,
         pub margin: UiRectInput,
         pub padding: UiRectInput,
         pub border: UiRectInput,
         pub flex_grow: f32,
         pub flex_shrink: f32,
         pub flex_basis: ValInput,
-        pub size: SizeInput,
-        pub min_size: SizeInput,
-        pub max_size: SizeInput,
         pub aspect_ratio: Option<f32>,
-        pub overflow: OverflowInput,
-        pub gap: SizeInput,
+        pub left: Val,
+        pub right: Val,
+        pub top: Val,
+        pub bottom: Val,
+        pub width: Val,
+        pub min_width: Val,
+        pub max_width: Val,
+        pub height: Val,
+        pub min_height: Val,
+        pub max_height: Val,
+        pub row_gap: Val,
+        pub column_gap: Val,
+        pub grid_auto_flow: GridAutoFlow,
+        pub grid_template_rows: Vec<RepeatedGridTrack>,
+        pub grid_template_columns: Vec<RepeatedGridTrack>,
+        pub grid_auto_rows: Vec<GridTrack>,
+        pub grid_auto_columns: Vec<GridTrack>,
+        pub grid_row: GridPlacement,
+        pub grid_column: GridPlacement,
     }
     from_to_default! {
         Style,
@@ -216,6 +252,7 @@ impl_external_schematic! {
         |value: Input| Self {
             display: value.display.into(),
             position_type: value.position_type.into(),
+            overflow: value.overflow.into(),
             direction: value.direction.into(),
             flex_direction: value.flex_direction.into(),
             flex_wrap: value.flex_wrap.into(),
@@ -223,19 +260,34 @@ impl_external_schematic! {
             align_self: value.align_self.into(),
             align_content: value.align_content.into(),
             justify_content: value.justify_content.into(),
-            position: value.position.into(),
+            justify_self: value.justify_self.into(),
+            justify_items: value.justify_items.into(),
             margin: value.margin.into(),
             padding: value.padding.into(),
             border: value.border.into(),
             flex_grow: value.flex_grow,
             flex_shrink: value.flex_shrink,
             flex_basis: value.flex_basis.into(),
-            size: value.size.into(),
-            min_size: value.min_size.into(),
-            max_size: value.max_size.into(),
             aspect_ratio: value.aspect_ratio,
-            overflow: value.overflow.into(),
-            gap: value.gap.into(),
+            left: value.left.into(),
+            right: value.right.into(),
+            top: value.top.into(),
+            bottom: value.bottom.into(),
+            width: value.width.into(),
+            min_width: value.min_width.into(),
+            max_width: value.max_width.into(),
+            height: value.height.into(),
+            min_height: value.min_height.into(),
+            max_height: value.max_height.into(),
+            row_gap: value.row_gap.into(),
+            column_gap: value.column_gap.into(),
+            grid_auto_flow: value.grid_auto_flow.into(),
+            grid_template_rows: value.grid_template_rows.into(),
+            grid_template_columns: value.grid_template_columns.into(),
+            grid_auto_rows: value.grid_auto_rows.into(),
+            grid_auto_columns: value.grid_auto_columns.into(),
+            grid_row: value.grid_row.into(),
+            grid_column: value.grid_column.into(),
         }
     }
 
@@ -445,20 +497,6 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub struct SizeInput {
-        pub width: ValInput,
-        pub height: ValInput,
-    }
-    from_to_default! {
-        Size,
-        SizeInput,
-        |value: Input| Self {
-            width: value.width.into(),
-            height: value.height.into(),
-        }
-    }
 
     #[derive(Reflect)]
     #[reflect(Default)]
