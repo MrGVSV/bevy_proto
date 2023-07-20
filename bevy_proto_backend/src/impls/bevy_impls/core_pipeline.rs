@@ -1,7 +1,7 @@
 use bevy::app::App;
 use bevy::core_pipeline::bloom::{BloomCompositeMode, BloomPrefilterSettings, BloomSettings};
 use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::core_pipeline::core_3d::Camera3dDepthLoadOp;
+use bevy::core_pipeline::core_3d::{Camera3dDepthLoadOp, Camera3dDepthTextureUsage};
 use bevy::core_pipeline::fxaa::Fxaa;
 use bevy::core_pipeline::prepass::{DepthPrepass, NormalPrepass};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
@@ -115,11 +115,13 @@ impl_external_schematic! {
     pub struct Camera3dInput {
         pub clear_color: ClearColorConfigInput,
         pub depth_load_op: Camera3dDepthLoadOpInput,
+        pub depth_texture_usages: Camera3dDepthTextureUsage,
     }
     from_to_default!(
         Camera3d,
         Camera3dInput,
         |value: Input| Self {
+            depth_texture_usages: value.depth_texture_usages.into(),
             clear_color: value.clear_color.into(),
             depth_load_op: value.depth_load_op.into()
         }
