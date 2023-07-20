@@ -531,7 +531,7 @@ pub struct ButtonBundle {
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
     #[reflect(default)]
-    pub background_color: bevy_impls::ui::BorderColorInput,
+    pub border_color: bevy_impls::ui::BorderColorInput,
     #[reflect(default)]
     pub image: bevy_impls::ui::UiImageInput,
     #[reflect(default)]
