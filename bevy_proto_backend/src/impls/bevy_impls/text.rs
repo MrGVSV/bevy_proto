@@ -28,7 +28,7 @@ impl_external_schematic! {
     pub struct TextInput {
         pub sections: Vec<TextSectionInput>,
         pub alignment: TextAlignmentInput,
-        pub linebreak_behaviour: BreakLineOnInput,
+        pub linebreak_behavior: BreakLineOnInput,
     }
     from_to_input! {
         Text,
@@ -42,7 +42,7 @@ impl_external_schematic! {
             Self {
                 sections,
                 alignment: input.alignment.into(),
-                linebreak_behaviour: input.linebreak_behaviour.into(),
+                linebreak_behavior: input.linebreak_behavior.into(),
             }
         }
     }
@@ -52,7 +52,7 @@ impl_external_schematic! {
             Self {
                 sections: Vec::new(),
                 alignment: base.alignment.into(),
-                linebreak_behaviour: base.linebreak_behaviour.into(),
+                linebreak_behavior: base.linebreak_behavior.into(),
             }
         }
     }
