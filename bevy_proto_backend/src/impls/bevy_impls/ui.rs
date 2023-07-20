@@ -3,9 +3,9 @@ use bevy::math::{Rect, Vec2};
 use bevy::prelude::{BackgroundColor, Button, Label};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::{
-    AlignContent, AlignItems, AlignSelf, CalculatedClip, ContentSize, Direction, Display,
-    FlexDirection, FlexWrap, FocusPolicy, GridAutoFlow, GridPlacement, GridTrack, Interaction,
-    JustifyContent, JustifyItems, JustifySelf, Node, Overflow, PositionType,
+    AlignContent, AlignItems, AlignSelf, BorderColor, CalculatedClip, ContentSize, Direction,
+    Display, FlexDirection, FlexWrap, FocusPolicy, GridAutoFlow, GridPlacement, GridTrack,
+    Interaction, JustifyContent, JustifyItems, JustifySelf, Node, Overflow, PositionType,
     RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
 };
 
@@ -54,6 +54,20 @@ impl_external_schematic! {
     from_to_default! {
         BackgroundColor,
         BackgroundColorInput,
+        |value: Input| Self(value.0.into())
+    }
+}
+
+impl_external_schematic! {
+    #[schematic(from = BorderColorInput)]
+    struct BorderColor();
+    // ---
+    #[derive(Reflect)]
+    #[reflect(Default)]
+    pub struct BorderColorInput(pub ProtoColor);
+    from_to_default! {
+        BorderColor,
+        BorderColorInput,
         |value: Input| Self(value.0.into())
     }
 }
