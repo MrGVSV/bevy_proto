@@ -531,6 +531,8 @@ pub struct ButtonBundle {
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
     #[reflect(default)]
+    pub border_color: bevy_impls::ui::BorderColorInput,
+    #[reflect(default)]
     pub image: bevy_impls::ui::UiImageInput,
     #[reflect(default)]
     pub transform: Transform,
@@ -554,6 +556,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
             interaction: input.interaction.into(),
             focus_policy: input.focus_policy.into(),
             background_color: input.background_color.into(),
+            border_color: input.border_color.into(),
             image: bevy::ui::UiImage::from_input(input.image, context),
             transform: input.transform,
             global_transform: input.global_transform,
