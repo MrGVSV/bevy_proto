@@ -9,6 +9,7 @@ use bevy::app::App;
 use bevy::asset::Handle;
 use bevy::prelude::{Component, GlobalTransform, Transform};
 use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::ui::widget::UiImageSize;
 use bevy_proto_backend::impls::bevy_impls;
 use bevy_proto_backend::{from, from_to_default, from_to_input};
 
@@ -597,6 +598,8 @@ pub struct ImageBundle {
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
+    #[reflect(ignore, default)]
+    pub image_size: UiImageSize
 }
 
 #[cfg(feature = "bevy_ui")]
@@ -614,6 +617,7 @@ impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
             z_index: input.z_index.into(),
+            image_size: UiImageSize::default() // this field is set automatically by Bevy normally
         }
     }
 }
