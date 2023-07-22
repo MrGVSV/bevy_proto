@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::core::Name;
-use bevy::reflect::{FromReflect, Reflect};
+use bevy::reflect::Reflect;
 
 use crate::impls::macros::register_schematic;
 use bevy_proto_derive::impl_external_schematic;

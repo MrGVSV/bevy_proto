@@ -1,5 +1,5 @@
 use bevy::app::App;
-use bevy::reflect::{FromReflect, Reflect};
+use bevy::reflect::Reflect;
 use bevy::window::{PrimaryWindow, Window};
 
 use crate::impls::macros::register_schematic;
