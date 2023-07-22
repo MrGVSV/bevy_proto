@@ -13,12 +13,7 @@ pub(super) fn register(app: &mut App) {
     register_schematic!(app, Handle<bevy::prelude::AnimationClip>);
 
     #[cfg(feature = "bevy_audio")]
-    register_schematic!(
-        app,
-        Handle<bevy::prelude::AudioSink>,
-        Handle<bevy::prelude::AudioSource>,
-        Handle<bevy::prelude::SpatialAudioSink>,
-    );
+    register_schematic!(app, Handle<bevy::prelude::AudioSource>,);
 
     #[cfg(feature = "bevy_gltf")]
     register_schematic!(

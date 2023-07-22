@@ -2,11 +2,12 @@ use bevy::app::App;
 use bevy::math::{Rect, Vec2};
 use bevy::prelude::{BackgroundColor, Button, Label};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
+use bevy::ui::widget::TextFlags;
 use bevy::ui::{
     AlignContent, AlignItems, AlignSelf, BorderColor, CalculatedClip, ContentSize, Direction,
     Display, FlexDirection, FlexWrap, FocusPolicy, GridAutoFlow, GridPlacement, GridTrack,
-    Interaction, JustifyContent, JustifyItems, JustifySelf, Node, Overflow, PositionType,
-    RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
+    Interaction, JustifyContent, JustifyItems, JustifySelf, Node, Overflow, OverflowAxis,
+    PositionType, RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
 };
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
@@ -19,13 +20,13 @@ pub(super) fn register(app: &mut App) {
         BackgroundColor,
         Button,
         CalculatedClip,
-        ContentSize,
         FocusPolicy,
         Interaction,
         Label,
         Node,
         RelativeCursorPosition,
         Style,
+        TextFlags,
         UiImage,
     );
 
@@ -104,23 +105,7 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
-    #[schematic(from = ContentSizeInput)]
     struct ContentSize {}
-    // ---
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub struct ContentSizeInput {
-        pub size: Vec2,
-        pub preserve_aspect_ratio: bool,
-    }
-    from_to_default! {
-        ContentSize,
-        ContentSizeInput,
-        |value: Input| Self {
-            size: value.size,
-            preserve_aspect_ratio: value.preserve_aspect_ratio,
-        }
-    }
 }
 
 impl_external_schematic! {
@@ -308,6 +293,7 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum AlignContentInput {
+        Default,
         Start,
         End,
         FlexStart,
@@ -322,6 +308,7 @@ impl_external_schematic! {
         AlignContent,
         AlignContentInput,
         |value: Input| match value {
+            Input::Default => Self::Default,
             Input::Start => Self::Start,
             Input::End => Self::End,
             Input::FlexStart => Self::FlexStart,
@@ -337,6 +324,7 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum AlignItemsInput {
+        Default,
         Start,
         End,
         FlexStart,
@@ -349,6 +337,7 @@ impl_external_schematic! {
         AlignItems,
         AlignItemsInput,
         |value: Input| match value {
+            Input::Default => Self::Default,
             Input::Start => Self::Start,
             Input::End => Self::End,
             Input::FlexStart => Self::FlexStart,
@@ -406,15 +395,17 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum DisplayInput {
-        None,
         Flex,
+        Grid,
+        None,
     }
     from_to_default! {
         Display,
         DisplayInput,
         |value: Input| match value {
-            Input::None => Self::None,
             Input::Flex => Self::Flex,
+            Input::Grid => Self::Grid,
+            Input::None => Self::None,
         }
     }
 
@@ -457,6 +448,7 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum JustifyContentInput {
+        Default,
         Start,
         End,
         FlexStart,
@@ -470,6 +462,7 @@ impl_external_schematic! {
         JustifyContent,
         JustifyContentInput,
         |value: Input| match value {
+            Input::Default => Self::Default,
             Input::Start => Self::Start,
             Input::End => Self::End,
             Input::FlexStart => Self::FlexStart,
@@ -483,16 +476,16 @@ impl_external_schematic! {
 
     #[derive(Reflect)]
     #[reflect(Default)]
-    pub enum OverflowInput {
-        Visible,
-        Hidden,
+    pub struct OverflowInput {
+        pub x: OverflowAxis,
+        pub y: OverflowAxis,
     }
     from_to_default! {
         Overflow,
         OverflowInput,
-        |value: Input| match value {
-            Input::Visible => Self::Visible,
-            Input::Hidden => Self::Hidden,
+        |value: Input| Self {
+            x: value.x.into(),
+            y: value.y.into(),
         }
     }
 
@@ -534,21 +527,31 @@ impl_external_schematic! {
     #[derive(Reflect)]
     #[reflect(Default)]
     pub enum ValInput {
-        Undefined,
         Auto,
         Px(f32),
         Percent(f32),
+        Vw(f32),
+        Vh(f32),
+        VMin(f32),
+        VMax(f32),
     }
     from_to_default! {
         Val,
         ValInput,
         |value: Input| match value {
-            Input::Undefined => Self::Undefined,
             Input::Auto => Self::Auto,
             Input::Px(value) => Self::Px(value),
             Input::Percent(value) => Self::Percent(value),
+            Input::Vw(value) => Self::Vw(value),
+            Input::Vh(value) => Self::Vh(value),
+            Input::VMin(value) => Self::VMin(value),
+            Input::VMax(value) => Self::VMax(value),
         }
     }
+}
+
+impl_external_schematic! {
+    pub struct TextFlags {}
 }
 
 impl_external_schematic! {

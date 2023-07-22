@@ -145,7 +145,7 @@ impl<'a> ToTokens for Input<'a> {
                 let from_impl = make_from_impl(quote!(Self));
 
                 tokens.extend(quote! {
-                    #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
+                    #[derive(#bevy_crate::prelude::Reflect)]
                     #vis struct #input_ty_def #where_clause;
 
                     #from_impl
@@ -168,7 +168,7 @@ impl<'a> ToTokens for Input<'a> {
                 });
 
                 tokens.extend(quote! {
-                    #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
+                    #[derive(#bevy_crate::prelude::Reflect)]
                     #vis struct #input_ty_def (
                         #(#filtered,)*
                         #phantom_ty
@@ -196,7 +196,7 @@ impl<'a> ToTokens for Input<'a> {
                 });
 
                 tokens.extend(quote! {
-                    #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
+                    #[derive(#bevy_crate::prelude::Reflect)]
                     #vis struct #input_ty_def #where_clause {
                         #(#filtered,)*
                         #phantom_ty
@@ -224,7 +224,7 @@ impl<'a> ToTokens for Input<'a> {
                 });
 
                 tokens.extend(quote! {
-                    #[derive(#bevy_crate::prelude::Reflect, #bevy_crate::prelude::FromReflect)]
+                    #[derive(#bevy_crate::prelude::Reflect)]
                     #vis enum #input_ty_def #where_clause {
                         #(#variants,)*
                         #phantom_ty

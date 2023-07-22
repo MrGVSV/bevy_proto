@@ -2,7 +2,7 @@ use bevy::app::App;
 use bevy::math::{UVec3, Vec3};
 use bevy::pbr::wireframe::Wireframe;
 use bevy::pbr::{
-    AlphaMode, CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, ClusterZConfig,
+    CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, ClusterZConfig,
     DirectionalLight, EnvironmentMapLight, FogFalloff, FogSettings, NotShadowCaster,
     NotShadowReceiver, PointLight, SpotLight,
 };
@@ -15,7 +15,6 @@ use bevy_proto_derive::impl_external_schematic;
 pub(super) fn register(app: &mut App) {
     register_schematic!(
         app,
-        AlphaMode,
         CascadeShadowConfig,
         ClusterConfig,
         DirectionalLight,
@@ -30,10 +29,6 @@ pub(super) fn register(app: &mut App) {
 
     // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
     app.register_type::<FogFalloffInput>();
-}
-
-impl_external_schematic! {
-    enum AlphaMode {}
 }
 
 impl_external_schematic! {

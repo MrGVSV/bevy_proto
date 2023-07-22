@@ -199,7 +199,7 @@ impl<'a> EntityTree<'a> {
 
         let entity = world.spawn(instance).id();
         if let Some(parent) = parent {
-            Command::write(
+            Command::apply(
                 AddChild {
                     parent,
                     child: entity,

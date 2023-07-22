@@ -100,7 +100,7 @@ impl<L: Loader<Prototype>, C: Config<Prototype>> Plugin for ProtoPlugin<L, C> {
             plugin = plugin.with_loader(loader);
         }
 
-        app.add_plugin(plugin);
+        app.add_plugins(plugin);
 
         #[cfg(feature = "custom_schematics")]
         crate::custom::register_custom_schematics(app);
