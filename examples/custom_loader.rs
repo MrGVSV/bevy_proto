@@ -22,7 +22,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // =============== //
         // Be sure to add `ProtoPlugin` with the custom loader:
-        .add_plugins(ProtoPlugin::new_with_loader(MyLoader::default()))
+        .add_plugins(ProtoPlugin::new_with_loader(MyLoader))
         // =============== //
         .register_type::<Player>()
         .register_type::<Health>()
