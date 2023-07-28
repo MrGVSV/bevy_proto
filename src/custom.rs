@@ -8,10 +8,10 @@
 use bevy::app::App;
 use bevy::asset::Handle;
 use bevy::prelude::{Component, GlobalTransform, Transform};
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::widget::UiImageSize;
 use bevy_proto_backend::impls::bevy_impls;
-use bevy_proto_backend::{from, from_to_default, from_to_input};
+use bevy_proto_backend::{from, from_to_default};
 
 use bevy_proto_backend::schematics::{
     FromSchematicInput, ReflectSchematic, Schematic, SchematicContext,
@@ -134,7 +134,7 @@ pub struct SpriteBundle {
     pub texture: Handle<bevy::prelude::Image>,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -168,7 +168,7 @@ pub struct SpriteSheetBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -414,7 +414,7 @@ pub struct DynamicSceneBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -447,7 +447,7 @@ pub struct SceneBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -532,7 +532,7 @@ pub struct ButtonBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
@@ -583,11 +583,11 @@ pub struct ImageBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub image_size: UiImageSize,
 }
 
@@ -622,6 +622,7 @@ pub struct NodeBundle {
     pub node: bevy_impls::ui::NodeInput,
     pub style: bevy_impls::ui::StyleInput,
     pub background_color: bevy_impls::ui::BackgroundColorInput,
+    pub border_color: bevy::ui::BorderColor,
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
@@ -639,6 +640,7 @@ from_to_default!(
         node: value.node.into(),
         style: value.style.into(),
         background_color: value.background_color.into(),
+        border_color: value.border_color,
         focus_policy: value.focus_policy.into(),
         transform: value.transform,
         global_transform: value.global_transform,
@@ -714,12 +716,12 @@ impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
 #[reflect(Schematic)]
 #[schematic(into = bevy::pbr::MaterialMeshBundle<M>)]
 pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
-    #[reflect(
-        default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<bevy::render::mesh::Mesh>"
-    )]
+    // #[reflect(
+    //     default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<bevy::render::mesh::Mesh>"
+    // )]
     #[schematic(asset(lazy))]
     pub mesh: Handle<bevy::render::mesh::Mesh>,
-    #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
+    // #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
     #[schematic(asset(lazy))]
     pub material: Handle<M>,
     #[reflect(default)]
@@ -728,7 +730,7 @@ pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -757,7 +759,6 @@ impl<M: bevy::pbr::Material> From<MaterialMeshBundle<M>> for bevy::pbr::Material
 pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
     #[reflect(default)]
     pub mesh: bevy_impls::sprite::Mesh2dHandleInput,
-    #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
     #[schematic(asset(lazy))]
     pub material: Handle<M>,
     #[reflect(default)]
@@ -766,7 +767,7 @@ pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 

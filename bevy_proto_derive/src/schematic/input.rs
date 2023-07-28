@@ -162,7 +162,7 @@ impl<'a> ToTokens for Input<'a> {
 
                 let phantom_ty = phantom_ty.map(|phantom_ty| {
                     quote! {
-                        #[reflect(ignore, default)]
+                        #[reflect(ignore)]
                         #phantom_ty
                     }
                 });
@@ -190,7 +190,7 @@ impl<'a> ToTokens for Input<'a> {
 
                 let phantom_ty = phantom_ty.map(|phantom_ty| {
                     quote! {
-                        #[reflect(ignore, default)]
+                        #[reflect(ignore)]
                         __phantom_ty__: #phantom_ty
                     }
                 });
@@ -219,7 +219,7 @@ impl<'a> ToTokens for Input<'a> {
 
                 let phantom_ty = phantom_ty.map(|phantom_ty| {
                     quote! {
-                        _Phantom(#[reflect(ignore, default)] #phantom_ty)
+                        _Phantom(#[reflect(ignore)] #phantom_ty)
                     }
                 });
 
