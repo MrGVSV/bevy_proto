@@ -10,7 +10,7 @@ use bevy::ui::{
     PositionType, RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
 };
 
-use crate::impls::macros::{from_to, from_to_default, register_schematic};
+use crate::impls::macros::{from_to_default, register_schematic};
 use crate::proto::{ProtoAsset, ProtoColor};
 use bevy_proto_derive::impl_external_schematic;
 
@@ -170,11 +170,19 @@ impl_external_schematic! {
     // ---
     #[derive(Reflect)]
     pub struct NodeInput;
-    from_to!(
-        Node,
-        NodeInput,
-        |_: Input| Self
-    );
+
+    impl From<Node> for NodeInput {
+        fn from(_: Node) -> Self {
+            Self
+        }
+    }
+
+    impl From<NodeInput> for Node {
+        fn from(_: NodeInput) -> Self {
+            Self::default()
+        }
+    }
+
     impl Default for NodeInput {
         fn default() -> Self {
             Self
