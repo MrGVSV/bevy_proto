@@ -121,7 +121,7 @@ impl_external_schematic! {
         Camera3d,
         Camera3dInput,
         |value: Input| Self {
-            depth_texture_usages: value.depth_texture_usages.into(),
+            depth_texture_usages: value.depth_texture_usages,
             clear_color: value.clear_color.into(),
             depth_load_op: value.depth_load_op.into()
         }

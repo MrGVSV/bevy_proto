@@ -11,6 +11,7 @@ use bevy::prelude::{Component, GlobalTransform, Transform};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::widget::UiImageSize;
 use bevy_proto_backend::impls::bevy_impls;
+use bevy_proto_backend::proto::ProtoColor;
 use bevy_proto_backend::{from, from_to_default};
 
 use bevy_proto_backend::schematics::{
@@ -622,7 +623,7 @@ pub struct NodeBundle {
     pub node: bevy_impls::ui::NodeInput,
     pub style: bevy_impls::ui::StyleInput,
     pub background_color: bevy_impls::ui::BackgroundColorInput,
-    pub border_color: bevy::ui::BorderColor,
+    pub border_color: bevy_impls::ui::BorderColorInput,
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
@@ -640,7 +641,7 @@ from_to_default!(
         node: value.node.into(),
         style: value.style.into(),
         background_color: value.background_color.into(),
-        border_color: value.border_color,
+        border_color: value.border_color.into(),
         focus_policy: value.focus_policy.into(),
         transform: value.transform,
         global_transform: value.global_transform,
@@ -682,8 +683,12 @@ pub struct TextBundle {
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
-    #[reflect(default)]
+    #[reflect(default = "transparent_background_color")]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
+}
+
+fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
+    bevy_impls::ui::BackgroundColorInput(ProtoColor::None)
 }
 
 #[cfg(feature = "bevy_ui")]

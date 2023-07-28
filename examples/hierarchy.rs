@@ -32,31 +32,36 @@ use bevy_proto_backend::tree::EntityAccess;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::new().with_config(
-            ProtoConfig::default().on_before_apply_prototype(Box::new(|prototype, context| {
-                // To see the end result of our hierarchy, let's inspect the generated
-                // `EntityTree` for the `Parent` prototype.
-                if prototype.id() == "Parent" {
-                    println!("{:#?}", context.tree());
+        .add_plugins((
+            DefaultPlugins,
+            ProtoPlugin::new().with_config(ProtoConfig::default().on_before_apply_prototype(
+                Box::new(|prototype, context| {
+                    // To see the end result of our hierarchy, let's inspect the generated
+                    // `EntityTree` for the `Parent` prototype.
+                    if prototype.id() == "Parent" {
+                        println!("{:#?}", context.tree());
 
-                    // We can also directly access the generated entities
-                    // (check out the docs for `EntityAccess` for details):
-                    let key_entity = context.find_entity(&EntityAccess::from("/OtherChild/@0"));
-                    println!("🔑 Key Entity: {:?}", key_entity.unwrap());
-                }
-            })),
+                        // We can also directly access the generated entities
+                        // (check out the docs for `EntityAccess` for details):
+                        let key_entity = context.find_entity(&EntityAccess::from("/OtherChild/@0"));
+                        println!("🔑 Key Entity: {:?}", key_entity.unwrap());
+                    }
+                }),
+            )),
+            ShapePlugin,
         ))
-        .add_plugin(ShapePlugin)
         .register_type::<Opens>()
         .register_type::<DrawRelations>()
         .register_type::<HasHat>()
         .add_systems(Startup, (setup, load))
-        .add_systems(Update, (
-            spawn.run_if(prototype_ready("Parent").and_then(run_once())),
-            inspect,
-            draw_relations,
-        ))
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("Parent").and_then(run_once())),
+                inspect,
+                draw_relations,
+            ),
+        )
         .run();
 }
 
@@ -77,12 +82,12 @@ struct Opens(
 );
 
 /// Marker component opting into the drawing of relationships.
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct DrawRelations;
 
 /// Marker component indicating a hat is present.
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct HasHat;
 

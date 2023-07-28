@@ -1,6 +1,4 @@
-use bevy::reflect::{
-    std_traits::ReflectDefault, Reflect, ReflectDeserialize, ReflectSerialize,
-};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect, ReflectDeserialize, ReflectSerialize};
 use bevy::render::color::Color;
 use serde::{Deserialize, Serialize};
 

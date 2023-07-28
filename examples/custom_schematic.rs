@@ -7,17 +7,19 @@ use bevy_proto::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::new())
+        .add_plugins((DefaultPlugins, ProtoPlugin::new()))
         // =============== //
         // Make sure to register your types!
         .register_type::<Foo>()
         // ================ //
         .add_systems(Startup, load)
-        .add_systems(Update, (
-            spawn.run_if(prototype_ready("CustomSchematic").and_then(run_once())),
-            inspect,
-        ))
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("CustomSchematic").and_then(run_once())),
+                inspect,
+            ),
+        )
         .run();
 }
 

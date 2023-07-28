@@ -20,6 +20,7 @@
 //! For more details, check out the documentation on the derive macro.
 
 use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use std::marker::PhantomData;
 
 use bevy_proto::prelude::*;
@@ -38,7 +39,7 @@ fn main() {
 /// To see what this generated input type looks like, scroll to the bottom of this file.
 #[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
-struct Foo<T: Reflect> {
+struct Foo<T: Reflect + TypePath> {
     /// Assets can be loaded by marking any `Handle<T>` field like so:
     #[schematic(asset)]
     lazy_asset: Handle<Image>,
@@ -69,7 +70,7 @@ struct Foo<T: Reflect> {
     complex_from: EntityGroup,
     /// As a side note, all reflection attributes get passed to the generated
     /// input type.
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     _phantom: PhantomData<T>,
 }
 
@@ -132,27 +133,35 @@ impl<T: ToString> From<T> for Bar {
 //
 // -----------------------------------------------------------------------
 // const _: () = {
-//     #[derive(::bevy::prelude::Reflect, ::bevy::prelude::FromReflect)]
-//     pub struct FooInput<T: Reflect> {
+//     #[derive(::bevy::prelude::Reflect)]
+//     pub struct FooInput<T: Reflect + TypePath> {
 //         lazy_asset: ::bevy_proto_backend::proto::ProtoAsset,
 //         preloaded_asset: ::bevy_proto_backend::proto::ProtoAsset,
 //         entity: ::bevy_proto_backend::tree::EntityAccess,
 //         optional_entity: ::bevy_proto_backend::tree::EntityAccess,
 //         simple_from: [f32; 3],
 //         complex_from: String,
-//         #[reflect(ignore, default)]
+//         #[reflect(ignore)]
 //         _phantom: PhantomData<T>,
-//         #[reflect(ignore, default)]
+//         #[reflect(ignore)]
 //         __phantom_ty__: ::core::marker::PhantomData<fn() -> (T)>,
 //     }
-//     impl<T: Reflect> ::bevy_proto_backend::schematics::FromSchematicInput<FooInput<T>> for Foo<T> {
+//     impl<T: Reflect + TypePath> ::bevy_proto_backend::schematics::FromSchematicInput<FooInput<T>>
+//         for Foo<T>
+//     {
 //         fn from_input(
 //             __input__: FooInput<T>,
 //             __context__: &mut ::bevy_proto_backend::schematics::SchematicContext,
 //         ) -> Self {
 //             Self {
-//                 lazy_asset: __context__.world().resource::<::bevy::asset::AssetServer>().load(__input__.lazy_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
-//                 preloaded_asset: __context__.world().resource::<::bevy::asset::AssetServer>().load(__input__.preloaded_asset.to_asset_path().expect("ProtoAsset should contain an asset path")),
+//                 lazy_asset: match __input__.lazy_asset {
+//                     ::bevy_proto_backend::proto::ProtoAsset::AssetPath(ref path) => { __context__.world().resource::<::bevy::asset::AssetServer>().load(path) }
+//                     ::bevy_proto_backend::proto::ProtoAsset::HandleId(handle_id) => { __context__.world().resource::<::bevy::asset::AssetServer>().get_handle(handle_id) }
+//                 },
+//                 preloaded_asset: match __input__.preloaded_asset {
+//                     ::bevy_proto_backend::proto::ProtoAsset::AssetPath(ref path) => { __context__.world().resource::<::bevy::asset::AssetServer>().load(path) }
+//                     ::bevy_proto_backend::proto::ProtoAsset::HandleId(handle_id) => { __context__.world().resource::<::bevy::asset::AssetServer>().get_handle(handle_id) }
+//                 },
 //                 entity: <Entity as ::bevy_proto_backend::schematics::FromSchematicInput<::bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.entity, __context__),
 //                 optional_entity: <Option<Entity> as ::bevy_proto_backend::schematics::FromSchematicInput<::bevy_proto_backend::tree::EntityAccess>>::from_input(__input__.optional_entity, __context__),
 //                 simple_from: <Color as ::bevy_proto_backend::schematics::FromSchematicInput<[f32; 3]>>::from_input(__input__.simple_from, __context__),
@@ -161,7 +170,7 @@ impl<T: ToString> From<T> for Bar {
 //             }
 //         }
 //     }
-//     impl<T: Reflect> ::bevy_proto_backend::schematics::Schematic for Foo<T> {
+//     impl<T: Reflect + TypePath> ::bevy_proto_backend::schematics::Schematic for Foo<T> {
 //         type Input = FooInput<T>;
 //         fn apply(
 //             __input__: &Self::Input,
@@ -170,12 +179,12 @@ impl<T: ToString> From<T> for Bar {
 //             let __input__ = <Self::Input as ::bevy::reflect::FromReflect>::from_reflect(
 //                 &*::bevy::reflect::Reflect::clone_value(__input__),
 //             )
-//                 .unwrap_or_else(|| {
-//                     panic!(
-//                         "{} should have a functioning `FromReflect` impl",
-//                         std::any::type_name::<Self::Input>()
-//                     )
-//                 });
+//             .unwrap_or_else(|| {
+//                 panic!(
+//                     "{} should have a functioning `FromReflect` impl",
+//                     std::any::type_name::<Self::Input>()
+//                 )
+//             });
 //             let __input__ = <Self as ::bevy_proto_backend::schematics::FromSchematicInput<
 //                 Self::Input,
 //             >>::from_input(__input__, __context__);
@@ -207,14 +216,18 @@ impl<T: ToString> From<T> for Bar {
 //             __input__: &mut Self::Input,
 //             __dependencies__: &mut ::bevy_proto_backend::deps::DependenciesBuilder,
 //         ) {
-//             let _: Handle<Image> = __dependencies__.add_dependency(
-//                 __input__
-//                     .preloaded_asset
-//                     .to_asset_path()
-//                     .expect("ProtoAsset should contain an asset path")
-//                     .to_owned(),
-//             );
+//             match __input__.preloaded_asset {
+//                 ::bevy_proto_backend::proto::ProtoAsset::AssetPath(ref path) => {
+//                     let _: Handle<Image> = __dependencies__.add_dependency(path.to_owned());
+//                 }
+//                 ::bevy_proto_backend::proto::ProtoAsset::HandleId(handle_id) => {
+//                     panic!("expected `ProtoAsset::AssetPath` in field `{}` of `{}`, but found `ProtoAsset::HandleId`", "preloaded_asset", ::core::any::type_name::<Self::Input>());
+//                 }
+//             }
 //         }
 //     }
+//     const _: () = {
+//         mod Assertions {}
+//     };
 // };
 // -----------------------------------------------------------------------

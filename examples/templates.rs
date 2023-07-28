@@ -28,26 +28,28 @@ use bevy_proto::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::new())
+        .add_plugins((DefaultPlugins, ProtoPlugin::new()))
         .register_type::<Colored>()
         .register_type::<Scaled>()
         .add_systems(Startup, (load, setup))
-        .add_systems(Update, (
-            spawn.run_if(prototype_ready("Player").and_then(run_once())),
-            on_spawn,
-            inspect,
-        ))
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("Player").and_then(run_once())),
+                on_spawn,
+                inspect,
+            ),
+        )
         .run();
 }
 
 /// A component used to tint a sprite.
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct Colored(Color);
 
 /// A component used to scale a sprite.
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct Scaled(f32);
 

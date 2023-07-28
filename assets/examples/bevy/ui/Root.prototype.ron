@@ -3,10 +3,8 @@
   schematics: {
     "bevy_proto::custom::NodeBundle": (
       style: (
-        size: (
-          width: Percent(100.0),
-          height: Percent(100.0),
-        ),
+        width: Percent(100.0),
+        height: Percent(100.0),
         justify_content: SpaceBetween,
       )
     )

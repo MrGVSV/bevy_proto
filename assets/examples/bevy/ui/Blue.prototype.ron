@@ -3,15 +3,11 @@
   schematics: {
     "bevy_proto::custom::NodeBundle": (
       style: (
-        size: (
-          width: Px(200.0),
-          height: Px(200.0),
-        ),
+        width: Px(200.0),
+        height: Px(200.0),
         position_type: Absolute,
-        position: (
-          left: Px(210.0),
-          bottom: Px(10.0),
-        ),
+        left: Px(210.0),
+        bottom: Px(10.0),
         border: (
           left: Px(20.0),
           right: Px(20.0),
@@ -19,6 +15,7 @@
           bottom: Px(20.0),
         ),
       ),
+      border_color: (Green),
       background_color: (Rgba(
         red: 0.4,
         green: 0.4,
@@ -33,10 +30,8 @@
       schematics: {
         "bevy_proto::custom::NodeBundle": (
           style: (
-            size: (
-              width: Percent(100.0),
-              height: Percent(100.0),
-            ),
+            width: Percent(100.0),
+            height: Percent(100.0),
           ),
           background_color: (Rgba(
             red: 0.8,

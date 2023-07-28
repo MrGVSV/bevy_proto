@@ -3,10 +3,8 @@
   schematics: {
     "bevy_proto::custom::NodeBundle": (
       style: (
-        size: (
-          width: Percent(100.0),
-          height: Percent(100.0),
-        ),
+        width: Percent(100.0),
+        height: Percent(100.0),
         position_type: Absolute,
         align_items: Center,
         justify_content: Center,
@@ -19,10 +17,8 @@
       schematics: {
         "bevy_proto::custom::NodeBundle": (
           style: (
-            size: (
-              width: Px(100.0),
-              height: Px(100.0),
-            ),
+            width: Px(100.0),
+            height: Px(100.0),
           ),
           background_color: (Red),
         )
@@ -34,15 +30,11 @@
             schematics: {
               "bevy_proto::custom::NodeBundle": (
                 style: (
-                  size: (
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                  ),
+                  width: Percent(100.0),
+                  height: Percent(100.0),
                   position_type: Absolute,
-                  position: (
-                    left: Px(20.0),
-                    bottom: Px(20.0),
-                  ),
+                  left: Px(20.0),
+                  bottom: Px(20.0),
                 ),
                 background_color: (Rgba(
                   red: 1.0,
@@ -60,15 +52,11 @@
             schematics: {
               "bevy_proto::custom::NodeBundle": (
                 style: (
-                  size: (
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                  ),
+                  width: Percent(100.0),
+                  height: Percent(100.0),
                   position_type: Absolute,
-                  position: (
-                    left: Px(40.0),
-                    bottom: Px(40.0),
-                  ),
+                  left: Px(40.0),
+                  bottom: Px(40.0),
                 ),
                 background_color: (Rgba(
                   red: 1.0,
@@ -86,15 +74,11 @@
             schematics: {
               "bevy_proto::custom::NodeBundle": (
                 style: (
-                  size: (
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                  ),
+                  width: Percent(100.0),
+                  height: Percent(100.0),
                   position_type: Absolute,
-                  position: (
-                    left: Px(60.0),
-                    bottom: Px(60.0),
-                  ),
+                  left: Px(60.0),
+                  bottom: Px(60.0),
                 ),
                 background_color: (Rgba(
                   red: 1.0,
@@ -112,15 +96,11 @@
             schematics: {
               "bevy_proto::custom::NodeBundle": (
                 style: (
-                  size: (
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                  ),
+                  width: Percent(100.0),
+                  height: Percent(100.0),
                   position_type: Absolute,
-                  position: (
-                    left: Px(80.0),
-                    bottom: Px(80.0),
-                  ),
+                  left: Px(80.0),
+                  bottom: Px(80.0),
                 ),
                 background_color: (Rgba(
                   red: 1.0,

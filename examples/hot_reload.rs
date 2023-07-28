@@ -13,20 +13,27 @@
 //!
 //! Just run the example and try it out for yourself!
 
+use bevy::asset::ChangeWatcher;
 use bevy::prelude::*;
+use std::time::Duration;
 
 use bevy_proto::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            // Enable hot-reloading of assets:
-            watch_for_changes: true,
-            ..default()
-        }))
-        .add_plugin(ProtoPlugin::new())
+        .add_plugins((
+            DefaultPlugins.set(AssetPlugin {
+                // Enable hot-reloading of assets:
+                watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
+                ..default()
+            }),
+            ProtoPlugin::new(),
+        ))
         .add_systems(Startup, (setup, load))
-        .add_systems(Update, (spawn.run_if(prototype_ready("ReloadableSprite")), inspect))
+        .add_systems(
+            Update,
+            (spawn.run_if(prototype_ready("ReloadableSprite")), inspect),
+        )
         .run();
 }
 

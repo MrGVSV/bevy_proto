@@ -86,13 +86,13 @@ impl<'de, 'a> DeserializeSeed<'de> for SchematicsDeserializer<'a> {
 #[cfg(test)]
 mod tests {
     use bevy::prelude::Component;
-    use bevy::reflect::{FromReflect, Reflect, TypeRegistryInternal};
+    use bevy::reflect::{Reflect, TypeRegistryInternal};
 
     use bevy_proto_backend::schematics::Schematic;
 
     use super::*;
 
-    #[derive(Reflect, FromReflect, Component, Schematic, Eq, PartialEq, Debug)]
+    #[derive(Reflect, Component, Schematic, Eq, PartialEq, Debug)]
     struct MySchematic {
         foo: usize,
     }

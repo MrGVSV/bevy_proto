@@ -19,11 +19,11 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // =============== //
         // Be sure to add `ProtoPlugin` with the custom config:
-        .add_plugin(ProtoPlugin::new_with_config(MyConfig::default()))
+        .add_plugins(ProtoPlugin::new_with_config(MyConfig::default()))
         // Note: If you don't need to define your own type/resource,
         // you can also just add some callbacks to the default `ProtoConfig`:
         //
-        // .add_plugin(
+        // .add_plugins(
         //     ProtoPlugin::new().with_config(ProtoConfig::default().on_register_prototype(Box::new(
         //         |prototype, _handle| {
         //             println!("Registered: {:?}", prototype.id());
@@ -33,16 +33,20 @@ fn main() {
         //
         // =============== //
         .add_systems(Startup, load)
-        .add_systems(Update, (
-            // =============== //
-            // For custom configs we also need to use `ProtoCondition::<MyConfig>::prototype_ready`
-            // instead of the default `prototype_ready` for our run condition:
-            spawn
-                .run_if(ProtoCondition::<MyConfig>::prototype_ready("Player").and_then(run_once())),
-            // =============== //
-            on_config_change,
-            inspect,
-        ))
+        .add_systems(
+            Update,
+            (
+                // =============== //
+                // For custom configs we also need to use `ProtoCondition::<MyConfig>::prototype_ready`
+                // instead of the default `prototype_ready` for our run condition:
+                spawn.run_if(
+                    ProtoCondition::<MyConfig>::prototype_ready("Player").and_then(run_once()),
+                ),
+                // =============== //
+                on_config_change,
+                inspect,
+            ),
+        )
         .run();
 }
 

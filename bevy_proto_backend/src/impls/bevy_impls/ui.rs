@@ -34,6 +34,7 @@ pub(super) fn register(app: &mut App) {
     app.register_type::<AlignContentInput>()
         .register_type::<AlignItemsInput>()
         .register_type::<AlignSelfInput>()
+        .register_type::<BorderColorInput>()
         .register_type::<DirectionInput>()
         .register_type::<DisplayInput>()
         .register_type::<FlexDirectionInput>()
@@ -259,8 +260,8 @@ impl_external_schematic! {
             align_self: value.align_self.into(),
             align_content: value.align_content.into(),
             justify_content: value.justify_content.into(),
-            justify_self: value.justify_self.into(),
-            justify_items: value.justify_items.into(),
+            justify_self: value.justify_self,
+            justify_items: value.justify_items,
             margin: value.margin.into(),
             padding: value.padding.into(),
             border: value.border.into(),
@@ -268,25 +269,25 @@ impl_external_schematic! {
             flex_shrink: value.flex_shrink,
             flex_basis: value.flex_basis.into(),
             aspect_ratio: value.aspect_ratio,
-            left: value.left.into(),
-            right: value.right.into(),
-            top: value.top.into(),
-            bottom: value.bottom.into(),
-            width: value.width.into(),
-            min_width: value.min_width.into(),
-            max_width: value.max_width.into(),
-            height: value.height.into(),
-            min_height: value.min_height.into(),
-            max_height: value.max_height.into(),
-            row_gap: value.row_gap.into(),
-            column_gap: value.column_gap.into(),
-            grid_auto_flow: value.grid_auto_flow.into(),
-            grid_template_rows: value.grid_template_rows.into(),
-            grid_template_columns: value.grid_template_columns.into(),
-            grid_auto_rows: value.grid_auto_rows.into(),
-            grid_auto_columns: value.grid_auto_columns.into(),
-            grid_row: value.grid_row.into(),
-            grid_column: value.grid_column.into(),
+            left: value.left,
+            right: value.right,
+            top: value.top,
+            bottom: value.bottom,
+            width: value.width,
+            min_width: value.min_width,
+            max_width: value.max_width,
+            height: value.height,
+            min_height: value.min_height,
+            max_height: value.max_height,
+            row_gap: value.row_gap,
+            column_gap: value.column_gap,
+            grid_auto_flow: value.grid_auto_flow,
+            grid_template_rows: value.grid_template_rows,
+            grid_template_columns: value.grid_template_columns,
+            grid_auto_rows: value.grid_auto_rows,
+            grid_auto_columns: value.grid_auto_columns,
+            grid_row: value.grid_row,
+            grid_column: value.grid_column,
         }
     }
 
@@ -484,8 +485,8 @@ impl_external_schematic! {
         Overflow,
         OverflowInput,
         |value: Input| Self {
-            x: value.x.into(),
-            y: value.y.into(),
+            x: value.x,
+            y: value.y,
         }
     }
 

@@ -5,11 +5,12 @@
       style: (
         flex_direction: Column,
         align_self: Stretch,
-        size: (
-          width: Auto,
-          height: Percent(50.0),
-        ),
-        overflow: Hidden
+        width: Auto,
+        height: Percent(50.0),
+        overflow: (
+          x: Clip,
+          y: Clip,
+        )
       ),
       background_color: (Rgba(
         red: 0.10,
@@ -26,10 +27,8 @@
         "bevy_proto::custom::NodeBundle": (
           style: (
             flex_direction: Column,
-            max_size: (
-              width: Undefined,
-              height: Undefined,
-            ),
+            max_width: Auto,
+            max_height: Auto,
             align_items: Center,
           ),
         ),
