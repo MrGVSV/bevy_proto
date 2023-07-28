@@ -173,7 +173,7 @@ impl_external_schematic! {
     from_to!(
         Node,
         NodeInput,
-        |_: Input| Self::default()
+        |_: Input| Self
     );
     impl Default for NodeInput {
         fn default() -> Self {
