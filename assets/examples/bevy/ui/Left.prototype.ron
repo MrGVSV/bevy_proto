@@ -3,10 +3,7 @@
   schematics: {
     "bevy_proto::custom::NodeBundle": (
       style: (
-        size: (
-          width: Px(200.0),
-          height: Auto,
-        ),
+        width: Px(200.0),
         border: (
           left: Px(2.0),
           right: Px(2.0),
@@ -28,10 +25,7 @@
       schematics: {
         "bevy_proto::custom::NodeBundle": (
           style: (
-            size: (
-              width: Percent(100.0),
-              height: Auto,
-            ),
+            width: Percent(100.0),
           ),
           background_color: (Rgba(
             red: 0.15,

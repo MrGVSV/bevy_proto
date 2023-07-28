@@ -2,11 +2,11 @@ use bevy::app::App;
 use bevy::math::{UVec3, Vec3};
 use bevy::pbr::wireframe::Wireframe;
 use bevy::pbr::{
-    AlphaMode, CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, ClusterZConfig,
+    CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, ClusterZConfig,
     DirectionalLight, EnvironmentMapLight, FogFalloff, FogSettings, NotShadowCaster,
     NotShadowReceiver, PointLight, SpotLight,
 };
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
 use crate::proto::ProtoColor;
@@ -15,7 +15,6 @@ use bevy_proto_derive::impl_external_schematic;
 pub(super) fn register(app: &mut App) {
     register_schematic!(
         app,
-        AlphaMode,
         CascadeShadowConfig,
         ClusterConfig,
         DirectionalLight,
@@ -33,14 +32,10 @@ pub(super) fn register(app: &mut App) {
 }
 
 impl_external_schematic! {
-    enum AlphaMode {}
-}
-
-impl_external_schematic! {
     #[schematic(from = CascadeShadowConfigInput)]
     struct CascadeShadowConfig {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct CascadeShadowConfigInput {
         pub num_cascades: usize,
@@ -78,7 +73,7 @@ impl_external_schematic! {
     #[schematic(from = ClusterConfigInput)]
     enum ClusterConfig {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum ClusterConfigInput {
         None,
@@ -120,7 +115,7 @@ impl_external_schematic! {
     #[schematic(from = DirectionalLightInput)]
     struct DirectionalLight {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct DirectionalLightInput {
         pub color: ProtoColor,
@@ -155,7 +150,7 @@ impl_external_schematic! {
     #[schematic(from = FogSettingsInput)]
     struct FogSettings {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct FogSettingsInput {
         pub color: ProtoColor,
@@ -174,7 +169,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub enum FogFalloffInput {
         Linear {
             start: f32,
@@ -207,7 +202,7 @@ impl_external_schematic! {
     #[schematic(from = NotShadowCasterInput)]
     struct NotShadowCaster;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct NotShadowCasterInput;
     impl From<NotShadowCasterInput> for NotShadowCaster {
         fn from(_: NotShadowCasterInput) -> Self {
@@ -220,7 +215,7 @@ impl_external_schematic! {
     #[schematic(from = NotShadowReceiverInput)]
     struct NotShadowReceiver;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct NotShadowReceiverInput;
     impl From<NotShadowReceiverInput> for NotShadowReceiver {
         fn from(_: NotShadowReceiverInput) -> Self {
@@ -233,7 +228,7 @@ impl_external_schematic! {
     #[schematic(from = PointLightInput)]
     struct PointLight {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct PointLightInput {
         pub color: ProtoColor,
@@ -263,7 +258,7 @@ impl_external_schematic! {
     #[schematic(from = SpotLightInput)]
     struct SpotLight {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct SpotLightInput {
         pub color: ProtoColor,
@@ -297,7 +292,7 @@ impl_external_schematic! {
     #[schematic(from = WireframeInput)]
     struct Wireframe;
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct WireframeInput;
     impl From<WireframeInput> for Wireframe {
         fn from(_: WireframeInput) -> Self {

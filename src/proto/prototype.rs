@@ -1,5 +1,5 @@
 use crate::proto::ProtoChild;
-use bevy::reflect::TypeUuid;
+use bevy::reflect::{TypePath, TypeUuid};
 use bevy_proto_backend::children::Children;
 use bevy_proto_backend::deps::Dependencies;
 use bevy_proto_backend::path::ProtoPath;
@@ -8,7 +8,7 @@ use bevy_proto_backend::schematics::Schematics;
 use bevy_proto_backend::templates::Templates;
 
 /// The core asset type used to create easily-configurable entity trees.
-#[derive(Debug, TypeUuid)]
+#[derive(Debug, TypeUuid, TypePath)]
 #[uuid = "cbc85a87-723a-4e61-83c7-26e96e54fe9f"]
 pub struct Prototype {
     pub(crate) id: String,

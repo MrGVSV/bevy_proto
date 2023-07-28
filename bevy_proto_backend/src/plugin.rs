@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::app::{App, Plugin};
 use bevy::asset::AddAsset;
-use bevy::prelude::FromWorld;
+use bevy::prelude::{FromWorld, Update};
 use parking_lot::Mutex;
 
 use crate::impls;
@@ -79,7 +79,7 @@ impl<T: Prototypical, L: Loader<T>, C: Config<T>> Plugin for ProtoBackendPlugin<
         app.add_event::<ProtoAssetEvent<T>>();
 
         // === Systems === //
-        app.add_system(on_proto_asset_event::<T, C>);
+        app.add_systems(Update, on_proto_asset_event::<T, C>);
     }
 }
 

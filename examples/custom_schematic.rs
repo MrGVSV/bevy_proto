@@ -7,17 +7,19 @@ use bevy_proto::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(ProtoPlugin::new())
+        .add_plugins((DefaultPlugins, ProtoPlugin::new()))
         // =============== //
         // Make sure to register your types!
         .register_type::<Foo>()
         // ================ //
-        .add_startup_system(load)
-        .add_systems((
-            spawn.run_if(prototype_ready("CustomSchematic").and_then(run_once())),
-            inspect,
-        ))
+        .add_systems(Startup, load)
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("CustomSchematic").and_then(run_once())),
+                inspect,
+            ),
+        )
         .run();
 }
 
@@ -39,7 +41,7 @@ struct Foo;
 
 // This struct provides configuration for `Foo` in the prototype file.
 // Input types must implement `FromReflect`
-#[derive(Reflect, FromReflect)]
+#[derive(Reflect)]
 struct FooInput {
     /// The asset path of the image to load.
     image: String,

@@ -1,6 +1,4 @@
-use bevy::reflect::{
-    std_traits::ReflectDefault, FromReflect, Reflect, ReflectDeserialize, ReflectSerialize,
-};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect, ReflectDeserialize, ReflectSerialize};
 use bevy::render::color::Color;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +9,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// [`Red`]: ProtoColor::Red
 /// [`AliceBlue`]: ProtoColor::AliceBlue
-#[derive(Reflect, FromReflect, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Reflect, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[reflect(Default, PartialEq, Serialize, Deserialize)]
 pub enum ProtoColor {
     /// sRGBA color

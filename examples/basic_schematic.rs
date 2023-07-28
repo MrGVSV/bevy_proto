@@ -7,7 +7,7 @@ use bevy_proto::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, ProtoPlugin::new()))
         // =============== //
         // Make sure to register your types!
         .register_type::<Playable>()
@@ -17,16 +17,18 @@ fn main() {
         .register_type::<MaxPlayers>()
         .register_type_data::<MaxPlayers, ReflectSchematic>()
         // =============== //
-        .add_plugin(ProtoPlugin::new())
-        .add_startup_systems((setup, load))
-        .add_systems((
-            spawn.run_if(
-                prototype_ready("Player")
-                    .and_then(prototype_ready("PlayerConfig"))
-                    .and_then(run_once()),
+        .add_systems(Startup, (setup, load))
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(
+                    prototype_ready("Player")
+                        .and_then(prototype_ready("PlayerConfig"))
+                        .and_then(run_once()),
+                ),
+                inspect,
             ),
-            inspect,
-        ))
+        )
         .run();
 }
 
@@ -37,15 +39,12 @@ fn main() {
 // First thing's first, we need to derive `Reflect` so that we can register
 // this type to the registry (speaking of, don't forget to do that!):
 #[derive(Reflect)]
-// For the basic schematic types we also need to derive `FromReflect` so that
-// we can convert the deserialized data into a real instance of our type:
-#[derive(FromReflect)]
 // Lastly, we need to register `ReflectSchematic`, which can do like this:
 #[reflect(Schematic)]
 struct Playable;
 
 /// The derive also works for enums!
-#[derive(Component, Schematic, Reflect, FromReflect, Debug)]
+#[derive(Component, Schematic, Reflect, Debug)]
 #[reflect(Schematic)]
 enum Alignment {
     Good,
@@ -60,7 +59,7 @@ enum Alignment {
 ///
 /// Note that when a schematic is applied, it will replace the current instance
 /// of the resource in the world.
-#[derive(Resource, Schematic, Reflect, FromReflect)]
+#[derive(Resource, Schematic, Reflect)]
 #[schematic(kind = "resource")]
 struct MaxPlayers(u8);
 

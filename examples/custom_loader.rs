@@ -22,16 +22,19 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // =============== //
         // Be sure to add `ProtoPlugin` with the custom loader:
-        .add_plugin(ProtoPlugin::new_with_loader(MyLoader::default()))
+        .add_plugins(ProtoPlugin::new_with_loader(MyLoader))
         // =============== //
         .register_type::<Player>()
         .register_type::<Health>()
         .register_type::<Mana>()
-        .add_startup_system(load)
-        .add_systems((
-            spawn.run_if(prototype_ready("Player").and_then(run_once())),
-            inspect,
-        ))
+        .add_systems(Startup, load)
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("Player").and_then(run_once())),
+                inspect,
+            ),
+        )
         .run();
 }
 
@@ -96,15 +99,15 @@ impl Loader<Prototype> for MyLoader {
     }
 }
 
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct Player;
 
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct Health(i32);
 
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 struct Mana(i32);
 

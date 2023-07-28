@@ -6,10 +6,8 @@
         flex_direction: Column,
         justify_content: Center,
         align_items: Center,
-        size: (
-          width: Px(200.0),
-          height: Auto,
-        ),
+        width: Px(200.0),
+        height: Auto,
       ),
       background_color: (Rgba(
         red: 0.15,
@@ -35,10 +33,8 @@
             )]
           ),
           style: (
-            size: (
-              width: Auto,
-              height: Px(25.0),
-            )
+            width: Auto,
+            height: Px(25.0),
           ),
         ),
         "bevy_ui::widget::label::Label": ()

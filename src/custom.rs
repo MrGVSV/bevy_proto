@@ -8,9 +8,11 @@
 use bevy::app::App;
 use bevy::asset::Handle;
 use bevy::prelude::{Component, GlobalTransform, Transform};
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
+use bevy::ui::widget::UiImageSize;
 use bevy_proto_backend::impls::bevy_impls;
-use bevy_proto_backend::{from, from_to_default, from_to_input};
+use bevy_proto_backend::proto::ProtoColor;
+use bevy_proto_backend::{from, from_to_default};
 
 use bevy_proto_backend::schematics::{
     FromSchematicInput, ReflectSchematic, Schematic, SchematicContext,
@@ -45,10 +47,18 @@ pub(crate) fn register_custom_schematics(app: &mut App) {
         .register_type::<TextBundle>();
 }
 
+fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
+    bevy_impls::ui::BackgroundColorInput(ProtoColor::None)
+}
+
+fn transparent_border_color() -> bevy_impls::ui::BorderColorInput {
+    bevy_impls::ui::BorderColorInput(ProtoColor::None)
+}
+
 /// A [`Schematic`] implementation of [`TransformBundle`].
 ///
 /// [`TransformBundle`]: bevy::prelude::TransformBundle
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::prelude::TransformBundle)]
 pub struct TransformBundle {
@@ -69,7 +79,7 @@ from_to_default! {
 ///
 /// [`SpatialBundle`]: bevy::prelude::SpatialBundle
 #[cfg(feature = "bevy_render")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::render::prelude::SpatialBundle)]
 pub struct SpatialBundle {
@@ -96,7 +106,7 @@ from_to_default! {
 ///
 /// [`VisibilityBundle`]: bevy::prelude::VisibilityBundle
 #[cfg(feature = "bevy_render")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::prelude::VisibilityBundle)]
 pub struct VisibilityBundle {
@@ -133,7 +143,7 @@ pub struct SpriteBundle {
     pub texture: Handle<bevy::prelude::Image>,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -167,7 +177,7 @@ pub struct SpriteSheetBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -191,7 +201,7 @@ from!(
 ///
 /// [`Camera2dBundle`]: bevy::core_pipeline::core_2d::Camera2dBundle
 #[cfg(feature = "bevy_core_pipeline")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::prelude::Camera2dBundle)]
 pub struct Camera2dBundle {
@@ -231,7 +241,7 @@ from_to_default! {
 ///
 /// [`Camera3dBundle`]: bevy::core_pipeline::core_3d::Camera3dBundle
 #[cfg(feature = "bevy_core_pipeline")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::prelude::Camera3dBundle)]
 pub struct Camera3dBundle {
@@ -273,7 +283,7 @@ from_to_default! {
 ///
 /// [`DirectionalLightBundle`]: bevy::pbr::DirectionalLightBundle
 #[cfg(feature = "bevy_pbr")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::DirectionalLightBundle)]
 pub struct DirectionalLightBundle {
@@ -331,7 +341,7 @@ impl Default for DirectionalLightBundle {
 ///
 /// [`PointLightBundle`]: bevy::pbr::PointLightBundle
 #[cfg(feature = "bevy_pbr")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::PointLightBundle)]
 pub struct PointLightBundle {
@@ -366,7 +376,7 @@ from_to_default!(
 ///
 /// [`SpotLightBundle`]: bevy::pbr::SpotLightBundle
 #[cfg(feature = "bevy_pbr")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::SpotLightBundle)]
 pub struct SpotLightBundle {
@@ -413,7 +423,7 @@ pub struct DynamicSceneBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -446,7 +456,7 @@ pub struct SceneBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -463,49 +473,40 @@ from!(bevy::scene::SceneBundle, SceneBundle, |value: Input| Self {
 ///
 /// [`Text2dBundle`]: bevy::text::Text2dBundle
 #[cfg(feature = "bevy_text")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
-#[reflect(Schematic, Default)]
+#[derive(Component, Schematic, Reflect)]
+#[reflect(Schematic)]
 #[schematic(into = bevy::text::Text2dBundle)]
 pub struct Text2dBundle {
+    #[reflect(default)]
     pub text: bevy_impls::text::TextInput,
+    #[reflect(default)]
     pub text_anchor: bevy::sprite::Anchor,
+    #[reflect(default)]
     pub text_2d_bounds: bevy_impls::text::Text2dBoundsInput,
+    #[reflect(default)]
     pub transform: Transform,
+    #[reflect(default)]
     pub global_transform: GlobalTransform,
+    #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
+    #[reflect(default)]
+    pub text_layout_info: bevy_impls::text::TextLayoutInfoInput,
 }
 
 #[cfg(feature = "bevy_text")]
-from_to_input!(
-    bevy::text::Text2dBundle,
-    Text2dBundle,
-    |input: Input, context| {
+impl FromSchematicInput<Text2dBundle> for bevy::text::Text2dBundle {
+    fn from_input(input: Text2dBundle, context: &mut SchematicContext) -> Self {
         Self {
             text: FromSchematicInput::from_input(input.text, context),
             text_anchor: input.text_anchor,
-            text_2d_bounds: input.text_2d_bounds.into(),
+            text_2d_bounds: FromSchematicInput::from_input(input.text_2d_bounds, context),
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-        }
-    }
-);
-
-#[cfg(feature = "bevy_text")]
-impl Default for Text2dBundle {
-    fn default() -> Self {
-        let base = bevy::text::Text2dBundle::default();
-        Self {
-            text: Default::default(),
-            text_anchor: base.text_anchor,
-            text_2d_bounds: base.text_2d_bounds.into(),
-            transform: base.transform,
-            global_transform: base.global_transform,
-            visibility: base.visibility,
-            computed_visibility: base.computed_visibility,
+            text_layout_info: FromSchematicInput::from_input(input.text_layout_info, context),
         }
     }
 }
@@ -514,7 +515,7 @@ impl Default for Text2dBundle {
 ///
 /// [`ButtonBundle`]: bevy::ui::node_bundles::ButtonBundle
 #[cfg(feature = "bevy_ui")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 #[schematic(into = bevy::ui::node_bundles::ButtonBundle)]
 pub struct ButtonBundle {
@@ -530,6 +531,8 @@ pub struct ButtonBundle {
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
+    #[reflect(default = "transparent_border_color")]
+    pub border_color: bevy_impls::ui::BorderColorInput,
     #[reflect(default)]
     pub image: bevy_impls::ui::UiImageInput,
     #[reflect(default)]
@@ -538,7 +541,7 @@ pub struct ButtonBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
@@ -554,6 +557,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
             interaction: input.interaction.into(),
             focus_policy: input.focus_policy.into(),
             background_color: input.background_color.into(),
+            border_color: input.border_color.into(),
             image: bevy::ui::UiImage::from_input(input.image, context),
             transform: input.transform,
             global_transform: input.global_transform,
@@ -568,7 +572,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
 ///
 /// [`ImageBundle`]: bevy::ui::node_bundles::ImageBundle
 #[cfg(feature = "bevy_ui")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 #[schematic(into = bevy::ui::node_bundles::ImageBundle)]
 pub struct ImageBundle {
@@ -576,8 +580,6 @@ pub struct ImageBundle {
     pub node: bevy_impls::ui::NodeInput,
     #[reflect(default)]
     pub style: bevy_impls::ui::StyleInput,
-    #[reflect(default)]
-    pub calculated_size: bevy_impls::ui::CalculatedSizeInput,
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
     #[reflect(default)]
@@ -590,10 +592,12 @@ pub struct ImageBundle {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
+    #[reflect(ignore)]
+    pub image_size: UiImageSize,
 }
 
 #[cfg(feature = "bevy_ui")]
@@ -602,7 +606,7 @@ impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
         Self {
             node: input.node.into(),
             style: input.style.into(),
-            calculated_size: input.calculated_size.into(),
+            calculated_size: Default::default(),
             background_color: input.background_color.into(),
             image: bevy::ui::UiImage::from_input(input.image, context),
             focus_policy: input.focus_policy.into(),
@@ -611,6 +615,7 @@ impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
             z_index: input.z_index.into(),
+            image_size: UiImageSize::default(), // this field is set automatically by Bevy normally
         }
     }
 }
@@ -619,13 +624,14 @@ impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
 ///
 /// [`NodeBundle`]: bevy::ui::node_bundles::NodeBundle
 #[cfg(feature = "bevy_ui")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
+#[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::ui::node_bundles::NodeBundle)]
 pub struct NodeBundle {
     pub node: bevy_impls::ui::NodeInput,
     pub style: bevy_impls::ui::StyleInput,
     pub background_color: bevy_impls::ui::BackgroundColorInput,
+    pub border_color: bevy_impls::ui::BorderColorInput,
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
@@ -643,6 +649,7 @@ from_to_default!(
         node: value.node.into(),
         style: value.style.into(),
         background_color: value.background_color.into(),
+        border_color: value.border_color.into(),
         focus_policy: value.focus_policy.into(),
         transform: value.transform,
         global_transform: value.global_transform,
@@ -656,61 +663,55 @@ from_to_default!(
 ///
 /// [`TextBundle`]: bevy::ui::node_bundles::TextBundle
 #[cfg(feature = "bevy_ui")]
-#[derive(Component, Schematic, Reflect, FromReflect)]
-#[reflect(Schematic, Default)]
+#[derive(Component, Schematic, Reflect)]
+#[reflect(Schematic)]
 #[schematic(into = bevy::ui::node_bundles::TextBundle)]
 pub struct TextBundle {
+    #[reflect(default)]
     pub node: bevy_impls::ui::NodeInput,
+    #[reflect(default)]
     pub style: bevy_impls::ui::StyleInput,
+    #[reflect(default)]
     pub text: bevy_impls::text::TextInput,
-    pub calculated_size: bevy_impls::ui::CalculatedSizeInput,
+    #[reflect(default)]
+    pub text_layout_info: bevy_impls::text::TextLayoutInfoInput,
+    #[reflect(default)]
+    pub text_flags: bevy::ui::widget::TextFlags,
+    #[reflect(ignore)]
+    pub calculated_size: bevy::ui::ContentSize,
+    #[reflect(default)]
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
+    #[reflect(default)]
     pub transform: Transform,
+    #[reflect(default)]
     pub global_transform: GlobalTransform,
+    #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
+    #[reflect(default)]
     pub z_index: bevy_impls::ui::ZIndexInput,
+    #[reflect(default = "transparent_background_color")]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
 }
 
 #[cfg(feature = "bevy_ui")]
-from_to_input!(
-    bevy::ui::node_bundles::TextBundle,
-    TextBundle,
-    |input: Input, context| {
+impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
+    fn from_input(input: TextBundle, context: &mut SchematicContext) -> Self {
         Self {
-            node: input.node.into(),
-            style: input.style.into(),
+            node: FromSchematicInput::from_input(input.node, context),
+            style: FromSchematicInput::from_input(input.style, context),
             text: FromSchematicInput::from_input(input.text, context),
-            calculated_size: input.calculated_size.into(),
-            focus_policy: input.focus_policy.into(),
+            text_layout_info: FromSchematicInput::from_input(input.text_layout_info, context),
+            text_flags: input.text_flags,
+            calculated_size: input.calculated_size,
+            focus_policy: FromSchematicInput::from_input(input.focus_policy, context),
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-            z_index: input.z_index.into(),
-            background_color: input.background_color.into(),
-        }
-    }
-);
-
-#[cfg(feature = "bevy_ui")]
-impl Default for TextBundle {
-    fn default() -> Self {
-        let base = bevy::ui::node_bundles::TextBundle::default();
-        Self {
-            node: base.node.into(),
-            style: base.style.into(),
-            text: Default::default(),
-            calculated_size: base.calculated_size.into(),
-            focus_policy: base.focus_policy.into(),
-            transform: base.transform,
-            global_transform: base.global_transform,
-            visibility: base.visibility,
-            computed_visibility: base.computed_visibility,
-            z_index: base.z_index.into(),
-            background_color: base.background_color.into(),
+            z_index: FromSchematicInput::from_input(input.z_index, context),
+            background_color: FromSchematicInput::from_input(input.background_color, context),
         }
     }
 }
@@ -724,12 +725,12 @@ impl Default for TextBundle {
 #[reflect(Schematic)]
 #[schematic(into = bevy::pbr::MaterialMeshBundle<M>)]
 pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
-    #[reflect(
-        default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<bevy::render::mesh::Mesh>"
-    )]
+    // #[reflect(
+    //     default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<bevy::render::mesh::Mesh>"
+    // )]
     #[schematic(asset(lazy))]
     pub mesh: Handle<bevy::render::mesh::Mesh>,
-    #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
+    // #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
     #[schematic(asset(lazy))]
     pub material: Handle<M>,
     #[reflect(default)]
@@ -738,7 +739,7 @@ pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 
@@ -767,7 +768,6 @@ impl<M: bevy::pbr::Material> From<MaterialMeshBundle<M>> for bevy::pbr::Material
 pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
     #[reflect(default)]
     pub mesh: bevy_impls::sprite::Mesh2dHandleInput,
-    #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
     #[schematic(asset(lazy))]
     pub material: Handle<M>,
     #[reflect(default)]
@@ -776,7 +776,7 @@ pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
     pub global_transform: GlobalTransform,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
-    #[reflect(ignore, default)]
+    #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
 }
 

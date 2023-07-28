@@ -186,7 +186,7 @@ impl<T: Prototypical, C: Config<T>> ProtoInsertCommand<T, C> {
 }
 
 impl<T: Prototypical, C: Config<T>> Command for ProtoInsertCommand<T, C> {
-    fn write(self, world: &mut World) {
+    fn apply(self, world: &mut World) {
         self.data.assert_is_registered(world);
 
         self.data
@@ -217,7 +217,7 @@ impl<T: Prototypical, C: Config<T>> ProtoRemoveCommand<T, C> {
 }
 
 impl<T: Prototypical, C: Config<T>> Command for ProtoRemoveCommand<T, C> {
-    fn write(self, world: &mut World) {
+    fn apply(self, world: &mut World) {
         self.data.assert_is_registered(world);
 
         self.data

@@ -1,12 +1,12 @@
 use bevy::app::App;
 use bevy::core_pipeline::bloom::{BloomCompositeMode, BloomPrefilterSettings, BloomSettings};
 use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::core_pipeline::core_3d::Camera3dDepthLoadOp;
+use bevy::core_pipeline::core_3d::{Camera3dDepthLoadOp, Camera3dDepthTextureUsage};
 use bevy::core_pipeline::fxaa::Fxaa;
 use bevy::core_pipeline::prepass::{DepthPrepass, NormalPrepass};
 use bevy::core_pipeline::tonemapping::{DebandDither, Tonemapping};
 use bevy::prelude::{Camera2d, Camera3d, Color};
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 
 use crate::impls::macros::{from_to, from_to_default, register_schematic};
 use bevy_proto_derive::impl_external_schematic;
@@ -35,7 +35,7 @@ impl_external_schematic! {
     #[schematic(from = BloomSettingsInput)]
     struct BloomSettings {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct BloomSettingsInput {
         pub intensity: f32,
@@ -58,7 +58,7 @@ impl_external_schematic! {
         }
     );
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct BloomPrefilterSettingsInput {
         pub threshold: f32,
@@ -73,7 +73,7 @@ impl_external_schematic! {
         }
     );
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub enum BloomCompositeModeInput {
         EnergyConserving,
         Additive,
@@ -92,7 +92,7 @@ impl_external_schematic! {
     #[schematic(from = Camera2dInput)]
     struct Camera2d {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct Camera2dInput {
         pub clear_color: ClearColorConfigInput,
@@ -110,22 +110,24 @@ impl_external_schematic! {
     #[schematic(from = Camera3dInput)]
     struct Camera3d {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct Camera3dInput {
         pub clear_color: ClearColorConfigInput,
         pub depth_load_op: Camera3dDepthLoadOpInput,
+        pub depth_texture_usages: Camera3dDepthTextureUsage,
     }
     from_to_default!(
         Camera3d,
         Camera3dInput,
         |value: Input| Self {
+            depth_texture_usages: value.depth_texture_usages,
             clear_color: value.clear_color.into(),
             depth_load_op: value.depth_load_op.into()
         }
     );
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum Camera3dDepthLoadOpInput {
         Clear(f32),
@@ -149,7 +151,7 @@ impl_external_schematic! {
     #[schematic(from = DepthPrepassInput)]
     struct DepthPrepass {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct DepthPrepassInput;
     impl From<DepthPrepassInput> for DepthPrepass {
         fn from(_: DepthPrepassInput) -> Self {
@@ -166,7 +168,7 @@ impl_external_schematic! {
     #[schematic(from = NormalPrepassInput)]
     struct NormalPrepass {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct NormalPrepassInput;
     impl From<NormalPrepassInput> for NormalPrepass {
         fn from(_: NormalPrepassInput) -> Self {
@@ -179,7 +181,7 @@ impl_external_schematic! {
     enum Tonemapping {}
 }
 
-#[derive(Reflect, FromReflect)]
+#[derive(Reflect)]
 #[reflect(Default)]
 pub enum ClearColorConfigInput {
     Default,

@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::core::Name;
-use bevy::reflect::{FromReflect, Reflect};
+use bevy::reflect::Reflect;
 
 use crate::impls::macros::register_schematic;
 use bevy_proto_derive::impl_external_schematic;
@@ -13,7 +13,7 @@ impl_external_schematic! {
     #[schematic(from = NameInput)]
     struct Name {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct NameInput(String);
     impl From<NameInput> for Name {
         fn from(input: NameInput) -> Self {

@@ -26,20 +26,23 @@ use bevy_proto_backend::cycles::CycleResponse;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(
+        .add_plugins((
+            DefaultPlugins,
             ProtoPlugin::new().with_config(ProtoConfig::default().on_cycle(Box::new(|cycle| {
                 println!("Handling cycle: {:?}", cycle);
                 // Here we can configure what CycleResponse is returned.
                 // For debug builds, the default behavior is to panic.
                 CycleResponse::Panic
             }))),
-        )
-        .add_startup_system(load)
-        .add_systems((
-            spawn.run_if(prototype_ready("CycleA").and_then(run_once())),
-            inspect,
         ))
+        .add_systems(Startup, load)
+        .add_systems(
+            Update,
+            (
+                spawn.run_if(prototype_ready("CycleA").and_then(run_once())),
+                inspect,
+            ),
+        )
         .run();
 }
 

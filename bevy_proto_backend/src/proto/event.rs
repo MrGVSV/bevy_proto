@@ -1,5 +1,6 @@
 use crate::proto::Prototypical;
 use bevy::asset::Handle;
+use bevy::prelude::Event;
 
 /// Asset lifecycle events for [prototype] assets.
 ///
@@ -9,7 +10,7 @@ use bevy::asset::Handle;
 ///
 /// [prototype]: Prototypical
 /// [`AssetEvent`]: bevy::asset::AssetEvent
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Event)]
 pub enum ProtoAssetEvent<T: Prototypical> {
     /// This event is fired when a prototype has been successfully created,
     /// registered, and cached.

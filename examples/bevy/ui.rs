@@ -9,34 +9,41 @@
 //!
 //! [`ui`]: https://github.com/bevyengine/bevy/blob/v0.10.1/examples/ui/ui.rs
 
+use bevy::asset::ChangeWatcher;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_proto::prelude::*;
+use std::time::Duration;
 
 const ROOT: &str = "Root";
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: true,
-            ..default()
-        }))
-        .add_plugin(ProtoPlugin::new())
+        .add_plugins((
+            DefaultPlugins.set(AssetPlugin {
+                watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
+                ..default()
+            }),
+            ProtoPlugin::new(),
+        ))
         // The original example sets the update mode to `desktop_app`,
         // but this doesn't play nice with hot-reloading.
         // .insert_resource(bevy::winit::WinitSettings::desktop_app())
         .register_type::<ScrollingList>()
         .register_type::<ScrollText>()
-        .add_startup_systems((setup, load))
-        .add_systems((spawn.run_if(prototype_ready(ROOT)), inspect, mouse_scroll))
+        .add_systems(Startup, (setup, load))
+        .add_systems(
+            Update,
+            (spawn.run_if(prototype_ready(ROOT)), inspect, mouse_scroll),
+        )
         .run();
 }
 
-#[derive(Component, Default, Reflect, FromReflect)]
+#[derive(Component, Default, Reflect)]
 #[reflect(Schematic)]
 struct ScrollText(String);
 
-#[derive(Component, Reflect, FromReflect, Schematic)]
+#[derive(Component, Reflect, Schematic)]
 #[reflect(Schematic)]
 struct ScrollingList {
     #[reflect(default)]
@@ -62,7 +69,7 @@ fn mouse_scroll(
 
             scrolling_list.position += dy;
             scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
-            style.position.top = Val::Px(scrolling_list.position);
+            style.top = Val::Px(scrolling_list.position);
         }
     }
 }

@@ -1,7 +1,10 @@
 use bevy::app::App;
 use bevy::math::Vec2;
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect};
-use bevy::text::{BreakLineOn, Text, Text2dBounds, TextAlignment, TextSection, TextStyle};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
+use bevy::text::{
+    BreakLineOn, GlyphAtlasInfo, PositionedGlyph, Text, Text2dBounds, TextAlignment,
+    TextLayoutInfo, TextSection, TextStyle,
+};
 
 use crate::impls::macros::{from_to, from_to_default, from_to_input, register_schematic};
 use crate::proto::{ProtoAsset, ProtoColor};
@@ -23,12 +26,12 @@ impl_external_schematic! {
     #[schematic(from = TextInput)]
     struct Text {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct TextInput {
         pub sections: Vec<TextSectionInput>,
         pub alignment: TextAlignmentInput,
-        pub linebreak_behaviour: BreakLineOnInput,
+        pub linebreak_behavior: BreakLineOnInput,
     }
     from_to_input! {
         Text,
@@ -42,7 +45,7 @@ impl_external_schematic! {
             Self {
                 sections,
                 alignment: input.alignment.into(),
-                linebreak_behaviour: input.linebreak_behaviour.into(),
+                linebreak_behavior: input.linebreak_behavior.into(),
             }
         }
     }
@@ -52,12 +55,12 @@ impl_external_schematic! {
             Self {
                 sections: Vec::new(),
                 alignment: base.alignment.into(),
-                linebreak_behaviour: base.linebreak_behaviour.into(),
+                linebreak_behavior: base.linebreak_behavior.into(),
             }
         }
     }
 
-    #[derive(FromReflect, Reflect)]
+    #[derive(Reflect)]
     pub struct TextSectionInput {
         pub value: String,
         pub style: TextStyleInput,
@@ -71,7 +74,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct TextStyleInput {
         pub font: ProtoAsset,
         pub font_size: f32,
@@ -87,7 +90,7 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub enum TextAlignmentInput {
         Left,
         Center,
@@ -103,10 +106,11 @@ impl_external_schematic! {
         }
     }
 
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub enum BreakLineOnInput {
         WordBoundary,
         AnyCharacter,
+        NoWrap,
     }
     from_to! {
         BreakLineOn,
@@ -114,6 +118,7 @@ impl_external_schematic! {
         |value: Input| match value {
             Input::WordBoundary => Self::WordBoundary,
             Input::AnyCharacter => Self::AnyCharacter,
+            Input::NoWrap => Self::NoWrap,
         }
     }
 }
@@ -122,7 +127,7 @@ impl_external_schematic! {
     #[schematic(from = Text2dBoundsInput)]
     struct Text2dBounds {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct Text2dBoundsInput {
         pub size: Vec2,
@@ -132,6 +137,62 @@ impl_external_schematic! {
         Text2dBoundsInput,
         |value: Input| Self {
             size: value.size,
+        }
+    }
+}
+
+#[derive(Reflect, Default)]
+#[reflect(Default)]
+pub struct TextLayoutInfoInput {
+    pub glyphs: Vec<PositionedGlyphInput>,
+    pub size: Vec2,
+}
+
+impl FromSchematicInput<TextLayoutInfoInput> for TextLayoutInfo {
+    fn from_input(input: TextLayoutInfoInput, context: &mut SchematicContext) -> Self {
+        Self {
+            glyphs: input
+                .glyphs
+                .into_iter()
+                .map(|glyph| FromSchematicInput::from_input(glyph, context))
+                .collect(),
+            size: input.size,
+        }
+    }
+}
+
+#[derive(Reflect)]
+pub struct PositionedGlyphInput {
+    pub position: Vec2,
+    pub size: Vec2,
+    pub atlas_info: GlyphAtlasInfoInput,
+    pub section_index: usize,
+    pub byte_index: usize,
+}
+
+impl FromSchematicInput<PositionedGlyphInput> for PositionedGlyph {
+    fn from_input(input: PositionedGlyphInput, context: &mut SchematicContext) -> Self {
+        Self {
+            position: input.position,
+            size: input.size,
+            atlas_info: FromSchematicInput::from_input(input.atlas_info, context),
+            section_index: input.section_index,
+            byte_index: input.byte_index,
+        }
+    }
+}
+
+#[derive(Reflect)]
+pub struct GlyphAtlasInfoInput {
+    pub texture_atlas: ProtoAsset,
+    pub glyph_index: usize,
+}
+
+impl FromSchematicInput<GlyphAtlasInfoInput> for GlyphAtlasInfo {
+    fn from_input(input: GlyphAtlasInfoInput, context: &mut SchematicContext) -> Self {
+        Self {
+            texture_atlas: FromSchematicInput::from_input(input.texture_atlas, context),
+            glyph_index: input.glyph_index,
         }
     }
 }

@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::{Camera, Entity, OrthographicProjection, PerspectiveProjection, Projection};
-use bevy::reflect::{std_traits::ReflectDefault, FromReflect, Reflect, TupleStruct};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect, TupleStruct};
 use bevy::render::camera::CameraRenderGraph;
 use bevy::render::mesh::skinning::SkinnedMesh;
 use bevy::render::primitives::Aabb;
@@ -39,7 +39,7 @@ impl_external_schematic! {
     #[schematic(from = CameraRenderGraphInput)]
     struct CameraRenderGraph {}
     // ---
-    #[derive(Reflect, FromReflect, Default)]
+    #[derive(Reflect, Default)]
     #[reflect(Default)]
     pub struct CameraRenderGraphInput(Cow<'static, str>);
 
@@ -67,7 +67,7 @@ impl_external_schematic! {
     #[schematic(from = ColorGradingInput)]
     struct ColorGrading {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub struct ColorGradingInput {
         pub exposure: f32,
@@ -99,7 +99,7 @@ impl_external_schematic! {
     #[schematic(from = ProjectionInput)]
     enum Projection {}
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     #[reflect(Default)]
     pub enum ProjectionInput {
         Perspective(PerspectiveProjection),
@@ -119,7 +119,7 @@ impl_external_schematic! {
     #[schematic(from = RenderLayersInput)]
     struct RenderLayers();
     // ---
-    #[derive(Reflect, FromReflect)]
+    #[derive(Reflect)]
     pub struct RenderLayersInput(u8);
     impl From<RenderLayersInput> for RenderLayers {
         fn from(value: RenderLayersInput) -> Self {
