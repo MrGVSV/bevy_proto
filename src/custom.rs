@@ -47,6 +47,14 @@ pub(crate) fn register_custom_schematics(app: &mut App) {
         .register_type::<TextBundle>();
 }
 
+fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
+    bevy_impls::ui::BackgroundColorInput(ProtoColor::None)
+}
+
+fn transparent_border_color() -> bevy_impls::ui::BorderColorInput {
+    bevy_impls::ui::BorderColorInput(ProtoColor::None)
+}
+
 /// A [`Schematic`] implementation of [`TransformBundle`].
 ///
 /// [`TransformBundle`]: bevy::prelude::TransformBundle
@@ -523,7 +531,7 @@ pub struct ButtonBundle {
     pub focus_policy: bevy_impls::ui::FocusPolicyInput,
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
-    #[reflect(default)]
+    #[reflect(default = "transparent_border_color")]
     pub border_color: bevy_impls::ui::BorderColorInput,
     #[reflect(default)]
     pub image: bevy_impls::ui::UiImageInput,
@@ -685,10 +693,6 @@ pub struct TextBundle {
     pub z_index: bevy_impls::ui::ZIndexInput,
     #[reflect(default = "transparent_background_color")]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
-}
-
-fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
-    bevy_impls::ui::BackgroundColorInput(ProtoColor::None)
 }
 
 #[cfg(feature = "bevy_ui")]
