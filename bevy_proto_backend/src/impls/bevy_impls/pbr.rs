@@ -1,14 +1,13 @@
 use bevy::app::App;
-use bevy::math::{UVec3, Vec3};
 use bevy::pbr::wireframe::Wireframe;
 use bevy::pbr::{
-    CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, ClusterZConfig,
-    DirectionalLight, EnvironmentMapLight, FogFalloff, FogSettings, NotShadowCaster,
-    NotShadowReceiver, PointLight, SpotLight,
+    CascadeShadowConfig, CascadeShadowConfigBuilder, ClusterConfig, DirectionalLight,
+    EnvironmentMapLight, FogFalloff, FogSettings, NotShadowCaster, NotShadowReceiver, PointLight,
+    SpotLight,
 };
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 
-use crate::impls::macros::{from_to, from_to_default, register_schematic};
+use crate::impls::macros::{from_to_default, register_schematic};
 use crate::proto::ProtoColor;
 use bevy_proto_derive::impl_external_schematic;
 
@@ -26,9 +25,6 @@ pub(super) fn register(app: &mut App) {
         SpotLight,
         Wireframe,
     );
-
-    // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
-    app.register_type::<FogFalloffInput>();
 }
 
 impl_external_schematic! {
@@ -70,71 +66,11 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
-    #[schematic(from = ClusterConfigInput)]
     enum ClusterConfig {}
-    // ---
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub enum ClusterConfigInput {
-        None,
-        Single,
-        XYZ {
-            dimensions: UVec3,
-            z_config: ClusterZConfig,
-            dynamic_resizing: bool,
-        },
-        FixedZ {
-            total: u32,
-            z_slices: u32,
-            z_config: ClusterZConfig,
-            dynamic_resizing: bool,
-        },
-    }
-    from_to_default!(
-        ClusterConfig,
-        ClusterConfigInput,
-        |value: Input| match value {
-            Input::None => Self::None,
-            Input::Single => Self::Single,
-            Input::XYZ {
-                dimensions,
-                z_config,
-                dynamic_resizing,
-            } => Self::XYZ {dimensions, z_config, dynamic_resizing},
-            Input::FixedZ {
-                total,
-                z_slices,
-                z_config,
-                dynamic_resizing,
-            } => Self::FixedZ {total, z_slices, z_config, dynamic_resizing},
-        }
-    );
 }
 
 impl_external_schematic! {
-    #[schematic(from = DirectionalLightInput)]
     struct DirectionalLight {}
-    // ---
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub struct DirectionalLightInput {
-        pub color: ProtoColor,
-        pub illuminance: f32,
-        pub shadows_enabled: bool,
-        pub shadow_depth_bias: f32,
-        pub shadow_normal_bias: f32,
-    }
-    from_to_default! {
-        DirectionalLight,
-        DirectionalLightInput,
-        |value: Input| Self {
-            color: value.color.into(),
-            illuminance: value.illuminance,
-            shadows_enabled: value.shadows_enabled,
-            shadow_depth_bias: value.shadow_depth_bias,
-            shadow_normal_bias: value.shadow_normal_bias,
-        }
-    }
 }
 
 impl_external_schematic! {
@@ -156,7 +92,7 @@ impl_external_schematic! {
         pub color: ProtoColor,
         pub directional_light_color: ProtoColor,
         pub directional_light_exponent: f32,
-        pub falloff: FogFalloffInput,
+        pub falloff: FogFalloff,
     }
     from_to_default! {
         FogSettings,
@@ -165,138 +101,27 @@ impl_external_schematic! {
             color: value.color.into(),
             directional_light_color: value.directional_light_color.into(),
             directional_light_exponent: value.directional_light_exponent,
-            falloff: value.falloff.into(),
-        }
-    }
-
-    #[derive(Reflect)]
-    pub enum FogFalloffInput {
-        Linear {
-            start: f32,
-            end: f32,
-        },
-        Exponential {
-            density: f32,
-        },
-        ExponentialSquared {
-            density: f32,
-        },
-        Atmospheric {
-            extinction: Vec3,
-            inscattering: Vec3,
-        },
-    }
-    from_to! {
-        FogFalloff,
-        FogFalloffInput,
-        |value: Input| match value {
-            Input::Linear {start, end} => Self::Linear {start, end},
-            Input::Exponential {density} => Self::Exponential {density},
-            Input::ExponentialSquared {density} => Self::ExponentialSquared {density},
-            Input::Atmospheric {extinction, inscattering} => Self::Atmospheric {extinction, inscattering},
+            falloff: value.falloff,
         }
     }
 }
 
 impl_external_schematic! {
-    #[schematic(from = NotShadowCasterInput)]
     struct NotShadowCaster;
-    // ---
-    #[derive(Reflect)]
-    pub struct NotShadowCasterInput;
-    impl From<NotShadowCasterInput> for NotShadowCaster {
-        fn from(_: NotShadowCasterInput) -> Self {
-            Self
-        }
-    }
 }
 
 impl_external_schematic! {
-    #[schematic(from = NotShadowReceiverInput)]
     struct NotShadowReceiver;
-    // ---
-    #[derive(Reflect)]
-    pub struct NotShadowReceiverInput;
-    impl From<NotShadowReceiverInput> for NotShadowReceiver {
-        fn from(_: NotShadowReceiverInput) -> Self {
-            Self
-        }
-    }
 }
 
 impl_external_schematic! {
-    #[schematic(from = PointLightInput)]
     struct PointLight {}
-    // ---
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub struct PointLightInput {
-        pub color: ProtoColor,
-        pub intensity: f32,
-        pub range: f32,
-        pub radius: f32,
-        pub shadows_enabled: bool,
-        pub shadow_depth_bias: f32,
-        pub shadow_normal_bias: f32,
-    }
-    from_to_default! {
-        PointLight,
-        PointLightInput,
-        |value: Input| Self {
-            color: value.color.into(),
-            intensity: value.intensity,
-            range: value.range,
-            radius: value.radius,
-            shadows_enabled: value.shadows_enabled,
-            shadow_depth_bias: value.shadow_depth_bias,
-            shadow_normal_bias: value.shadow_normal_bias,
-        }
-    }
 }
 
 impl_external_schematic! {
-    #[schematic(from = SpotLightInput)]
     struct SpotLight {}
-    // ---
-    #[derive(Reflect)]
-    #[reflect(Default)]
-    pub struct SpotLightInput {
-        pub color: ProtoColor,
-        pub intensity: f32,
-        pub range: f32,
-        pub radius: f32,
-        pub shadows_enabled: bool,
-        pub shadow_depth_bias: f32,
-        pub shadow_normal_bias: f32,
-        pub outer_angle: f32,
-        pub inner_angle: f32,
-    }
-    from_to_default! {
-        SpotLight,
-        SpotLightInput,
-        |value: Input| Self {
-            color: value.color.into(),
-            intensity: value.intensity,
-            range: value.range,
-            radius: value.radius,
-            shadows_enabled: value.shadows_enabled,
-            shadow_depth_bias: value.shadow_depth_bias,
-            shadow_normal_bias: value.shadow_normal_bias,
-            outer_angle: value.outer_angle,
-            inner_angle: value.inner_angle,
-        }
-    }
 }
 
 impl_external_schematic! {
-    #[schematic(from = WireframeInput)]
     struct Wireframe;
-    // ---
-    #[derive(Reflect)]
-    pub struct WireframeInput;
-    impl From<WireframeInput> for Wireframe {
-        fn from(_: WireframeInput) -> Self {
-            Self
-        }
-    }
 }

@@ -6,7 +6,7 @@ use bevy::text::{
     TextLayoutInfo, TextSection, TextStyle,
 };
 
-use crate::impls::macros::{from_to, from_to_default, from_to_input, register_schematic};
+use crate::impls::macros::{from_to_default, from_to_input, register_schematic};
 use crate::proto::{ProtoAsset, ProtoColor};
 use crate::schematics::{FromSchematicInput, SchematicContext};
 use bevy_proto_derive::impl_external_schematic;
@@ -15,9 +15,7 @@ pub(super) fn register(app: &mut App) {
     register_schematic!(app, Text, Text2dBounds);
 
     // Can be removed if https://github.com/bevyengine/bevy/pull/5781 is ever merged
-    app.register_type::<BreakLineOnInput>()
-        .register_type::<TextAlignmentInput>()
-        .register_type::<TextSectionInput>()
+    app.register_type::<TextSectionInput>()
         .register_type::<Vec<TextSectionInput>>()
         .register_type::<TextStyleInput>();
 }
@@ -30,8 +28,8 @@ impl_external_schematic! {
     #[reflect(Default)]
     pub struct TextInput {
         pub sections: Vec<TextSectionInput>,
-        pub alignment: TextAlignmentInput,
-        pub linebreak_behavior: BreakLineOnInput,
+        pub alignment: TextAlignment,
+        pub linebreak_behavior: BreakLineOn,
     }
     from_to_input! {
         Text,
@@ -87,38 +85,6 @@ impl_external_schematic! {
             font: FromSchematicInput::from_input(input.font, context),
             font_size: input.font_size,
             color: input.color.into(),
-        }
-    }
-
-    #[derive(Reflect)]
-    pub enum TextAlignmentInput {
-        Left,
-        Center,
-        Right,
-    }
-    from_to! {
-        TextAlignment,
-        TextAlignmentInput,
-        |value: Input| match value {
-            Input::Left => Self::Left,
-            Input::Center => Self::Center,
-            Input::Right => Self::Right,
-        }
-    }
-
-    #[derive(Reflect)]
-    pub enum BreakLineOnInput {
-        WordBoundary,
-        AnyCharacter,
-        NoWrap,
-    }
-    from_to! {
-        BreakLineOn,
-        BreakLineOnInput,
-        |value: Input| match value {
-            Input::WordBoundary => Self::WordBoundary,
-            Input::AnyCharacter => Self::AnyCharacter,
-            Input::NoWrap => Self::NoWrap,
         }
     }
 }

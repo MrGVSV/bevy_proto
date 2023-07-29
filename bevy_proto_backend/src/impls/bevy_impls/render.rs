@@ -1,11 +1,10 @@
 use bevy::app::App;
 use bevy::prelude::{Camera, Entity, OrthographicProjection, PerspectiveProjection, Projection};
-use bevy::reflect::{std_traits::ReflectDefault, Reflect, TupleStruct};
+use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::render::camera::CameraRenderGraph;
 use bevy::render::mesh::skinning::SkinnedMesh;
 use bevy::render::primitives::Aabb;
 use bevy::render::view::{ColorGrading, RenderLayers, Visibility};
-use std::borrow::Cow;
 
 use crate::impls::macros::{from_to_default, register_schematic};
 use crate::tree::ProtoEntityList;
@@ -36,31 +35,7 @@ impl_external_schematic! {
 }
 
 impl_external_schematic! {
-    #[schematic(from = CameraRenderGraphInput)]
     struct CameraRenderGraph {}
-    // ---
-    #[derive(Reflect, Default)]
-    #[reflect(Default)]
-    pub struct CameraRenderGraphInput(Cow<'static, str>);
-
-    impl From<CameraRenderGraphInput> for CameraRenderGraph {
-        fn from(value: CameraRenderGraphInput) -> Self {
-            Self::new(value.0)
-        }
-    }
-
-    impl From<CameraRenderGraph> for CameraRenderGraphInput {
-        fn from(value: CameraRenderGraph) -> Self {
-            Self(
-                value
-                    .field(0)
-                    .unwrap()
-                    .downcast_ref::<Cow<'static, str>>()
-                    .unwrap()
-                    .clone(),
-            )
-        }
-    }
 }
 
 impl_external_schematic! {

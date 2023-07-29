@@ -206,7 +206,7 @@ from!(
 #[schematic(into = bevy::prelude::Camera2dBundle)]
 pub struct Camera2dBundle {
     pub camera: bevy::render::camera::Camera,
-    camera_render_graph: bevy_impls::render::CameraRenderGraphInput,
+    camera_render_graph: bevy::render::camera::CameraRenderGraph,
     pub projection: bevy::render::prelude::OrthographicProjection,
     #[reflect(ignore)]
     pub visible_entities: bevy::render::view::VisibleEntities,
@@ -225,7 +225,7 @@ from_to_default! {
     Camera2dBundle,
     |value: Input| Self {
         camera: value.camera,
-        camera_render_graph: value.camera_render_graph.into(),
+        camera_render_graph: value.camera_render_graph,
         projection: value.projection,
         visible_entities: value.visible_entities,
         frustum: value.frustum,
@@ -246,7 +246,7 @@ from_to_default! {
 #[schematic(into = bevy::prelude::Camera3dBundle)]
 pub struct Camera3dBundle {
     pub camera: bevy::render::camera::Camera,
-    camera_render_graph: bevy_impls::render::CameraRenderGraphInput,
+    camera_render_graph: bevy::render::camera::CameraRenderGraph,
     pub projection: bevy_impls::render::ProjectionInput,
     #[reflect(ignore)]
     pub visible_entities: bevy::render::view::VisibleEntities,
@@ -266,7 +266,7 @@ from_to_default! {
     Camera3dBundle,
     |value: Input| Self {
         camera: value.camera,
-        camera_render_graph: value.camera_render_graph.into(),
+        camera_render_graph: value.camera_render_graph,
         projection: value.projection.into(),
         visible_entities: value.visible_entities,
         frustum: value.frustum,
@@ -287,7 +287,7 @@ from_to_default! {
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::DirectionalLightBundle)]
 pub struct DirectionalLightBundle {
-    pub directional_light: bevy_impls::pbr::DirectionalLightInput,
+    pub directional_light: bevy::pbr::DirectionalLight,
     #[reflect(ignore)]
     pub frusta: bevy::render::primitives::CascadesFrusta,
     #[reflect(ignore)]
@@ -307,7 +307,7 @@ from!(
     bevy::pbr::DirectionalLightBundle,
     DirectionalLightBundle,
     |value: Input| Self {
-        directional_light: value.directional_light.into(),
+        directional_light: value.directional_light,
         frusta: value.frusta,
         cascades: value.cascades,
         cascade_shadow_config: value.cascade_shadow_config.into(),
@@ -324,7 +324,7 @@ impl Default for DirectionalLightBundle {
     fn default() -> Self {
         let base = bevy::pbr::DirectionalLightBundle::default();
         Self {
-            directional_light: base.directional_light.into(),
+            directional_light: base.directional_light,
             frusta: base.frusta,
             cascades: base.cascades,
             cascade_shadow_config: bevy_impls::pbr::CascadeShadowConfigInput::default(),
@@ -345,7 +345,7 @@ impl Default for DirectionalLightBundle {
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::PointLightBundle)]
 pub struct PointLightBundle {
-    pub point_light: bevy_impls::pbr::PointLightInput,
+    pub point_light: bevy::pbr::PointLight,
     #[reflect(ignore)]
     pub cubemap_frusta: bevy::render::primitives::CubemapFrusta,
     #[reflect(ignore)]
@@ -362,7 +362,7 @@ from_to_default!(
     bevy::pbr::PointLightBundle,
     PointLightBundle,
     |value: Input| Self {
-        point_light: value.point_light.into(),
+        point_light: value.point_light,
         cubemap_frusta: value.cubemap_frusta,
         cubemap_visible_entities: value.cubemap_visible_entities,
         transform: value.transform,
@@ -380,7 +380,7 @@ from_to_default!(
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::pbr::SpotLightBundle)]
 pub struct SpotLightBundle {
-    pub spot_light: bevy_impls::pbr::SpotLightInput,
+    pub spot_light: bevy::pbr::SpotLight,
     #[reflect(ignore)]
     pub visible_entities: bevy::render::view::VisibleEntities,
     #[reflect(ignore)]
@@ -397,7 +397,7 @@ from_to_default!(
     bevy::pbr::SpotLightBundle,
     SpotLightBundle,
     |value: Input| Self {
-        spot_light: value.spot_light.into(),
+        spot_light: value.spot_light,
         visible_entities: value.visible_entities,
         frustum: value.frustum,
         transform: value.transform,
@@ -520,15 +520,15 @@ impl FromSchematicInput<Text2dBundle> for bevy::text::Text2dBundle {
 #[schematic(into = bevy::ui::node_bundles::ButtonBundle)]
 pub struct ButtonBundle {
     #[reflect(default)]
-    pub node: bevy_impls::ui::NodeInput,
+    pub node: bevy::ui::Node,
     #[reflect(default)]
-    pub button: bevy_impls::ui::ButtonInput,
+    pub button: bevy::ui::widget::Button,
     #[reflect(default)]
     pub style: bevy_impls::ui::StyleInput,
     #[reflect(default)]
-    pub interaction: bevy_impls::ui::InteractionInput,
+    pub interaction: bevy::ui::Interaction,
     #[reflect(default)]
-    pub focus_policy: bevy_impls::ui::FocusPolicyInput,
+    pub focus_policy: bevy::ui::FocusPolicy,
     #[reflect(default)]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
     #[reflect(default = "transparent_border_color")]
@@ -544,18 +544,18 @@ pub struct ButtonBundle {
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
-    pub z_index: bevy_impls::ui::ZIndexInput,
+    pub z_index: bevy::ui::ZIndex,
 }
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
     fn from_input(input: ButtonBundle, context: &mut SchematicContext) -> Self {
         Self {
-            node: input.node.into(),
-            button: input.button.into(),
+            node: input.node,
+            button: input.button,
             style: input.style.into(),
-            interaction: input.interaction.into(),
-            focus_policy: input.focus_policy.into(),
+            interaction: input.interaction,
+            focus_policy: input.focus_policy,
             background_color: input.background_color.into(),
             border_color: input.border_color.into(),
             image: bevy::ui::UiImage::from_input(input.image, context),
@@ -563,7 +563,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-            z_index: input.z_index.into(),
+            z_index: input.z_index,
         }
     }
 }
@@ -577,7 +577,7 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
 #[schematic(into = bevy::ui::node_bundles::ImageBundle)]
 pub struct ImageBundle {
     #[reflect(default)]
-    pub node: bevy_impls::ui::NodeInput,
+    pub node: bevy::ui::Node,
     #[reflect(default)]
     pub style: bevy_impls::ui::StyleInput,
     #[reflect(default)]
@@ -585,7 +585,7 @@ pub struct ImageBundle {
     #[reflect(default)]
     pub image: bevy_impls::ui::UiImageInput,
     #[reflect(default)]
-    pub focus_policy: bevy_impls::ui::FocusPolicyInput,
+    pub focus_policy: bevy::ui::FocusPolicy,
     #[reflect(default)]
     pub transform: Transform,
     #[reflect(default)]
@@ -595,7 +595,7 @@ pub struct ImageBundle {
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
-    pub z_index: bevy_impls::ui::ZIndexInput,
+    pub z_index: bevy::ui::ZIndex,
     #[reflect(ignore)]
     pub image_size: UiImageSize,
 }
@@ -604,17 +604,17 @@ pub struct ImageBundle {
 impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
     fn from_input(input: ImageBundle, context: &mut SchematicContext) -> Self {
         Self {
-            node: input.node.into(),
+            node: input.node,
             style: input.style.into(),
             calculated_size: Default::default(),
             background_color: input.background_color.into(),
             image: bevy::ui::UiImage::from_input(input.image, context),
-            focus_policy: input.focus_policy.into(),
+            focus_policy: input.focus_policy,
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-            z_index: input.z_index.into(),
+            z_index: input.z_index,
             image_size: UiImageSize::default(), // this field is set automatically by Bevy normally
         }
     }
@@ -628,17 +628,17 @@ impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
 #[reflect(Schematic, Default)]
 #[schematic(into = bevy::ui::node_bundles::NodeBundle)]
 pub struct NodeBundle {
-    pub node: bevy_impls::ui::NodeInput,
+    pub node: bevy::ui::Node,
     pub style: bevy_impls::ui::StyleInput,
     pub background_color: bevy_impls::ui::BackgroundColorInput,
     pub border_color: bevy_impls::ui::BorderColorInput,
-    pub focus_policy: bevy_impls::ui::FocusPolicyInput,
+    pub focus_policy: bevy::ui::FocusPolicy,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     pub visibility: bevy::render::view::Visibility,
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
-    pub z_index: bevy_impls::ui::ZIndexInput,
+    pub z_index: bevy::ui::ZIndex,
 }
 
 #[cfg(feature = "bevy_ui")]
@@ -646,16 +646,16 @@ from_to_default!(
     bevy::ui::node_bundles::NodeBundle,
     NodeBundle,
     |value: Input| Self {
-        node: value.node.into(),
+        node: value.node,
         style: value.style.into(),
         background_color: value.background_color.into(),
         border_color: value.border_color.into(),
-        focus_policy: value.focus_policy.into(),
+        focus_policy: value.focus_policy,
         transform: value.transform,
         global_transform: value.global_transform,
         visibility: value.visibility,
         computed_visibility: value.computed_visibility,
-        z_index: value.z_index.into(),
+        z_index: value.z_index,
     }
 );
 
@@ -668,7 +668,7 @@ from_to_default!(
 #[schematic(into = bevy::ui::node_bundles::TextBundle)]
 pub struct TextBundle {
     #[reflect(default)]
-    pub node: bevy_impls::ui::NodeInput,
+    pub node: bevy::ui::Node,
     #[reflect(default)]
     pub style: bevy_impls::ui::StyleInput,
     #[reflect(default)]
@@ -680,7 +680,7 @@ pub struct TextBundle {
     #[reflect(ignore)]
     pub calculated_size: bevy::ui::ContentSize,
     #[reflect(default)]
-    pub focus_policy: bevy_impls::ui::FocusPolicyInput,
+    pub focus_policy: bevy::ui::FocusPolicy,
     #[reflect(default)]
     pub transform: Transform,
     #[reflect(default)]
@@ -690,7 +690,7 @@ pub struct TextBundle {
     #[reflect(ignore)]
     pub computed_visibility: bevy::render::view::ComputedVisibility,
     #[reflect(default)]
-    pub z_index: bevy_impls::ui::ZIndexInput,
+    pub z_index: bevy::ui::ZIndex,
     #[reflect(default = "transparent_background_color")]
     pub background_color: bevy_impls::ui::BackgroundColorInput,
 }
@@ -699,18 +699,18 @@ pub struct TextBundle {
 impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
     fn from_input(input: TextBundle, context: &mut SchematicContext) -> Self {
         Self {
-            node: FromSchematicInput::from_input(input.node, context),
+            node: input.node,
             style: FromSchematicInput::from_input(input.style, context),
             text: FromSchematicInput::from_input(input.text, context),
             text_layout_info: FromSchematicInput::from_input(input.text_layout_info, context),
             text_flags: input.text_flags,
             calculated_size: input.calculated_size,
-            focus_policy: FromSchematicInput::from_input(input.focus_policy, context),
+            focus_policy: input.focus_policy,
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-            z_index: FromSchematicInput::from_input(input.z_index, context),
+            z_index: input.z_index,
             background_color: FromSchematicInput::from_input(input.background_color, context),
         }
     }

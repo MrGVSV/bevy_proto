@@ -66,8 +66,6 @@ macro_rules! from_to {
     };
 }
 
-pub(super) use from_to;
-
 #[macro_export]
 #[doc(hidden)]
 macro_rules! from_to_input {
