@@ -42,8 +42,8 @@ impl_external_schematic! {
 
             Self {
                 sections,
-                alignment: input.alignment.into(),
-                linebreak_behavior: input.linebreak_behavior.into(),
+                alignment: input.alignment,
+                linebreak_behavior: input.linebreak_behavior,
             }
         }
     }
@@ -52,8 +52,8 @@ impl_external_schematic! {
             let base = Text::default();
             Self {
                 sections: Vec::new(),
-                alignment: base.alignment.into(),
-                linebreak_behavior: base.linebreak_behavior.into(),
+                alignment: base.alignment,
+                linebreak_behavior: base.linebreak_behavior,
             }
         }
     }

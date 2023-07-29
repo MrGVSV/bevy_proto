@@ -42,7 +42,7 @@ impl_external_schematic! {
         Camera2d,
         Camera2dInput,
         |value: Input| Self {
-            clear_color: value.clear_color.into(),
+            clear_color: value.clear_color,
         }
     );
 }

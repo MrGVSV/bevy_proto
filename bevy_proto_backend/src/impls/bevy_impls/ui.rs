@@ -242,10 +242,10 @@ impl_external_schematic! {
         UiRect,
         UiRectInput,
         |value: Input| Self {
-            left: value.left.into(),
-            right: value.right.into(),
-            top: value.top.into(),
-            bottom: value.bottom.into(),
+            left: value.left,
+            right: value.right,
+            top: value.top,
+            bottom: value.bottom,
         }
     }
 }
