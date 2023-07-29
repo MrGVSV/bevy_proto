@@ -4,7 +4,6 @@
 //! > it's just meant to give some more details on the derive macro.
 //!
 //! For schematics to be useful, they need to be serializable.
-//! This is why we've had to derive [`FromReflect`] on our schematics thus far.
 //! Unfortunately, there are times when we want our type to contain data that can't
 //! effectively be serialized (asset handles, entities, etc.).
 //!
@@ -32,9 +31,6 @@ fn main() {
 
 /// This struct will generate its own input type since it has at least one field
 /// marked with a `#[schematic]` attribute.
-///
-/// Because the generated input is used for deserialization,
-/// we can actually remove the `FromReflect` derive we normally would need (if desired).
 ///
 /// To see what this generated input type looks like, scroll to the bottom of this file.
 #[derive(Component, Schematic, Reflect)]
@@ -72,16 +68,6 @@ struct Foo<T: Reflect + TypePath> {
     /// input type.
     #[reflect(ignore)]
     _phantom: PhantomData<T>,
-}
-
-#[derive(Component, Schematic, Reflect)]
-#[reflect(Schematic)]
-enum Foob {
-    Bar(#[schematic(asset(preload))] Handle<Image>),
-    Baz {
-        #[schematic(asset(preload))]
-        image: Handle<Image>,
-    },
 }
 
 #[derive(Reflect)]

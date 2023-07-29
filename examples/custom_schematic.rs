@@ -40,7 +40,7 @@ fn main() {
 struct Foo;
 
 // This struct provides configuration for `Foo` in the prototype file.
-// Input types must implement `FromReflect`
+// Input types must implement `FromReflect` (so don't opt out of that!).
 #[derive(Reflect)]
 struct FooInput {
     /// The asset path of the image to load.
@@ -52,7 +52,7 @@ struct FooInput {
 // This is where we actually define the logic for `Foo`.
 impl Schematic for Foo {
     // Generally, this is `Self`.
-    // However, we decided to use `FooInput` so that can go here.
+    // However, we decided to use `FooInput`, so that can go here.
     type Input = FooInput;
 
     fn apply(input: &Self::Input, context: &mut SchematicContext) {
