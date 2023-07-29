@@ -14,7 +14,7 @@ use crate::schematics::SchematicContext;
 /// # Example
 ///
 /// ```
-/// use bevy::prelude::{Component, FromReflect, Reflect};
+/// use bevy::prelude::{Component, Reflect};
 /// use bevy_proto_backend::schematics::{Schematic, SchematicContext};
 /// #[derive(Component, Reflect)]
 /// struct PlayerId(usize);

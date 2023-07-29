@@ -7,7 +7,7 @@
 //! especially if there's more advanced logic involved—
 //! but they can be a great tool for rapid prototyping.
 //!
-//! [`ui`]: https://github.com/bevyengine/bevy/blob/v0.10.1/examples/ui/ui.rs
+//! [`ui`]: https://github.com/bevyengine/bevy/blob/v0.11.0/examples/ui/ui.rs
 
 use bevy::asset::ChangeWatcher;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};

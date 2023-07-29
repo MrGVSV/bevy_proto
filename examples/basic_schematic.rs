@@ -54,8 +54,9 @@ enum Alignment {
 
 /// The derive macro also has basic support for Bevy resources.
 ///
-/// This can be done by specifying the "kind".
-/// It's also a good idea to set `entity: false` in the prototype file.
+/// This can be done by specifying the "kind" as "resource".
+/// It's also a good idea to set `entity: false` in the prototype file
+/// so that the prototype doesn't spawn an entity.
 ///
 /// Note that when a schematic is applied, it will replace the current instance
 /// of the resource in the world.

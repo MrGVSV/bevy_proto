@@ -28,6 +28,7 @@ fn _load_with_server(asset_server: Res<AssetServer>, mut handle: Local<Handle<Pr
     // Just like with any other asset, we need to store its strong handle
     // so that it remains loaded.
     // Normally, we'd use a resource for that, but here we'll just use a `Local<T>`
+    // to permanently keep it loaded.
     *handle = asset_server.load("examples/loading/Player.prototype.ron");
 }
 
@@ -49,7 +50,7 @@ fn load(mut prototypes: PrototypesMut) {
 /// the `Assets<Prototype>` resource for this.
 /// The reason is because prototypes need to go through a registration phase
 /// once loaded.
-/// This means they might be _loaded_ but not yet _yet_.
+/// This means they might be _loaded_ but not _ready_ yet.
 /// So prefer this method for checking the status before spawning in order
 /// to avoid any runtime panics.
 fn _is_ready(prototypes: Prototypes) -> bool {
