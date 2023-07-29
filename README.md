@@ -78,7 +78,7 @@ This crate can be used for:
 Add the following to your `[dependencies]` section in `Cargo.toml`:
 
 ```rust
-bevy_proto = "0.10"
+bevy_proto = "0.11"
 ```
 
 Or use `cargo add`:
@@ -96,6 +96,7 @@ using the crate.
 
 | bevy   | bevy_proto |
 |--------|------------|
+| 0.11.0 | 0.11.0     |
 | 0.10.1 | 0.10.0     |
 
 For previous versions of this crate, see the [Previous Versions](#-previous-versions) section below.
