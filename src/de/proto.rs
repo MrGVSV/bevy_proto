@@ -78,7 +78,7 @@ impl<'a, 'ctx, 'load_ctx, 'de, L: Loader<Prototype>> DeserializeSeed<'de>
                             if id.is_some() {
                                 return Err(Error::duplicate_field(NAME));
                             }
-                            id = Some(map.next_value::<&str>()?.to_owned())
+                            id = Some(map.next_value::<String>()?)
                         }
                         PrototypeField::Templates => {
                             if templates.is_some() {
