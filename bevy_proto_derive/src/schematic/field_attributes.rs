@@ -275,7 +275,9 @@ impl<'a> FieldAttributesBuilder<'a> {
                 ReplacementType::Asset(AssetConfig::default()),
                 meta.path.span(),
             )?;
-            let ReplacementType::Asset(config) = &mut self.attrs.replacement_ty else {unreachable!()};
+            let ReplacementType::Asset(config) = &mut self.attrs.replacement_ty else {
+                unreachable!()
+            };
             config
         };
 
