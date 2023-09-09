@@ -58,7 +58,7 @@ impl<'w, 's, T: Prototypical, C: Config<T>> ProtoCommands<'w, 's, T, C> {
     /// [ID]: Prototypical::id
     /// [require an entity]: Prototypical::requires_entity
     pub fn remove<I: Into<T::Id>>(&mut self, id: I) {
-        self.add(ProtoInsertCommand::<T, C>::new(id.into(), None));
+        self.add(ProtoRemoveCommand::<T, C>::new(id.into(), None));
     }
 
     /// Get the [`ProtoEntityCommands`] for the given entity.
