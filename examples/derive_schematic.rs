@@ -45,15 +45,22 @@ struct Foo<T: Reflect + TypePath> {
     /// we can give it the `preload` argument:
     #[schematic(asset(preload))]
     preloaded_asset: Handle<Image>,
+    /// Assets can also be inlined directly into the prototype.
+    /// This is useful for rapid prototyping.
+    /// We can opt into this ability by using the `inline` argument:
+    #[schematic(asset(inline))]
+    inlinable_asset: Handle<Mesh>,
+    /// An inlined asset will result in a single asset being generated.
+    /// However, there may be cases where we want a new asset to be generated
+    /// every time we apply the `Schematic`.
+    /// To create a new asset every time, we can use the `unique` argument:
+    #[schematic(asset(inline, unique))]
+    unique_inlinable_asset: Handle<Mesh>,
     /// Entities can also be handled succinctly using an attribute.
     /// To reference any entity within the prototype's hierarchy
     /// (the `EntityTree`), we can use the following attribute:
     #[schematic(entity)]
     entity: Entity,
-    /// The above will panic if the entity could not be found within the tree.
-    /// If this is expected, we can also use this attribute on an `Option<Entity>`:
-    #[schematic(entity)]
-    optional_entity: Option<Entity>,
     /// We can also easily convert to any type `U` from type `T`
     /// where `T` implements `From<U>` by using the `from` attribute:
     #[schematic(from=[f32;3])]
@@ -121,124 +128,45 @@ impl<T: ToString> From<T> for Bar {
 // const _: () = {
 //     #[derive(::bevy::reflect::Reflect)]
 //     struct FooInput<T: Reflect + TypePath> {
-//         lazy_asset: bevy_proto_backend::assets::ProtoAsset<Image>,
-//         preloaded_asset: bevy_proto_backend::assets::ProtoAsset<Image>,
-//         entity: bevy_proto_backend::tree::EntityAccess,
-//         optional_entity: ::core::option::Option<bevy_proto_backend::tree::EntityAccess>,
+//         lazy_asset: bevy_proto::backend::assets::ProtoAsset<Image>,
+//         preloaded_asset: bevy_proto::backend::assets::ProtoAsset<Image>,
+//         inlinable_asset: bevy_proto::backend::assets::InlinableProtoAsset<Mesh>,
+//         unique_inlinable_asset: bevy_proto::backend::assets::InlinableProtoAsset<Mesh>,
+//         entity: bevy_proto::backend::tree::EntityAccess,
+//         optional_entity: ::core::option::Option<bevy_proto::backend::tree::EntityAccess>,
 //         simple_from: [f32; 3],
 //         complex_from: String,
 //         #[reflect(ignore)]
 //         _phantom: PhantomData<T>,
-//         #[reflect(ignore)]
-//         __phantom_ty__: ::core::marker::PhantomData<fn() -> (T)>,
+//         #[reflect(ignore)] __phantom_ty__: ::core::marker::PhantomData<fn() -> ( T )>,
 //     }
-//     impl<T: Reflect + TypePath> bevy_proto_backend::schematics::FromSchematicInput<FooInput<T>>
-//         for Foo<T>
-//     {
-//         fn from_input(
-//             __input__: FooInput<T>,
-//             __id__: bevy_proto_backend::schematics::SchematicId,
-//             __context__: &mut bevy_proto_backend::schematics::SchematicContext,
-//         ) -> Self {
+//     impl<T: Reflect + TypePath> bevy_proto::backend::schematics::FromSchematicInput<FooInput<T>> for Foo<T> {
+//         fn from_input(__input__: FooInput<T>, __id__: bevy_proto::backend::schematics::SchematicId, __context__: &mut bevy_proto::backend::schematics::SchematicContext) -> Self {
 //             Self {
-//                 lazy_asset: bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                     __input__.lazy_asset,
-//                     __id__.next(53117238229055557259509717840201618403u128),
-//                     __context__,
-//                 ),
-//                 preloaded_asset: bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                     __input__.preloaded_asset,
-//                     __id__.next(132456034052841687215576930551493772827u128),
-//                     __context__,
-//                 ),
-//                 entity: bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                     __input__.entity,
-//                     __id__.next(67591631779355904687644803370051695279u128),
-//                     __context__,
-//                 ),
-//                 optional_entity: __input__.optional_entity.map(|__temp__| {
-//                     bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                         __temp__,
-//                         __id__.next(138904564953014408501596690788554691527u128),
-//                         __context__,
-//                     )
-//                 }),
-//                 simple_from: bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                     __input__.simple_from,
-//                     __id__.next(72007669688143100026735716730996138490u128),
-//                     __context__,
-//                 ),
-//                 complex_from: bevy_proto_backend::schematics::FromSchematicInput::from_input(
-//                     __input__.complex_from,
-//                     __id__.next(17674188231867017750899388725992026672u128),
-//                     __context__,
-//                 ),
+//                 lazy_asset: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.lazy_asset, __id__.next(293524038300580229578133688495471229829u128), __context__),
+//                 preloaded_asset: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.preloaded_asset, __id__.next(259350747728244782380707855355652559683u128), __context__),
+//                 inlinable_asset: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.inlinable_asset, __id__.next(48963966091049860937914560587468761412u128), __context__),
+//                 unique_inlinable_asset: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.unique_inlinable_asset, __id__.next(::bevy::utils::Uuid::new_v4()), __context__),
+//                 entity: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.entity, __id__.next(38588287447872267661218663746081020914u128), __context__),
+//                 optional_entity: __input__.optional_entity.map(|__temp__| bevy_proto::backend::schematics::FromSchematicInput::from_input(__temp__, __id__.next(178921740518815055179893928029960888537u128), __context__)),
+//                 simple_from: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.simple_from, __id__.next(154624900170493169361666255879888812087u128), __context__),
+//                 complex_from: bevy_proto::backend::schematics::FromSchematicInput::from_input(__input__.complex_from, __id__.next(97324268160146727710221744064890112339u128), __context__),
 //                 _phantom: __input__._phantom,
 //             }
 //         }
 //     }
-//     impl<T: Reflect + TypePath> bevy_proto_backend::schematics::Schematic for Foo<T> {
+//     impl<T: Reflect + TypePath> bevy_proto::backend::schematics::Schematic for Foo<T> {
 //         type Input = FooInput<T>;
-//         fn apply(
-//             __input__: &Self::Input,
-//             __id__: bevy_proto_backend::schematics::SchematicId,
-//             __context__: &mut bevy_proto_backend::schematics::SchematicContext,
-//         ) {
-//             let __input__ = <Self::Input as ::bevy::reflect::FromReflect>::from_reflect(
-//                 &*::bevy::reflect::Reflect::clone_value(__input__),
-//             )
-//             .unwrap_or_else(|| {
-//                 panic!(
-//                     "{} should have a functioning `FromReflect` impl",
-//                     std::any::type_name::<Self::Input>()
-//                 )
-//             });
-//             let __input__ = <Self as bevy_proto_backend::schematics::FromSchematicInput<
-//                 Self::Input,
-//             >>::from_input(
-//                 __input__,
-//                 __id__.next(289817135421861623180843918255160292199u128),
-//                 __context__,
-//             );
-//             __context__
-//                 .entity_mut()
-//                 .unwrap_or_else(|| {
-//                     panic!(
-//                         "schematic `{}` expected entity",
-//                         std::any::type_name::<Self>()
-//                     )
-//                 })
-//                 .insert(__input__);
+//         fn apply(__input__: &Self::Input, __id__: bevy_proto::backend::schematics::SchematicId, __context__: &mut bevy_proto::backend::schematics::SchematicContext) {
+//             let __input__ = <Self::Input as ::bevy::reflect::FromReflect>::from_reflect(&*::bevy::reflect::Reflect::clone_value(__input__)).unwrap_or_else(|| { panic!("{} should have a functioning `FromReflect` impl", std::any::type_name::<Self::Input>()) });
+//             let __input__ = <Self as bevy_proto::backend::schematics::FromSchematicInput<Self::Input>>::from_input(__input__, __id__.next(124079712295037166834829694552442065145u128), __context__);
+//             __context__.entity_mut().unwrap_or_else(|| panic!("schematic `{}` expected entity", std::any::type_name::<Self>())).insert(__input__);
 //         }
-//         fn remove(
-//             __input__: &Self::Input,
-//             __id__: bevy_proto_backend::schematics::SchematicId,
-//             __context__: &mut bevy_proto_backend::schematics::SchematicContext,
-//         ) {
-//             __context__
-//                 .entity_mut()
-//                 .unwrap_or_else(|| {
-//                     panic!(
-//                         "schematic `{}` expected entity",
-//                         std::any::type_name::<Self>()
-//                     )
-//                 })
-//                 .remove::<Self>();
-//         }
-//         fn preload_dependencies(
-//             __input__: &mut Self::Input,
-//             __id__: bevy_proto_backend::schematics::SchematicId,
-//             __context__: &mut bevy_proto_backend::deps::DependenciesBuilder,
-//         ) {
+//         fn remove(__input__: &Self::Input, __id__: bevy_proto::backend::schematics::SchematicId, __context__: &mut bevy_proto::backend::schematics::SchematicContext) { __context__.entity_mut().unwrap_or_else(|| panic!("schematic `{}` expected entity", std::any::type_name::<Self>())).remove::<Self>(); }
+//         fn preload_dependencies(__input__: &mut Self::Input, __id__: bevy_proto::backend::schematics::SchematicId, __context__: &mut bevy_proto::backend::deps::DependenciesBuilder) {
 //             __input__.preloaded_asset = {
-//                 let __temp__ = <bevy_proto_backend::assets::ProtoAsset<Image> as ::bevy::reflect::FromReflect>::from_reflect(&*::bevy::reflect::Reflect::clone_value(&__input__.preloaded_asset)).unwrap_or_else(|| { panic!("{} should have a functioning `FromReflect` impl", ::std::any::type_name::<Image>()) });
-//                 bevy_proto_backend::assets::ProtoAsset::Handle(
-//                     bevy_proto_backend::schematics::FromSchematicPreloadInput::from_preload_input(
-//                         __temp__,
-//                         __id__.next(258100584073326308005614300177082934377u128),
-//                         __context__,
-//                     ),
-//                 )
+//                 let __temp__ = <bevy_proto::backend::assets::ProtoAsset<Image> as ::bevy::reflect::FromReflect>::from_reflect(&*::bevy::reflect::Reflect::clone_value(&__input__.preloaded_asset)).unwrap_or_else(|| { panic!("{} should have a functioning `FromReflect` impl", ::std::any::type_name::<Image>()) });
+//                 bevy_proto::backend::assets::ProtoAsset::Handle(bevy_proto::backend::schematics::FromSchematicPreloadInput::from_preload_input(__temp__, __id__.next(103128525922241248568468580724045435516u128), __context__))
 //             };
 //         }
 //     }
