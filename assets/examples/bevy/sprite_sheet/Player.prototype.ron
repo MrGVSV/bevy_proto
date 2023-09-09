@@ -1,0 +1,44 @@
+(
+  name: "Player",
+  schematics: {
+    "bevy_proto::custom::SpriteSheetBundle": (
+      // The schematic for `TextureAtlas` defines an enum input with a `Grid` variant.
+      // The fields of this variant map to the parameters of `TextureAtlas::from_grid`.
+      texture_atlas: Asset(Grid(
+        texture: AssetPath("textures/rpg/chars/gabe/gabe-idle-run.png"),
+        tile_size: (
+          x: 24.0,
+          y: 24.0
+        ),
+        columns: 7,
+        rows: 1,
+        padding: None,
+        offset: None,
+      )),
+      sprite: (
+        // Start our sprite at the first frame of the run animation
+        index: 1
+      ),
+      transform: (
+        scale: (
+          x: 6.0,
+          y: 6.0,
+          z: 6.0,
+        )
+      ),
+    ),
+    "bevy_sprite_sheet::AnimationIndices": (
+      // The run animation actually starts on the second frame (index 1)
+      first: 1,
+      last: 6
+    ),
+    "bevy_sprite_sheet::AnimationTimer": ((
+      duration: (
+        secs: 0,
+        // 1e8 nanoseconds == 0.1 seconds
+        nanos: 100000000
+      ),
+      mode: Repeating
+    ))
+  }
+)

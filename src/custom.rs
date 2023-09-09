@@ -13,39 +13,39 @@ use bevy::ui::widget::UiImageSize;
 use bevy_proto_backend::assets::{AssetSchematic, InlinableProtoAsset};
 use bevy_proto_backend::impls::bevy_impls;
 use bevy_proto_backend::proto::ProtoColor;
-use bevy_proto_backend::{from, from_to_default};
+use bevy_proto_backend::{from, from_to_default, register_schematic};
 
 use bevy_proto_backend::schematics::{
     FromSchematicInput, ReflectSchematic, Schematic, SchematicContext, SchematicId,
 };
 
 pub(crate) fn register_custom_schematics(app: &mut App) {
-    app.register_type::<TransformBundle>();
+    register_schematic!(app, TransformBundle);
     #[cfg(feature = "bevy_core_pipeline")]
-    app.register_type::<Camera2dBundle>()
-        .register_type::<Camera3dBundle>();
+    register_schematic!(app, Camera2dBundle, Camera3dBundle);
     #[cfg(feature = "bevy_pbr")]
-    app.register_type::<DirectionalLightBundle>()
-        .register_type::<PointLightBundle>()
-        .register_type::<SpotLightBundle>()
-        .register_type::<MaterialMeshBundle<bevy::pbr::StandardMaterial>>();
+    register_schematic!(
+        app,
+        DirectionalLightBundle,
+        PointLightBundle,
+        SpotLightBundle,
+        MaterialMeshBundle<bevy::pbr::StandardMaterial>
+    );
     #[cfg(feature = "bevy_render")]
-    app.register_type::<VisibilityBundle>()
-        .register_type::<SpatialBundle>();
+    register_schematic!(app, VisibilityBundle, SpatialBundle);
     #[cfg(feature = "bevy_sprite")]
-    app.register_type::<DynamicSceneBundle>()
-        .register_type::<SceneBundle>();
+    register_schematic!(app, DynamicSceneBundle, SceneBundle);
     #[cfg(feature = "bevy_sprite")]
-    app.register_type::<SpriteBundle>()
-        .register_type::<SpriteSheetBundle>()
-        .register_type::<MaterialMesh2dBundle<bevy::sprite::ColorMaterial>>();
+    register_schematic!(
+        app,
+        SpriteBundle,
+        SpriteSheetBundle,
+        MaterialMesh2dBundle<bevy::sprite::ColorMaterial>
+    );
     #[cfg(feature = "bevy_text")]
-    app.register_type::<Text2dBundle>();
+    register_schematic!(app, Text2dBundle);
     #[cfg(feature = "bevy_ui")]
-    app.register_type::<ButtonBundle>()
-        .register_type::<ImageBundle>()
-        .register_type::<NodeBundle>()
-        .register_type::<TextBundle>();
+    register_schematic!(app, ButtonBundle, ImageBundle, NodeBundle, TextBundle);
 }
 
 fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
