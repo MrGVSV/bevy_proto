@@ -14,9 +14,10 @@ The recommended order is:
 5. [derive_schematic.rs](./derive_schematic.rs) - A deeper look at the derive macro
 6. [custom_schematic.rs](./custom_schematic.rs) - Creating a custom `Schematic`implementation
 7. [hierarchy.rs](./hierarchy.rs) - Defining complex prototype hierarchies with children
-8. [cycles.rs](./cycles.rs) - How prototype cycles are handled
-9. [custom_loader.rs](./custom_loader.rs) - How to create a custom loader
-10. [custom_config.rs](./custom_config.rs) - How to create a custom config
+8. [asset_schematic.rs](./asset_schematic.rs) - Creating an `AssetSchematic` for inlinable assets
+9. [cycles.rs](./cycles.rs) - How prototype cycles are handled
+10. [custom_loader.rs](./custom_loader.rs) - How to create a custom loader
+11. [custom_config.rs](./custom_config.rs) - How to create a custom config
 
 ### Bevy Examples
 

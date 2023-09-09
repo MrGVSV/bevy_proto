@@ -116,6 +116,11 @@ bevy_prototype_lyon = "0.9.0"
 trybuild = "1.0.71"
 
 [[example]]
+name = "asset_schematic"
+path = "examples/asset_schematic.rs"
+required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite"]
+
+[[example]]
 name = "basic_schematic"
 path = "examples/basic_schematic.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite"]
