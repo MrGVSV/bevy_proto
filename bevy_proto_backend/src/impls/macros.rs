@@ -29,6 +29,7 @@ macro_rules! from {
 
             impl From<Input> for $real {
                 fn from(value: Input) -> Self {
+                    #[allow(clippy::redundant_closure_call)]
                     $body(value)
                 }
             }
@@ -49,6 +50,7 @@ macro_rules! from_to {
 
             impl From<Input> for $mock {
                 fn from(value: Input) -> Self {
+                    #[allow(clippy::redundant_closure_call)]
                     $body(value)
                 }
             }
@@ -59,6 +61,7 @@ macro_rules! from_to {
 
             impl From<Input> for $real {
                 fn from(value: Input) -> Self {
+                    #[allow(clippy::redundant_closure_call)]
                     $body(value)
                 }
             }
@@ -78,6 +81,7 @@ macro_rules! from_to_input {
                     input: Input,
                     context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
+                    #[allow(clippy::redundant_closure_call)]
                     $body(input, context)
                 }
             }
@@ -91,6 +95,7 @@ macro_rules! from_to_input {
                     input: Input,
                     context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
+                    #[allow(clippy::redundant_closure_call)]
                     $body(input, context)
                 }
             }
