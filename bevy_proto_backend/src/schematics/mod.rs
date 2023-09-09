@@ -42,10 +42,12 @@ pub use collection::*;
 pub use context::*;
 pub use dynamic::*;
 pub use error::*;
+pub use id::*;
 pub use schematic::*;
 
 mod collection;
 mod context;
 mod dynamic;
 mod error;
+mod id;
 mod schematic;

@@ -166,6 +166,11 @@ path = "examples/templates.rs"
 required-features = ["ron", "auto_name", "custom_schematics", "bevy_sprite", "yaml"]
 
 [[example]]
+name = "bevy_asset_loading"
+path = "examples/bevy/asset_loading.rs"
+required-features = ["ron", "auto_name", "custom_schematics"]
+
+[[example]]
 name = "bevy_ui"
 path = "examples/bevy/ui.rs"
 required-features = ["ron", "auto_name", "custom_schematics"]

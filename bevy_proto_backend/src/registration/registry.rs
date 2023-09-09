@@ -7,10 +7,11 @@ use crate::registration::params::RegistryParams;
 use bevy::asset::{Handle, HandleId};
 use bevy::prelude::Resource;
 
+use crate::assets::ProtoAssetEvent;
 use bevy::utils::{HashMap, HashSet};
 use parking_lot::RwLock;
 
-use crate::proto::{Config, ProtoAssetEvent, ProtoError, Prototypical};
+use crate::proto::{Config, ProtoError, Prototypical};
 use crate::tree::{ProtoTree, ProtoTreeBuilder};
 
 /// Resource used to track load states, store mappings, and generate cached data.

@@ -81,9 +81,12 @@ mod schematics;
 /// ```
 pub mod prelude {
     pub use crate::config::ProtoConfig;
+    pub use bevy_proto_backend::assets::{AssetSchematic, AssetSchematicAppExt};
     pub use bevy_proto_backend::deps::DependenciesBuilder;
     pub use bevy_proto_backend::proto::Prototypical;
-    pub use bevy_proto_backend::schematics::{ReflectSchematic, Schematic, SchematicContext};
+    pub use bevy_proto_backend::schematics::{
+        ReflectSchematic, Schematic, SchematicContext, SchematicId,
+    };
 
     pub use super::conditions::*;
     pub use super::plugin::ProtoPlugin;
@@ -127,7 +130,7 @@ pub mod prelude {
     ///
     /// [prototype]: Prototype
     /// [`AssetEvent`]: bevy::asset::AssetEvent
-    pub type ProtoAssetEvent = bevy_proto_backend::proto::ProtoAssetEvent<Prototype>;
+    pub type ProtoAssetEvent = bevy_proto_backend::assets::ProtoAssetEvent<Prototype>;
 }
 
 /// Provides access to the [backend crate] that `bevy_proto` is built on.

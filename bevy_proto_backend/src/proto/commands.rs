@@ -6,7 +6,7 @@ use bevy::prelude::{Commands, Entity, Mut, World};
 
 use crate::proto::{Config, Prototypical};
 use crate::registration::ProtoRegistry;
-use crate::schematics::{DynamicSchematic, SchematicContext};
+use crate::schematics::{DynamicSchematic, SchematicContext, SchematicId};
 use crate::tree::EntityTreeNode;
 
 /// A system parameter similar to [`Commands`], but catered towards [prototypes].
@@ -190,8 +190,8 @@ impl<T: Prototypical, C: Config<T>> Command for ProtoInsertCommand<T, C> {
         self.data.assert_is_registered(world);
 
         self.data
-            .for_each_schematic(world, true, |schematic, context| {
-                schematic.apply(context).unwrap();
+            .for_each_schematic(world, true, |schematic, id, context| {
+                schematic.apply(id, context).unwrap();
             });
     }
 }
@@ -221,8 +221,8 @@ impl<T: Prototypical, C: Config<T>> Command for ProtoRemoveCommand<T, C> {
         self.data.assert_is_registered(world);
 
         self.data
-            .for_each_schematic(world, false, |schematic, context| {
-                schematic.remove(context).unwrap();
+            .for_each_schematic(world, false, |schematic, id, context| {
+                schematic.remove(id, context).unwrap();
             });
     }
 }
@@ -294,7 +294,7 @@ impl<T: Prototypical, C: Config<T>> ProtoCommandData<T, C> {
     /// [prototype]: Prototypical
     fn for_each_schematic<F>(&self, world: &mut World, is_apply: bool, callback: F)
     where
-        F: Fn(&DynamicSchematic, &mut SchematicContext),
+        F: Fn(&DynamicSchematic, SchematicId, &mut SchematicContext),
     {
         self.for_each_entity(world, is_apply, |node, context, prototypes, config| {
             let on_before_prototype = if is_apply {
@@ -332,9 +332,11 @@ impl<T: Prototypical, C: Config<T>> ProtoCommandData<T, C> {
                 on_before_prototype(config, proto, context);
 
                 for (_, schematic) in proto.schematics().iter() {
-                    on_before_schematic(config, schematic, context);
-                    callback(schematic, context);
-                    on_after_schematic(config, schematic, context);
+                    let id = SchematicId::new(*handle_id, schematic.type_info().type_id());
+
+                    on_before_schematic(config, schematic, id.clone(), context);
+                    callback(schematic, id.clone(), context);
+                    on_after_schematic(config, schematic, id.clone(), context);
                 }
 
                 on_after_prototype(config, proto, context);

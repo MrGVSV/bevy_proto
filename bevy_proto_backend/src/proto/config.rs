@@ -3,7 +3,7 @@ use bevy::prelude::{FromWorld, Resource};
 
 use crate::cycles::{Cycle, CycleResponse};
 use crate::proto::Prototypical;
-use crate::schematics::{DynamicSchematic, SchematicContext};
+use crate::schematics::{DynamicSchematic, SchematicContext, SchematicId};
 
 /// Configuration for a [prototype].
 ///
@@ -87,6 +87,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_before_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
     }
@@ -101,6 +102,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_after_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
     }
@@ -115,6 +117,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_before_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
     }
@@ -129,6 +132,7 @@ pub trait Config<T: Prototypical>: Resource + FromWorld {
     fn on_after_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
     }

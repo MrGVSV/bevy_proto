@@ -77,7 +77,7 @@ fn mouse_scroll(
 impl Schematic for ScrollText {
     type Input = ScrollText;
 
-    fn apply(input: &Self::Input, context: &mut SchematicContext) {
+    fn apply(input: &Self::Input, _id: SchematicId, context: &mut SchematicContext) {
         let font = context
             .world()
             .resource::<AssetServer>()
@@ -95,7 +95,7 @@ impl Schematic for ScrollText {
             ));
     }
 
-    fn remove(_input: &Self::Input, context: &mut SchematicContext) {
+    fn remove(_input: &Self::Input, _id: SchematicId, context: &mut SchematicContext) {
         context.entity_mut().unwrap().remove::<TextBundle>();
     }
 }

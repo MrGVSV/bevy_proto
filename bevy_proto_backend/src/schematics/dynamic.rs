@@ -5,7 +5,7 @@ use bevy::reflect::{FromType, GetTypeRegistration, TypeInfo, TypeRegistration, T
 
 use crate::deps::DependenciesBuilder;
 use crate::schematics::schematic::Schematic;
-use crate::schematics::{SchematicContext, SchematicError};
+use crate::schematics::{SchematicContext, SchematicError, SchematicId};
 
 /// A dynamic representation of a [`Schematic`].
 ///
@@ -44,21 +44,30 @@ impl DynamicSchematic {
     }
 
     /// Dynamically call the corresponding [`Schematic::apply`] method.
-    pub fn apply(&self, context: &mut SchematicContext) -> Result<(), SchematicError> {
-        (self.reflect_schematic.apply)(&*self.input, context)
+    pub fn apply(
+        &self,
+        id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Result<(), SchematicError> {
+        (self.reflect_schematic.apply)(&*self.input, id, context)
     }
 
     /// Dynamically call the corresponding [`Schematic::remove`] method.
-    pub fn remove(&self, context: &mut SchematicContext) -> Result<(), SchematicError> {
-        (self.reflect_schematic.remove)(&*self.input, context)
+    pub fn remove(
+        &self,
+        id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Result<(), SchematicError> {
+        (self.reflect_schematic.remove)(&*self.input, id, context)
     }
 
     /// Dynamically call the corresponding [`Schematic::preload_dependencies`] method.
     pub fn preload_dependencies(
         &mut self,
+        id: SchematicId,
         dependencies: &mut DependenciesBuilder,
     ) -> Result<(), SchematicError> {
-        (self.reflect_schematic.preload_dependencies)(&mut *self.input, dependencies)
+        (self.reflect_schematic.preload_dependencies)(&mut *self.input, id, dependencies)
     }
 
     /// The type info of the corresponding [`Schematic`].
@@ -101,10 +110,19 @@ pub struct ReflectSchematic {
     input_registration: fn() -> TypeRegistration,
     create_dynamic:
         fn(Box<dyn Reflect>, ReflectSchematic) -> Result<DynamicSchematic, SchematicError>,
-    apply: fn(input: &dyn Reflect, context: &mut SchematicContext) -> Result<(), SchematicError>,
-    remove: fn(input: &dyn Reflect, context: &mut SchematicContext) -> Result<(), SchematicError>,
+    apply: fn(
+        input: &dyn Reflect,
+        id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Result<(), SchematicError>,
+    remove: fn(
+        input: &dyn Reflect,
+        id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Result<(), SchematicError>,
     preload_dependencies: fn(
         input: &mut dyn Reflect,
+        id: SchematicId,
         dependencies: &mut DependenciesBuilder,
     ) -> Result<(), SchematicError>,
     clone_input: fn(input: &dyn Reflect) -> Result<Box<dyn Reflect>, SchematicError>,
@@ -149,27 +167,27 @@ impl<T: Schematic> FromType<T> for ReflectSchematic {
                     reflect_schematic: data,
                 })
             },
-            apply: |reflect_input, context| {
+            apply: |reflect_input, id, context| {
                 let input = reflect_input.downcast_ref::<T::Input>().ok_or_else(|| {
                     SchematicError::TypeMismatch {
                         expected: std::any::type_name::<T::Input>(),
                         found: reflect_input.type_name().to_string(),
                     }
                 })?;
-                <T as Schematic>::apply(input, context);
+                <T as Schematic>::apply(input, id, context);
                 Ok(())
             },
-            remove: |reflect_input, context| {
+            remove: |reflect_input, id, context| {
                 let input = reflect_input.downcast_ref::<T::Input>().ok_or_else(|| {
                     SchematicError::TypeMismatch {
                         expected: std::any::type_name::<T::Input>(),
                         found: reflect_input.type_name().to_string(),
                     }
                 })?;
-                <T as Schematic>::remove(input, context);
+                <T as Schematic>::remove(input, id, context);
                 Ok(())
             },
-            preload_dependencies: |reflect_input, dependencies| {
+            preload_dependencies: |reflect_input, id, dependencies| {
                 let type_name = reflect_input.type_name().to_string();
                 let input = reflect_input.downcast_mut::<T::Input>().ok_or_else(|| {
                     SchematicError::TypeMismatch {
@@ -177,7 +195,7 @@ impl<T: Schematic> FromType<T> for ReflectSchematic {
                         found: type_name,
                     }
                 })?;
-                <T as Schematic>::preload_dependencies(input, dependencies);
+                <T as Schematic>::preload_dependencies(input, id, dependencies);
                 Ok(())
             },
             clone_input: |reflect_input| {

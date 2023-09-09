@@ -12,6 +12,7 @@ use crate::deps::DependenciesBuilder;
 use crate::load::{Loader, ProtoLoadMeta};
 use crate::path::ProtoPathContext;
 use crate::proto::Prototypical;
+use crate::schematics::SchematicId;
 
 /// The context when loading a [prototype].
 ///
@@ -145,7 +146,8 @@ impl<'a, 'ctx, T: Prototypical, L: Loader<T>> ProtoLoadContext<'a, 'ctx, T, L> {
 
         // 1. Track schematic dependencies
         for (_, schematic) in prototype.schematics_mut().iter_mut() {
-            schematic.preload_dependencies(&mut deps)?;
+            let id = SchematicId::new(meta.handle.id(), schematic.type_info().type_id());
+            schematic.preload_dependencies(id, &mut deps)?;
         }
 
         prototype.dependencies_mut().combine(deps.build());
