@@ -3,7 +3,9 @@ use syn::{Attribute, Error};
 use crate::common::input::{
     parse_input_meta, ForwardAttributes, InputType, OutputType, SchematicIo,
 };
-use crate::utils::constants::{ASSET_SCHEMATIC_ATTR, ATTR_ATTR, FROM_ATTR, INPUT_ATTR, INTO_ATTR};
+use crate::utils::constants::{
+    ASSET_SCHEMATIC_ATTR, ASSET_SCHEMATIC_ATTR_ATTR, FROM_ATTR, INPUT_ATTR, INTO_ATTR,
+};
 use crate::utils::{
     define_attribute, parse_bool, parse_nested_meta, AttrArg, AttrArgValue, AttrTarget,
 };
@@ -22,6 +24,11 @@ impl ContainerAttributes {
         let mut this = Self::default();
 
         for attr in attrs {
+            if attr.path().is_ident(ASSET_SCHEMATIC_ATTR_ATTR) {
+                this.forward_attrs.extend_from_attribute(attr)?;
+                continue;
+            }
+
             if !attr.path().is_ident(ASSET_SCHEMATIC_ATTR) {
                 continue;
             }
@@ -31,7 +38,6 @@ impl ContainerAttributes {
                 INTO_ATTR => io.try_set_output_ty(OutputType::Custom(meta.value()?.parse()?), None),
                 INPUT_ATTR => parse_input_meta(meta, io),
                 NoPreloadArg::NAME => this.no_preload.try_set(Some(parse_bool(&meta)?), meta.input.span()),
-                ATTR_ATTR => this.forward_attrs.extend_from_nested_meta(meta),
             })?;
         }
 

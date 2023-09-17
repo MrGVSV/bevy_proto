@@ -71,10 +71,10 @@ struct Foo<T: Reflect + TypePath> {
     /// It also uses the `from` attribute:
     #[schematic(from=String)]
     complex_from: EntityGroup,
-    /// To pass attributes to the generated input type,
-    /// we can use the `attr` argument on both fields and the container itself:
+    /// To pass attributes to the generated input type (both the field and the container),
+    /// we can use the dedicated `schematic_attr` attribute:
     #[reflect(ignore)]
-    #[schematic(attr(reflect(ignore)))]
+    #[schematic_attr(reflect(ignore))]
     _phantom: PhantomData<T>,
 }
 

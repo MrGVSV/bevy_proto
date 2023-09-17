@@ -73,12 +73,12 @@ mod utils;
 /// - `From<CustomSchematic> for ExternalType`
 /// - `FromSchematicInput<CustomSchematic> for ExternalType`
 ///
-/// ### `#[schematic(attr)]`
+/// ### `#[schematic_attr]`
 ///
 /// This attribute is used to forward attributes to the generated input type,
 /// if one is generated.
 ///
-/// For example, we can add derives on the input type like `#[schematic(attr(derive(Clone, Debug)))]`.
+/// For example, we can add derives on the input type like `#[schematic_attr(derive(Clone, Debug))]`.
 ///
 /// ## Field Attributes
 ///
@@ -186,13 +186,13 @@ mod utils;
 ///
 /// It can also be used to opt-out by specifying `#[schematic(optional = false)]`.
 ///
-/// ### `#[schematic(attr)]`
+/// ### `#[schematic_attr]`
 ///
 /// This attribute is used to forward attributes to the corresponding field on the generated input type,
 /// if one is generated.
 ///
-/// This is useful for passing things like `#[schematic(attr(reflect(ignore)))]`.
-#[proc_macro_derive(Schematic, attributes(schematic))]
+/// This is useful for passing things like `#[schematic_attr(reflect(ignore))]`.
+#[proc_macro_derive(Schematic, attributes(schematic, schematic_attr))]
 pub fn derive_schematic(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveSchematic);
     input.into_token_stream().into()

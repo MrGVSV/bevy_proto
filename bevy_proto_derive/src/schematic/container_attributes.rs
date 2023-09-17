@@ -3,7 +3,9 @@ use std::fmt::{Debug, Formatter};
 use crate::common::input::{
     parse_input_meta, ForwardAttributes, InputType, OutputType, SchematicIo,
 };
-use crate::utils::constants::{ATTR_ATTR, FROM_ATTR, INPUT_ATTR, INTO_ATTR, SCHEMATIC_ATTR};
+use crate::utils::constants::{
+    FROM_ATTR, INPUT_ATTR, INTO_ATTR, SCHEMATIC_ATTR, SCHEMATIC_ATTR_ATTR,
+};
 use syn::meta::ParseNestedMeta;
 use syn::{Attribute, Error, LitStr};
 
@@ -25,6 +27,11 @@ impl ContainerAttributes {
         let mut this = Self::default();
 
         for attr in attrs {
+            if attr.path().is_ident(SCHEMATIC_ATTR_ATTR) {
+                this.forward_attrs.extend_from_attribute(attr)?;
+                continue;
+            }
+
             if !attr.path().is_ident(SCHEMATIC_ATTR) {
                 continue;
             }
@@ -34,7 +41,6 @@ impl ContainerAttributes {
                 INTO_ATTR => io.try_set_output_ty(OutputType::Custom(meta.value()?.parse()?), None),
                 INPUT_ATTR => parse_input_meta(meta, io),
                 KIND_ATTR => this.parse_kind_meta(meta),
-                ATTR_ATTR => this.forward_attrs.extend_from_nested_meta(meta),
             })?;
         }
 

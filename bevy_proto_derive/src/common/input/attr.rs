@@ -7,7 +7,7 @@ use std::fmt::{Debug, Formatter};
 use syn::meta::ParseNestedMeta;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::{parenthesized, Error, Meta, Token, Visibility};
+use syn::{Attribute, Error, Meta, Token, Visibility};
 
 define_attribute!("vis" => InputVisArg(Visibility) for AttrTarget::InputVisibility, no_debug);
 define_attribute!("name" => InputNameArg(Ident) for AttrTarget::Input);
@@ -39,12 +39,9 @@ pub(crate) struct ForwardAttributes {
 }
 
 impl ForwardAttributes {
-    pub fn extend_from_nested_meta(&mut self, meta: ParseNestedMeta) -> syn::Result<()> {
-        let buffer;
-        parenthesized!(buffer in meta.input);
-
-        let other = buffer.parse::<Self>()?;
-        self.attributes.extend(other.attributes);
+    pub fn extend_from_attribute(&mut self, attr: &Attribute) -> syn::Result<()> {
+        let other = attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
+        self.attributes.extend(other);
 
         Ok(())
     }
