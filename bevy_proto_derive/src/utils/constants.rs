@@ -15,6 +15,7 @@ pub(crate) const ENTITY_ATTR: &str = "entity";
 pub(crate) const INPUT_ATTR: &str = "input";
 pub(crate) const FROM_ATTR: &str = "from";
 pub(crate) const INTO_ATTR: &str = "into";
+pub(crate) const ATTR_ATTR: &str = "attr";
 
 /// Ident for the `Schematic::Input` argument.
 pub(crate) const INPUT_IDENT: ConstIdent = ConstIdent("__input__");

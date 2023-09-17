@@ -5,7 +5,7 @@ use to_phantom::ToPhantom;
 
 use crate::common::data::{SchematicData, SchematicVariant};
 use crate::common::fields::{SchematicField, SchematicFields};
-use crate::common::input::{InputType, SchematicIo};
+use crate::common::input::{ForwardAttributes, InputType, SchematicIo};
 use crate::utils::constants::{CONTEXT_IDENT, DEPENDENCIES_IDENT, ID_IDENT, INPUT_IDENT};
 use crate::utils::exports::{
     DependenciesBuilder, FromSchematicInput, FromSchematicPreloadInput, Reflect, SchematicContext,
@@ -17,6 +17,7 @@ pub(crate) fn generate_input(
     io: &SchematicIo,
     data: &SchematicData,
     generics: &Generics,
+    attributes: &ForwardAttributes,
     no_preload: bool,
 ) -> Result<Option<TokenStream>, Error> {
     let input_ident = match io.input_ty() {
@@ -72,6 +73,7 @@ pub(crate) fn generate_input(
 
             Some(quote! {
                 #[derive(#Reflect)]
+                #attributes
                 #vis struct #input_ty_def #where_clause;
 
                 #from_impl
@@ -116,6 +118,7 @@ pub(crate) fn generate_input(
 
             Some(quote! {
                 #[derive(#Reflect)]
+                #attributes
                 #vis struct #input_ty_def (
                     #(#definitions,)*
                     #phantom_ty
@@ -168,6 +171,7 @@ pub(crate) fn generate_input(
 
             Some(quote! {
                 #[derive(#Reflect)]
+                #attributes
                 #vis struct #input_ty_def #where_clause {
                     #(#definitions,)*
                     #phantom_ty
@@ -213,6 +217,7 @@ pub(crate) fn generate_input(
 
             Some(quote! {
                 #[derive(#Reflect)]
+                #attributes
                 #vis enum #input_ty_def #where_clause {
                     #(#definitions,)*
                     #phantom_ty

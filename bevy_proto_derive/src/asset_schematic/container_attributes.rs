@@ -1,7 +1,9 @@
 use syn::{Attribute, Error};
 
-use crate::common::input::{parse_input_meta, InputType, OutputType, SchematicIo};
-use crate::utils::constants::{ASSET_SCHEMATIC_ATTR, FROM_ATTR, INPUT_ATTR, INTO_ATTR};
+use crate::common::input::{
+    parse_input_meta, ForwardAttributes, InputType, OutputType, SchematicIo,
+};
+use crate::utils::constants::{ASSET_SCHEMATIC_ATTR, ATTR_ATTR, FROM_ATTR, INPUT_ATTR, INTO_ATTR};
 use crate::utils::{
     define_attribute, parse_bool, parse_nested_meta, AttrArg, AttrArgValue, AttrTarget,
 };
@@ -12,6 +14,7 @@ define_attribute!("no_preload" => NoPreloadArg(bool) for AttrTarget::Asset);
 #[derive(Default)]
 pub(super) struct ContainerAttributes {
     no_preload: NoPreloadArg,
+    forward_attrs: ForwardAttributes,
 }
 
 impl ContainerAttributes {
@@ -28,6 +31,7 @@ impl ContainerAttributes {
                 INTO_ATTR => io.try_set_output_ty(OutputType::Custom(meta.value()?.parse()?), None),
                 INPUT_ATTR => parse_input_meta(meta, io),
                 NoPreloadArg::NAME => this.no_preload.try_set(Some(parse_bool(&meta)?), meta.input.span()),
+                ATTR_ATTR => this.forward_attrs.extend_from_nested_meta(meta),
             })?;
         }
 
@@ -36,5 +40,9 @@ impl ContainerAttributes {
 
     pub fn no_preload(&self) -> bool {
         self.no_preload.get().copied().unwrap_or_default()
+    }
+
+    pub fn forward_attrs(&self) -> &ForwardAttributes {
+        &self.forward_attrs
     }
 }

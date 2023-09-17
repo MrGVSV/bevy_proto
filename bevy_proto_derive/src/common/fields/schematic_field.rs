@@ -1,4 +1,5 @@
 use crate::common::fields::{FieldConfig, FieldKind};
+use crate::common::input::ForwardAttributes;
 use crate::utils::constants::{CONTEXT_IDENT, DEPENDENCIES_IDENT, INPUT_IDENT, TEMP_IDENT};
 use crate::utils::exports::{
     AssetServer, EntityAccess, FromReflect, FromSchematicInput, FromSchematicPreloadInput,
@@ -8,14 +9,12 @@ use crate::utils::NextId;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned, ToTokens};
 use syn::spanned::Spanned;
-use syn::{parse_quote, Attribute, Error, Field, Member, Type};
+use syn::{parse_quote, Error, Field, Member, Type};
 
 /// The base field information for fields of a `Schematic` or `AssetSchematic`.
 pub(crate) struct SchematicField {
-    /// The Bevy `#[reflect]` attributes applied to the field.
-    ///
-    /// These are used when generating the input type.
-    reflect_attrs: Vec<Attribute>,
+    /// Attributes that should be forwarded to the generated input field.
+    forward_attrs: ForwardAttributes,
     /// The field's configuration.
     config: FieldConfig,
     /// The member (ident or index) used to access this field.
@@ -35,14 +34,9 @@ impl SchematicField {
                 .clone()
                 .map(Member::Named)
                 .unwrap_or(Member::Unnamed(field_index.into())),
-            reflect_attrs: Vec::new(),
+            forward_attrs: ForwardAttributes::default(),
             config: FieldConfig::default(),
         }
-    }
-
-    /// Pushes a `#[reflect]` attribute to the field.
-    pub fn push_reflect_attr(&mut self, attr: Attribute) {
-        self.reflect_attrs.push(attr);
     }
 
     /// Returns a reference to the field's configuration.
@@ -58,6 +52,16 @@ impl SchematicField {
     /// The member (ident or index) used to access this field.
     pub fn member(&self) -> &Member {
         &self.member
+    }
+
+    /// The attributes that should be forwarded to the generated input field.
+    pub fn forward_attrs(&self) -> &ForwardAttributes {
+        &self.forward_attrs
+    }
+
+    /// A mutable reference to the attributes that should be forwarded to the generated input field.
+    pub fn forward_attrs_mut(&mut self) -> &mut ForwardAttributes {
+        &mut self.forward_attrs
     }
 
     /// Determines whether or not a generated input type should contain this field.
@@ -113,18 +117,18 @@ impl SchematicField {
 
     /// Generate this field's definition within a generated input type.
     pub fn generate_definition(&self) -> TokenStream {
-        let reflect_attrs = &self.reflect_attrs;
+        let forward_attrs = self.forward_attrs();
         let ty = match self.input_ty() {
             Ok(ty) => ty,
             Err(err) => return err.to_compile_error(),
         };
         match &self.member {
             Member::Named(ident) => quote! {
-                #(#reflect_attrs)*
+                #forward_attrs
                 #ident: #ty
             },
             Member::Unnamed(_) => quote! {
-                #(#reflect_attrs)*
+                #forward_attrs
                 #ty
             },
         }

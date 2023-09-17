@@ -4,7 +4,7 @@ use crate::common::fields::{
     OptionalArg, SchematicField,
 };
 use crate::common::input::{InputType, SchematicIo};
-use crate::utils::constants::{ASSET_ATTR, ENTITY_ATTR, FROM_ATTR};
+use crate::utils::constants::{ASSET_ATTR, ATTR_ATTR, ENTITY_ATTR, FROM_ATTR};
 use crate::utils::{parse_bool, parse_nested_meta, AttrArg};
 use proc_macro2::Span;
 use syn::meta::ParseNestedMeta;
@@ -71,10 +71,6 @@ struct ProtoFieldBuilder<'a> {
 impl<'a> ProtoFieldBuilder<'a> {
     fn build(mut self) -> Result<SchematicField, Error> {
         for attr in &self.field.attrs {
-            if attr.path().is_ident("reflect") {
-                self.proto_field.push_reflect_attr(attr.clone());
-            }
-
             if !attr.path().is_ident(self.derive_type.attr_name()) {
                 continue;
             }
@@ -86,6 +82,7 @@ impl<'a> ProtoFieldBuilder<'a> {
                         ASSET_ATTR => self.parse_asset_meta(meta),
                         ENTITY_ATTR => self.parse_entity_meta(meta),
                         OptionalArg::NAME => self.parse_optional_meta(meta),
+                        ATTR_ATTR => self.parse_forwarded_attr_meta(meta),
                     })?;
                 }
                 DeriveType::AssetSchematic => {
@@ -93,6 +90,7 @@ impl<'a> ProtoFieldBuilder<'a> {
                         FROM_ATTR => self.parse_from_meta(meta),
                         ASSET_ATTR => self.parse_asset_meta(meta),
                         OptionalArg::NAME => self.parse_optional_meta(meta),
+                        ATTR_ATTR => self.parse_forwarded_attr_meta(meta),
                     })?;
                 }
             }
@@ -201,6 +199,15 @@ impl<'a> ProtoFieldBuilder<'a> {
         self.proto_field
             .config_mut()
             .try_set_optional(parse_bool(&meta)?, meta.input.span())
+    }
+
+    /// Parse a `#[schematic(attr)]` attribute.
+    ///
+    /// This takes in the meta starting at `attr`.
+    fn parse_forwarded_attr_meta(&mut self, meta: ParseNestedMeta) -> Result<(), Error> {
+        self.proto_field
+            .forward_attrs_mut()
+            .extend_from_nested_meta(meta)
     }
 
     /// Method used to require that a `Schematic::Input` type be generated for the attribute
