@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use crate::assets::ProtoAssetEvent;
 use bevy::app::{App, Plugin};
 use bevy::asset::AddAsset;
 use bevy::prelude::{FromWorld, Update};
@@ -7,7 +8,7 @@ use parking_lot::Mutex;
 
 use crate::impls;
 use crate::load::{Loader, ProtoAssetLoader};
-use crate::proto::{Config, ProtoAsset, ProtoAssetEvent, ProtoStorage, Prototypical};
+use crate::proto::{Config, ProtoStorage, Prototypical};
 use crate::registration::{on_proto_asset_event, ProtoRegistry};
 use crate::tree::{AccessOp, ChildAccess, EntityAccess, ProtoEntity};
 
@@ -48,9 +49,9 @@ impl<T: Prototypical, L: Loader<T>, C: Config<T>> Plugin for ProtoBackendPlugin<
         #[cfg(feature = "bevy_render")]
         app.register_type::<crate::proto::ProtoColor>();
 
-        app.register_type::<ProtoAsset>()
-            .register_type::<ProtoEntity>()
+        app.register_type::<ProtoEntity>()
             .register_type::<EntityAccess>()
+            .register_type::<Option<EntityAccess>>()
             .register_type::<AccessOp>()
             .register_type::<ChildAccess>();
         impls::register_impls(app);

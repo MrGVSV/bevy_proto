@@ -58,8 +58,15 @@ This crate can be used for:
   > (
   >   name: "Puppy",
   >   schematics: {
-  >     "game::image::GameImage": (
-  >       handle: AssetPath("textures/puppy.png"),
+  >     "game::level::Level": (
+  >       // Load by path:
+  >       background: AssetPath("textures/bg.png"),
+  >       // Or define assets inline:
+  >       map: Asset((
+  >         name: "Level 1",
+  >         size: (20, 20),
+  >         // ...
+  >       ))
   >     ),
   >   },
   > )

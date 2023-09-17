@@ -1,6 +1,6 @@
 use bevy::app::App;
 use bevy::math::{Rect, Vec2};
-use bevy::prelude::{BackgroundColor, Button, Label};
+use bevy::prelude::{BackgroundColor, Button, Image, Label};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::widget::TextFlags;
 use bevy::ui::{
@@ -10,8 +10,9 @@ use bevy::ui::{
     PositionType, RelativeCursorPosition, RepeatedGridTrack, Style, UiImage, UiRect, Val, ZIndex,
 };
 
+use crate::assets::ProtoAsset;
 use crate::impls::macros::{from_to_default, register_schematic};
-use crate::proto::{ProtoAsset, ProtoColor};
+use crate::proto::ProtoColor;
 use bevy_proto_derive::impl_external_schematic;
 
 pub(super) fn register(app: &mut App) {
@@ -257,7 +258,7 @@ impl_external_schematic! {
 impl_external_schematic! {
     #[schematic(input(vis = pub))]
     pub struct UiImage {
-        #[schematic(asset(lazy))]
+        #[schematic(asset)]
         pub texture: Handle<Image>,
         #[reflect(default)]
         pub flip_x: bool,
@@ -269,7 +270,7 @@ impl_external_schematic! {
         fn default() -> Self {
             let base = UiImage::default();
             Self {
-                texture: ProtoAsset::HandleId(base.texture.id()),
+                texture: ProtoAsset::Handle(base.texture.clone_weak()),
                 flip_x: base.flip_x,
                 flip_y: base.flip_y,
             }

@@ -54,8 +54,7 @@ impl Schematic for Foo {
     // Generally, this is `Self`.
     // However, we decided to use `FooInput`, so that can go here.
     type Input = FooInput;
-
-    fn apply(input: &Self::Input, context: &mut SchematicContext) {
+    fn apply(input: &Self::Input, _id: SchematicId, context: &mut SchematicContext) {
         // 1. Create a camera if one doesn't exist in the world
         let world = context.world_mut();
         let change_tick = world.change_tick();
@@ -81,7 +80,7 @@ impl Schematic for Foo {
         }
     }
 
-    fn remove(_input: &Self::Input, context: &mut SchematicContext) {
+    fn remove(_input: &Self::Input, _id: SchematicId, context: &mut SchematicContext) {
         // It's important we handle any necessary cleanup when removing a schematic.
         let world = context.world_mut();
         let mut camera_query = world.query_filtered::<Entity, With<FooCamera>>();
@@ -93,7 +92,11 @@ impl Schematic for Foo {
         context.entity_mut().unwrap().remove::<SpriteBundle>();
     }
 
-    fn preload_dependencies(input: &mut Self::Input, dependencies: &mut DependenciesBuilder) {
+    fn preload_dependencies(
+        input: &mut Self::Input,
+        _id: SchematicId,
+        dependencies: &mut DependenciesBuilder,
+    ) {
         // This method is optional, but it allows us to preload our assets.
         let _: Handle<Image> = dependencies.add_dependency(input.image.clone());
     }

@@ -1,11 +1,10 @@
 use bevy::app::App;
-use bevy::asset::{Asset, AssetServer, Handle};
+use bevy::asset::{Asset, Handle};
 
 use crate::impls::macros::register_schematic;
 use bevy_proto_derive::impl_external_schematic;
 
-use crate::proto::ProtoAsset;
-use crate::schematics::{FromSchematicInput, SchematicContext};
+use crate::assets::ProtoAsset;
 
 #[allow(unused_variables)]
 pub(super) fn register(app: &mut App) {
@@ -59,15 +58,6 @@ pub(super) fn register(app: &mut App) {
 }
 
 impl_external_schematic! {
-    #[schematic(from = ProtoAsset)]
+    #[schematic(from = ProtoAsset<T>)]
     struct Handle<T: Asset> {}
-    // ---
-    impl<T: Asset> FromSchematicInput<ProtoAsset> for Handle<T> {
-        fn from_input(input: ProtoAsset, context: &mut SchematicContext) -> Self {
-            match input {
-                ProtoAsset::AssetPath(path) => context.world().resource::<AssetServer>().load(path),
-                ProtoAsset::HandleId(handle_id) => context.world().resource::<AssetServer>().get_handle(handle_id),
-            }
-        }
-    }
 }

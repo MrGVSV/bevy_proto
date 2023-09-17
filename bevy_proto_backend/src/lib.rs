@@ -1,9 +1,9 @@
 pub use plugin::*;
 
+pub mod assets;
 pub mod children;
 pub mod cycles;
 pub mod deps;
-#[doc(hidden)]
 pub mod impls;
 pub mod load;
 pub mod path;

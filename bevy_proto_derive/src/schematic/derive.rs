@@ -1,64 +1,50 @@
+use crate::common::data::{DeriveType, SchematicData};
+use crate::common::fields::SchematicFields;
+use crate::common::input::{
+    generate_from_reflect_conversion, generate_input, generate_input_conversion, InputType,
+    OutputType, SchematicIo,
+};
+use crate::utils::constants::{CONTEXT_IDENT, DEPENDENCIES_IDENT, ID_IDENT, INPUT_IDENT};
+use crate::utils::exports::{DependenciesBuilder, Schematic, SchematicContext, SchematicId};
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream};
-use syn::{DeriveInput, Generics, Visibility};
+use syn::{DeriveInput, Error, Generics, Visibility};
 
 use crate::schematic::container_attributes::{ContainerAttributes, SchematicKind};
-use crate::schematic::data::SchematicData;
-use crate::schematic::field_attributes::ReplacementType;
-use crate::schematic::idents::{CONTEXT_IDENT, DEPENDENCIES_IDENT, INPUT_IDENT};
-use crate::schematic::input::{Input, InputType};
-use crate::schematic::self_type::SelfType;
-use crate::schematic::structs::SchematicStruct;
-use crate::utils::{get_bevy_crate, get_proto_crate};
 
 pub(crate) struct DeriveSchematic {
     attrs: ContainerAttributes,
-    ident: Ident,
     generics: Generics,
     data: SchematicData,
-    self_ty: SelfType,
-    input_ty: InputType,
-    assertions: TokenStream,
-    proto_crate: TokenStream,
-    bevy_crate: TokenStream,
+    io: SchematicIo,
 }
 
 impl DeriveSchematic {
-    pub fn attrs(&self) -> &ContainerAttributes {
-        &self.attrs
-    }
-
-    pub fn ident(&self) -> &Ident {
-        &self.ident
-    }
-
-    pub fn generics(&self) -> &Generics {
+    fn generics(&self) -> &Generics {
         &self.generics
     }
 
-    pub fn proto_crate(&self) -> &TokenStream {
-        &self.proto_crate
+    fn io(&self) -> &SchematicIo {
+        &self.io
     }
 
-    pub fn self_ty(&self) -> &SelfType {
-        &self.self_ty
+    fn output_ty(&self) -> &OutputType {
+        self.io.output_ty()
     }
 
-    pub fn input_ty(&self) -> &InputType {
-        &self.input_ty
+    fn input_ty(&self) -> &InputType {
+        self.io.input_ty()
     }
 
-    pub fn data(&self) -> &SchematicData {
+    fn data(&self) -> &SchematicData {
         &self.data
     }
 
     /// Generate the logic for `Schematic::apply`.
-    pub fn apply_def(&self) -> TokenStream {
-        let conversion = self
-            .input_ty
-            .generate_conversion(self.self_ty(), &self.proto_crate);
-        let construct_input = self.generate_from_reflect_input();
+    fn apply_def(&self) -> TokenStream {
+        let from_reflect = generate_from_reflect_conversion();
+        let conversion = generate_input_conversion(self.io());
 
         let insert = if matches!(self.attrs.kind(), SchematicKind::Resource) {
             quote!(#CONTEXT_IDENT.world_mut().insert_resource(#INPUT_IDENT);)
@@ -72,7 +58,7 @@ impl DeriveSchematic {
         };
 
         quote! {
-            let #INPUT_IDENT = #construct_input;
+            #from_reflect
 
             #conversion
 
@@ -82,154 +68,57 @@ impl DeriveSchematic {
     }
 
     /// Generate the logic for `Schematic::remove`.
-    pub fn remove_def(&self) -> TokenStream {
-        let self_ty = self.self_ty();
+    fn remove_def(&self) -> TokenStream {
+        let output_ty = self.output_ty();
 
         if matches!(self.attrs.kind(), SchematicKind::Resource) {
-            quote!(#CONTEXT_IDENT.world_mut().remove_resource::<#self_ty>();)
+            quote!(#CONTEXT_IDENT.world_mut().remove_resource::<#output_ty>();)
         } else {
             quote!(
                 #CONTEXT_IDENT
                     .entity_mut()
                     .unwrap_or_else(|| panic!("schematic `{}` expected entity", std::any::type_name::<Self>()))
-                    .remove::<#self_ty>();
+                    .remove::<#output_ty>();
             )
         }
     }
 
     /// Generates the logic for `Schematic::preload`.
-    pub fn preload_def(&self) -> Option<TokenStream> {
-        let proto_crate = &self.proto_crate;
-        match &self.data {
-            SchematicData::Struct(SchematicStruct::Unit) => None,
+    fn preload_def(&self) -> Result<TokenStream, Error> {
+        Ok(match &self.data {
+            SchematicData::Struct(SchematicFields::Unit) => TokenStream::new(),
             SchematicData::Struct(
-                SchematicStruct::Named(fields) | SchematicStruct::Unnamed(fields),
-            ) => Some(
-                fields
-                    .iter()
-                    .filter_map(|field| match field.attrs().replacement_ty() {
-                        ReplacementType::Asset(config) if config.is_preload() => {
-                            let ty = field.defined_ty();
-                            let member = field.member();
-                            let name_str = field.member().to_token_stream().to_string();
-
-                            Some(if let Some(path) = config.path() {
-                                quote!(
-                                    let _: #ty = #DEPENDENCIES_IDENT.add_dependency(#path);
-                                )
-                            } else {
-                                quote!(
-                                    match #INPUT_IDENT.#member {
-                                        #proto_crate::proto::ProtoAsset::AssetPath(ref path) => {
-                                            let _: #ty = #DEPENDENCIES_IDENT.add_dependency(path.to_owned());
-                                        }
-                                        #proto_crate::proto::ProtoAsset::HandleId(handle_id) => {
-                                            panic!(
-                                                "expected `ProtoAsset::AssetPath` in field `{}` of `{}`, but found `ProtoAsset::HandleId`",
-                                                #name_str,
-                                                ::core::any::type_name::<Self::Input>()
-                                            );
-                                        }
-                                    }
-                                )
-                            })
-                        }
-                        _ => None,
-                    })
-                    .collect(),
-            ),
+                SchematicFields::Named(fields) | SchematicFields::Unnamed(fields),
+            ) => fields
+                .iter()
+                .map(|field| field.generate_preload(None).map(|preload| quote!(#preload)))
+                .collect::<Result<TokenStream, Error>>()?,
             SchematicData::Enum(variants) => {
-                let input_ty = self.input_ty();
                 let arms = variants
                     .iter()
-                    .map(|variant| variant.generate_preload_arm(input_ty));
+                    .map(|variant| variant.generate_preload_arm(self.io()))
+                    .collect::<Result<Vec<_>, Error>>()?;
 
-                Some(quote! {
+                quote! {
                     match #INPUT_IDENT {
-                        #(#arms,)*
+                        #(#arms)*
                         _ => unreachable!(),
                     }
-                })
+                }
             }
-        }
-    }
-
-    /// Generates an expression that clones the `Schematic`'s input argument to
-    /// a `Box<dyn Reflect>` using its `FromReflect`.
-    fn generate_from_reflect_input(&self) -> TokenStream {
-        let bevy_crate = &self.bevy_crate;
-        quote! {
-            <Self::Input as #bevy_crate::reflect::FromReflect>::from_reflect(
-                &*#bevy_crate::reflect::Reflect::clone_value(#INPUT_IDENT)
-            ).unwrap_or_else(|| {
-                panic!(
-                    "{} should have a functioning `FromReflect` impl",
-                    std::any::type_name::<Self::Input>()
-                )
-            })
-        }
-    }
-}
-
-impl Parse for DeriveSchematic {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let input = input.parse::<DeriveInput>()?;
-
-        let mut assertions = TokenStream::new();
-
-        let mut self_ty = SelfType::default();
-        #[cfg(feature = "assertions")]
-        assertions.extend(self_ty.assertions());
-
-        let mut input_ty = InputType::default();
-        #[cfg(feature = "assertions")]
-        assertions.extend(input_ty.assertions());
-
-        let attrs = ContainerAttributes::new(&input.attrs, &mut self_ty, &mut input_ty)?;
-        #[cfg(feature = "assertions")]
-        assertions.extend(attrs.assertions());
-
-        let proto_crate = get_proto_crate();
-        let bevy_crate = get_bevy_crate();
-
-        let data = SchematicData::from_data(
-            input.data,
-            &input.ident,
-            &mut input_ty,
-            &proto_crate,
-            &bevy_crate,
-        )?;
-        #[cfg(feature = "assertions")]
-        assertions.extend(data.assertions());
-
-        Ok(Self {
-            attrs,
-            ident: input.ident,
-            generics: input.generics,
-            data,
-            self_ty,
-            input_ty,
-            assertions,
-            proto_crate,
-            bevy_crate,
         })
     }
-}
 
-impl ToTokens for DeriveSchematic {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let ident = self.ident();
+    fn generate(&self) -> Result<TokenStream, Error> {
+        let ident: &Ident = self.io.ident();
         let (impl_generics, ty_generics, where_clause) = self.generics().split_for_impl();
 
-        let proto_crate = self.proto_crate();
-
-        let attrs = self.attrs();
-
-        let input = Input::get_input(self);
+        let input = generate_input(self.io(), self.data(), self.generics(), true)?;
         let apply_def = self.apply_def();
         let remove_def = self.remove_def();
-        let preload_def = self.preload_def();
+        let preload_def = self.preload_def()?;
 
+        let input_vis = self.io.input_vis();
         let input_ty = match self.input_ty() {
             InputType::Generated(ident) => {
                 quote!(#ident #ty_generics)
@@ -237,49 +126,61 @@ impl ToTokens for DeriveSchematic {
             input_ty => input_ty.to_token_stream(),
         };
 
-        let assertions = if cfg!(feature = "assertions") {
-            let assertions = &self.assertions;
-            Some(quote! {
-                const _: () = {
-                    mod Assertions {
-                        #assertions
-                    }
-                };
-            })
-        } else {
-            None
-        };
-
         let output = quote! {
             #input
 
-            impl #impl_generics #proto_crate::schematics::Schematic for #ident #ty_generics #where_clause {
+            impl #impl_generics #Schematic for #ident #ty_generics #where_clause {
                 type Input = #input_ty;
 
-                fn apply(#INPUT_IDENT: &Self::Input, #CONTEXT_IDENT: &mut #proto_crate::schematics::SchematicContext) {
+                fn apply(#INPUT_IDENT: &Self::Input, #ID_IDENT: #SchematicId, #CONTEXT_IDENT: &mut #SchematicContext) {
                     #apply_def
                 }
 
-                fn remove(#INPUT_IDENT: &Self::Input, #CONTEXT_IDENT: &mut #proto_crate::schematics::SchematicContext) {
+                fn remove(#INPUT_IDENT: &Self::Input, #ID_IDENT: #SchematicId, #CONTEXT_IDENT: &mut #SchematicContext) {
                     #remove_def
                 }
 
-                fn preload_dependencies(#INPUT_IDENT: &mut Self::Input, #DEPENDENCIES_IDENT: &mut #proto_crate::deps::DependenciesBuilder)  {
+                fn preload_dependencies(#INPUT_IDENT: &mut Self::Input, #ID_IDENT: #SchematicId, #DEPENDENCIES_IDENT: &mut #DependenciesBuilder)  {
                     #preload_def
                 }
             }
-
-            #assertions
         };
 
-        if matches!(attrs.input_vis(), None | Some(Visibility::Inherited)) {
-            tokens.extend(quote! {
+        Ok(match input_vis {
+            None | Some(Visibility::Inherited) => quote! {
                 const _: () = {
                     #output
                 };
-            })
-        } else {
-            tokens.extend(output);
+            },
+            _ => output,
+        })
+    }
+}
+
+impl Parse for DeriveSchematic {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let input = input.parse::<DeriveInput>()?;
+
+        let mut io = SchematicIo::new(&input);
+
+        let attrs = ContainerAttributes::new(&input.attrs, &mut io)?;
+
+        let data = SchematicData::new(input.data, &mut io, DeriveType::Schematic)?;
+
+        Ok(Self {
+            attrs,
+            generics: input.generics,
+            data,
+            io,
+        })
+    }
+}
+
+impl ToTokens for DeriveSchematic {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self.generate() {
+            Ok(output) => tokens.extend(output),
+            Err(err) => err.to_compile_error().to_tokens(tokens),
         }
     }
 }

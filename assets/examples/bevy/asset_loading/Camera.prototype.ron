@@ -1,0 +1,15 @@
+(
+  name: "Camera",
+  schematics: {
+    "bevy_proto::custom::Camera3dBundle": (
+      transform: (
+        translation: (
+          x: 0,
+          y: 3.0,
+          z: 10.0
+        ),
+        rotation: (-0.14521314, -0.0, -0.0, 0.9894004),
+      )
+    )
+  }
+)

@@ -1,6 +1,6 @@
 use std::fmt::{Debug, Formatter};
 
-use bevy::asset::{Asset, AssetPath, Handle, HandleUntyped, LoadContext};
+use bevy::asset::{Asset, AssetPath, Handle, HandleUntyped, LoadContext, LoadedAsset};
 use bevy::utils::hashbrown::hash_map::Iter;
 use bevy::utils::HashMap;
 
@@ -88,6 +88,12 @@ impl<'a, 'ctx> DependenciesBuilder<'a, 'ctx> {
         let (path, handle) = self.get_handle(path);
         self.deps.insert(path, handle.clone_untyped());
         handle
+    }
+
+    /// Add a labeled asset.
+    pub fn add_asset<T: Asset, L: AsRef<str>>(&mut self, asset: T, label: L) -> Handle<T> {
+        self.ctx
+            .set_labeled_asset(label.as_ref(), LoadedAsset::new(asset))
     }
 
     fn get_handle<T: Asset, P: Into<AssetPath<'static>>>(

@@ -79,10 +79,11 @@ macro_rules! from_to_input {
             impl $crate::schematics::FromSchematicInput<Input> for $mock {
                 fn from_input(
                     input: Input,
+                    id: $crate::schematics::SchematicId,
                     context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
                     #[allow(clippy::redundant_closure_call)]
-                    $body(input, context)
+                    $body(input, id, context)
                 }
             }
         };
@@ -93,10 +94,11 @@ macro_rules! from_to_input {
             impl $crate::schematics::FromSchematicInput<Input> for $real {
                 fn from_input(
                     input: Input,
+                    id: $crate::schematics::SchematicId,
                     context: &mut $crate::schematics::SchematicContext,
                 ) -> Self {
                     #[allow(clippy::redundant_closure_call)]
-                    $body(input, context)
+                    $body(input, id, context)
                 }
             }
         };

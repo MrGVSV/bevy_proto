@@ -1,4 +1,5 @@
-use crate::proto::{Config, ProtoAssetEvent, ProtoError, Prototypical};
+use crate::assets::ProtoAssetEvent;
+use crate::proto::{Config, ProtoError, Prototypical};
 use bevy::asset::{Assets, Handle, HandleId};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{EventWriter, Res, ResMut};

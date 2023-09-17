@@ -1,0 +1,29 @@
+(
+  name: "Sphere",
+  schematics: {
+    "bevy_proto::custom::MaterialMeshBundle<bevy_pbr::pbr_material::StandardMaterial>": (
+      // Mesh is an `AssetSchematic` which has a dedicated `MeshInput` type used for
+      // defining the mesh within a prototype file.
+      // The `MeshInput` type is an enum with various variants for primitive shapes.
+      // Here, we're using the `Cube` variant:
+      mesh: Asset(UvSphere((
+        radius: 1.0,
+      ))),
+      material: Asset((
+        base_color: Rgba(
+          red: 0.8,
+          green: 0.7,
+          blue: 0.6,
+          alpha: 1.0
+        ),
+      )),
+      transform: (
+        translation: (
+          x: 3.0,
+          y: 0.0,
+          z: 0.0
+        )
+      ),
+    )
+  }
+)

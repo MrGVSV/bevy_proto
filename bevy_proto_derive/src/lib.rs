@@ -1,10 +1,13 @@
 use proc_macro::TokenStream;
 
+use crate::asset_schematic::{DeriveAssetSchematic, ExternalAssetSchematic};
 use quote::ToTokens;
 use syn::parse_macro_input;
 
 use crate::schematic::{DeriveSchematic, ExternalSchematic};
 
+mod asset_schematic;
+mod common;
 mod schematic;
 mod utils;
 
@@ -95,15 +98,41 @@ mod utils;
 ///
 /// #### Arguments
 ///
-/// ##### `({lazy|preload})`
+/// ##### `(preload)`
 ///
 /// _Optional_
 ///
-/// If `lazy`, then the asset won't be loaded until the schematic is actually used.
-/// If `preload`, then the asset will be preloaded as a dependency of the schematic.
+/// If present, then the asset will be preloaded as a dependency of the schematic.
 ///
-/// The `lazy` variant is not strictly needed, since it corresponds to the default behavior.
-/// However, it exists for users who may want the distinction to be extra explicit.
+/// Cannot be used with the `unique` argument.
+///
+/// ##### `(unique)`
+///
+/// _Optional_
+///
+/// Note: This attribute does nothing without the `inline` argument.
+///
+/// By default, when an asset is loaded inline it will only create a single asset.
+/// Additional loads will point to the same asset.
+///
+/// In some cases, it's desirable to have each load create a new asset.
+/// This attribute allows a unique asset to be created upon each load.
+///
+/// Cannot be used with the `preload` argument.
+///
+/// ##### `(inline)`
+///
+/// _Optional_
+///
+/// Normally, assets are defined in their own unique file and referenced by path.
+///
+/// However, there are times when it would be better to define an asset inline with a schematic.
+/// This attribute allows an asset to either be defined by path or inline.
+///
+/// The asset type within the `Handle` or the type specified by the `type` argument must implement `AssetSchematic`.
+/// This will result in the field being generated as an `InlinableProtoAsset`.
+///
+/// Cannot be used with the `path` argument.
 ///
 /// ##### `(path = "path/to/asset.png")`
 ///
@@ -113,6 +142,16 @@ mod utils;
 ///
 /// This can be used when a particular asset should always be used.
 /// When this argument is found, the corresponding field will be removed from the generated input type.
+///
+/// Cannot be used with the `inline` argument.
+///
+/// ##### `(type = path::to::AssetType)`
+///
+/// _Optional_
+///
+/// When using a typed handle, this macro will attempt to infer the asset type from the handle's type.
+/// However, if this fails or if defining an asset schematic type that is not the asset itself,
+/// this attribute can be used with the desired type.
 ///
 /// ### `#[schematic(entity)]`
 ///
@@ -141,6 +180,14 @@ mod utils;
 /// - `FromSchematicInput<CustomFieldInput> for MyFieldType`
 ///
 /// This is useful for defining custom logic or controlling the serialized representation.
+///
+/// ### `#[schematic(optional)]`
+///
+/// Entity and asset fields are able to be defined as optional.
+/// Normally, this macro will determine whether this is the case by the type.
+/// If this fails, this attribute can be used to force the field to be optional.
+///
+/// It can also be used to opt-out by specifying `#[schematic(optional = false)]`.
 #[proc_macro_derive(Schematic, attributes(schematic))]
 pub fn derive_schematic(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveSchematic);
@@ -188,5 +235,69 @@ pub fn derive_schematic(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn impl_external_schematic(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ExternalSchematic);
+    input.to_token_stream().into()
+}
+
+/// Derive the `AssetSchematic` trait.
+///
+/// This macro will generate the impl for `AssetSchematic` as well as a corresponding
+/// `Schematic::Input` type if one is needed.
+///
+/// # Attributes
+///
+/// This macro supports most of the attributes that the [`Schematic` derive macro] supports,
+/// but with the `asset_schematic` namespace rather than `schematic`.
+///
+/// ## Container Attributes
+///
+/// This macro shares many of the same container attributes as the `Schematic` derive macro including:
+/// - `#[asset_schematic(input)]`
+/// - `#[asset_schematic(from = path::to::Type)]`
+/// - `#[asset_schematic(into = path::to::Type)]`
+///
+/// ### `#[asset_schematic(no_preload)]`
+///
+/// By default, this macro will also generate the impl for `PreloadAssetSchematic` to allow
+/// the asset to be preloaded.
+///
+/// This is useful for assets that are used frequently and/or are small in size,
+/// but sometimes this isn't always desirable or even possible.
+///
+/// This attribute disables the generation of the `PreloadAssetSchematic` impl.
+///
+/// ## Field Attributes
+///
+/// This macro shares many of the same field attributes as the `Schematic` derive macro including:
+/// - `#[asset_schematic(asset)]`
+/// - `#[asset_schematic(from = path::to::FieldType)]`
+/// - `#[asset_schematic(optional)]`
+///
+/// For the `asset` attribute, the following arguments are supported:
+/// - `(inline)`
+/// - `(path = "path/to/asset.png")`
+/// - `(type = path::to::AssetType)`
+///
+/// [`Schematic` derive macro]: derive_schematic
+#[proc_macro_derive(AssetSchematic, attributes(asset_schematic))]
+pub fn derive_asset_schematic(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveAssetSchematic);
+    input.into_token_stream().into()
+}
+
+/// Internal macro used to easily implement `AssetSchematic` on external types.
+///
+/// Takes a type definition:
+///
+/// ```ignore
+/// impl_external_asset_schematic! {
+///   struct SomeExternalAssetType {
+///     foo: usize
+///   }
+/// }
+/// ```
+#[doc(hidden)]
+#[proc_macro]
+pub fn impl_external_asset_schematic(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as ExternalAssetSchematic);
     input.to_token_stream().into()
 }

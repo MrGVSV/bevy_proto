@@ -8,7 +8,7 @@ use bevy::prelude::Entity;
 use bevy::reflect::{std_traits::ReflectDefault, Reflect, ReflectDeserialize};
 use serde::Deserialize;
 
-use crate::schematics::{FromSchematicInput, SchematicContext};
+use crate::schematics::{FromSchematicInput, SchematicContext, SchematicId};
 
 /// A deserializable prototype entity reference.
 ///
@@ -343,7 +343,7 @@ impl<T: AsRef<Path>> From<T> for EntityAccess {
 }
 
 impl FromSchematicInput<EntityAccess> for Entity {
-    fn from_input(input: EntityAccess, context: &mut SchematicContext) -> Self {
+    fn from_input(input: EntityAccess, _id: SchematicId, context: &mut SchematicContext) -> Self {
         context
             .find_entity(&input)
             .unwrap_or_else(|| panic!("entity should exist at path {:?}", input.to_path()))
@@ -351,7 +351,7 @@ impl FromSchematicInput<EntityAccess> for Entity {
 }
 
 impl FromSchematicInput<ProtoEntity> for Entity {
-    fn from_input(input: ProtoEntity, context: &mut SchematicContext) -> Self {
+    fn from_input(input: ProtoEntity, _id: SchematicId, context: &mut SchematicContext) -> Self {
         let access: EntityAccess = input.into();
         context
             .find_entity(&access)
@@ -360,13 +360,13 @@ impl FromSchematicInput<ProtoEntity> for Entity {
 }
 
 impl FromSchematicInput<EntityAccess> for Option<Entity> {
-    fn from_input(input: EntityAccess, context: &mut SchematicContext) -> Self {
+    fn from_input(input: EntityAccess, _id: SchematicId, context: &mut SchematicContext) -> Self {
         context.find_entity(&input)
     }
 }
 
 impl FromSchematicInput<ProtoEntity> for Option<Entity> {
-    fn from_input(input: ProtoEntity, context: &mut SchematicContext) -> Self {
+    fn from_input(input: ProtoEntity, _id: SchematicId, context: &mut SchematicContext) -> Self {
         context.find_entity(&input.into())
     }
 }
@@ -393,7 +393,11 @@ impl FromSchematicInput<ProtoEntity> for Option<Entity> {
 pub struct ProtoEntityList(pub Vec<ProtoEntity>);
 
 impl FromSchematicInput<ProtoEntityList> for Vec<Entity> {
-    fn from_input(input: ProtoEntityList, context: &mut SchematicContext) -> Self {
+    fn from_input(
+        input: ProtoEntityList,
+        _id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Self {
         input
             .0
             .into_iter()

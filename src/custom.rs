@@ -10,41 +10,42 @@ use bevy::asset::Handle;
 use bevy::prelude::{Component, GlobalTransform, Transform};
 use bevy::reflect::{std_traits::ReflectDefault, Reflect};
 use bevy::ui::widget::UiImageSize;
+use bevy_proto_backend::assets::{AssetSchematic, InlinableProtoAsset};
 use bevy_proto_backend::impls::bevy_impls;
 use bevy_proto_backend::proto::ProtoColor;
-use bevy_proto_backend::{from, from_to_default};
+use bevy_proto_backend::{from, from_to_default, register_schematic};
 
 use bevy_proto_backend::schematics::{
-    FromSchematicInput, ReflectSchematic, Schematic, SchematicContext,
+    FromSchematicInput, ReflectSchematic, Schematic, SchematicContext, SchematicId,
 };
 
 pub(crate) fn register_custom_schematics(app: &mut App) {
-    app.register_type::<TransformBundle>();
+    register_schematic!(app, TransformBundle);
     #[cfg(feature = "bevy_core_pipeline")]
-    app.register_type::<Camera2dBundle>()
-        .register_type::<Camera3dBundle>();
+    register_schematic!(app, Camera2dBundle, Camera3dBundle);
     #[cfg(feature = "bevy_pbr")]
-    app.register_type::<DirectionalLightBundle>()
-        .register_type::<PointLightBundle>()
-        .register_type::<SpotLightBundle>()
-        .register_type::<MaterialMeshBundle<bevy::pbr::StandardMaterial>>();
+    register_schematic!(
+        app,
+        DirectionalLightBundle,
+        PointLightBundle,
+        SpotLightBundle,
+        MaterialMeshBundle<bevy::pbr::StandardMaterial>
+    );
     #[cfg(feature = "bevy_render")]
-    app.register_type::<VisibilityBundle>()
-        .register_type::<SpatialBundle>();
+    register_schematic!(app, VisibilityBundle, SpatialBundle);
     #[cfg(feature = "bevy_sprite")]
-    app.register_type::<DynamicSceneBundle>()
-        .register_type::<SceneBundle>();
+    register_schematic!(app, DynamicSceneBundle, SceneBundle);
     #[cfg(feature = "bevy_sprite")]
-    app.register_type::<SpriteBundle>()
-        .register_type::<SpriteSheetBundle>()
-        .register_type::<MaterialMesh2dBundle<bevy::sprite::ColorMaterial>>();
+    register_schematic!(
+        app,
+        SpriteBundle,
+        SpriteSheetBundle,
+        MaterialMesh2dBundle<bevy::sprite::ColorMaterial>
+    );
     #[cfg(feature = "bevy_text")]
-    app.register_type::<Text2dBundle>();
+    register_schematic!(app, Text2dBundle);
     #[cfg(feature = "bevy_ui")]
-    app.register_type::<ButtonBundle>()
-        .register_type::<ImageBundle>()
-        .register_type::<NodeBundle>()
-        .register_type::<TextBundle>();
+    register_schematic!(app, ButtonBundle, ImageBundle, NodeBundle, TextBundle);
 }
 
 fn transparent_background_color() -> bevy_impls::ui::BackgroundColorInput {
@@ -139,7 +140,7 @@ pub struct SpriteBundle {
     pub transform: Transform,
     #[reflect(default)]
     pub global_transform: GlobalTransform,
-    #[schematic(asset(lazy))]
+    #[schematic(asset)]
     pub texture: Handle<bevy::prelude::Image>,
     #[reflect(default)]
     pub visibility: bevy::render::view::Visibility,
@@ -169,7 +170,7 @@ from!(bevy::sprite::SpriteBundle, SpriteBundle, |value: Input| {
 pub struct SpriteSheetBundle {
     #[reflect(default)]
     pub sprite: bevy_impls::sprite::TextureAtlasSpriteInput,
-    #[schematic(asset(lazy))]
+    #[schematic(asset(inline))]
     pub texture_atlas: Handle<bevy::prelude::TextureAtlas>,
     #[reflect(default)]
     pub transform: Transform,
@@ -415,7 +416,7 @@ from_to_default!(
 #[reflect(Schematic)]
 #[schematic(into = bevy::scene::DynamicSceneBundle)]
 pub struct DynamicSceneBundle {
-    #[schematic(asset(lazy))]
+    #[schematic(asset)]
     pub scene: Handle<bevy::scene::DynamicScene>,
     #[reflect(default)]
     pub transform: Transform,
@@ -448,7 +449,7 @@ from!(
 #[reflect(Schematic)]
 #[schematic(into = bevy::scene::SceneBundle)]
 pub struct SceneBundle {
-    #[schematic(asset(lazy))]
+    #[schematic(asset)]
     pub scene: Handle<bevy::scene::Scene>,
     #[reflect(default)]
     pub transform: Transform,
@@ -497,16 +498,34 @@ pub struct Text2dBundle {
 
 #[cfg(feature = "bevy_text")]
 impl FromSchematicInput<Text2dBundle> for bevy::text::Text2dBundle {
-    fn from_input(input: Text2dBundle, context: &mut SchematicContext) -> Self {
+    fn from_input(input: Text2dBundle, id: SchematicId, context: &mut SchematicContext) -> Self {
         Self {
-            text: FromSchematicInput::from_input(input.text, context),
+            text: FromSchematicInput::from_input(
+                input.text,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x14c512589e954232b77ee264aecebe56,
+                )),
+                context,
+            ),
             text_anchor: input.text_anchor,
-            text_2d_bounds: FromSchematicInput::from_input(input.text_2d_bounds, context),
+            text_2d_bounds: FromSchematicInput::from_input(
+                input.text_2d_bounds,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x73693c0f150b44389da54b25360886b2,
+                )),
+                context,
+            ),
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
-            text_layout_info: FromSchematicInput::from_input(input.text_layout_info, context),
+            text_layout_info: FromSchematicInput::from_input(
+                input.text_layout_info,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0xa28731f3a3f445d69b85c438111c9949,
+                )),
+                context,
+            ),
         }
     }
 }
@@ -549,7 +568,7 @@ pub struct ButtonBundle {
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
-    fn from_input(input: ButtonBundle, context: &mut SchematicContext) -> Self {
+    fn from_input(input: ButtonBundle, id: SchematicId, context: &mut SchematicContext) -> Self {
         Self {
             node: input.node,
             button: input.button,
@@ -558,7 +577,13 @@ impl FromSchematicInput<ButtonBundle> for bevy::ui::node_bundles::ButtonBundle {
             focus_policy: input.focus_policy,
             background_color: input.background_color.into(),
             border_color: input.border_color.into(),
-            image: bevy::ui::UiImage::from_input(input.image, context),
+            image: bevy::ui::UiImage::from_input(
+                input.image,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x1d002cb9c29f40cf97a71a341abe855f,
+                )),
+                context,
+            ),
             transform: input.transform,
             global_transform: input.global_transform,
             visibility: input.visibility,
@@ -602,13 +627,19 @@ pub struct ImageBundle {
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<ImageBundle> for bevy::ui::node_bundles::ImageBundle {
-    fn from_input(input: ImageBundle, context: &mut SchematicContext) -> Self {
+    fn from_input(input: ImageBundle, id: SchematicId, context: &mut SchematicContext) -> Self {
         Self {
             node: input.node,
             style: input.style.into(),
             calculated_size: Default::default(),
             background_color: input.background_color.into(),
-            image: bevy::ui::UiImage::from_input(input.image, context),
+            image: bevy::ui::UiImage::from_input(
+                input.image,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x5f3dc1f3b56d49e99f2a5978aea6b745,
+                )),
+                context,
+            ),
             focus_policy: input.focus_policy,
             transform: input.transform,
             global_transform: input.global_transform,
@@ -697,12 +728,30 @@ pub struct TextBundle {
 
 #[cfg(feature = "bevy_ui")]
 impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
-    fn from_input(input: TextBundle, context: &mut SchematicContext) -> Self {
+    fn from_input(input: TextBundle, id: SchematicId, context: &mut SchematicContext) -> Self {
         Self {
             node: input.node,
-            style: FromSchematicInput::from_input(input.style, context),
-            text: FromSchematicInput::from_input(input.text, context),
-            text_layout_info: FromSchematicInput::from_input(input.text_layout_info, context),
+            style: FromSchematicInput::from_input(
+                input.style,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x63ca849a99e44de2b6fcad4cbdd03640,
+                )),
+                context,
+            ),
+            text: FromSchematicInput::from_input(
+                input.text,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0xd3a21a2a19ab4a18b8a60f5ab95f299d,
+                )),
+                context,
+            ),
+            text_layout_info: FromSchematicInput::from_input(
+                input.text_layout_info,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0x3647343b704b40f2a789b890cf417c18,
+                )),
+                context,
+            ),
             text_flags: input.text_flags,
             calculated_size: input.calculated_size,
             focus_policy: input.focus_policy,
@@ -711,7 +760,13 @@ impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
             visibility: input.visibility,
             computed_visibility: input.computed_visibility,
             z_index: input.z_index,
-            background_color: FromSchematicInput::from_input(input.background_color, context),
+            background_color: FromSchematicInput::from_input(
+                input.background_color,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0xc82dc5faf3ff4442878496f8d77187c3,
+                )),
+                context,
+            ),
         }
     }
 }
@@ -724,14 +779,15 @@ impl FromSchematicInput<TextBundle> for bevy::ui::node_bundles::TextBundle {
 #[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 #[schematic(into = bevy::pbr::MaterialMeshBundle<M>)]
-pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
-    // #[reflect(
-    //     default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<bevy::render::mesh::Mesh>"
-    // )]
-    #[schematic(asset(lazy))]
+pub struct MaterialMeshBundle<M: bevy::pbr::Material + AssetSchematic>
+where
+    Handle<M>: FromSchematicInput<InlinableProtoAsset<M>>,
+{
+    #[reflect(default)]
+    #[schematic(asset(inline))]
     pub mesh: Handle<bevy::render::mesh::Mesh>,
-    // #[reflect(default = "bevy_proto_backend::proto::ProtoAsset::default_handle_id::<M>")]
-    #[schematic(asset(lazy))]
+    #[reflect(default)]
+    #[schematic(asset(inline))]
     pub material: Handle<M>,
     #[reflect(default)]
     pub transform: Transform,
@@ -744,7 +800,11 @@ pub struct MaterialMeshBundle<M: bevy::pbr::Material> {
 }
 
 #[cfg(feature = "bevy_pbr")]
-impl<M: bevy::pbr::Material> From<MaterialMeshBundle<M>> for bevy::pbr::MaterialMeshBundle<M> {
+impl<M: bevy::pbr::Material + AssetSchematic> From<MaterialMeshBundle<M>>
+    for bevy::pbr::MaterialMeshBundle<M>
+where
+    Handle<M>: FromSchematicInput<InlinableProtoAsset<M>>,
+{
     fn from(value: MaterialMeshBundle<M>) -> Self {
         Self {
             mesh: value.mesh,
@@ -765,10 +825,14 @@ impl<M: bevy::pbr::Material> From<MaterialMeshBundle<M>> for bevy::pbr::Material
 #[derive(Component, Schematic, Reflect)]
 #[reflect(Schematic)]
 #[schematic(into = bevy::sprite::MaterialMesh2dBundle<M>)]
-pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
+pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d + AssetSchematic>
+where
+    Handle<M>: FromSchematicInput<InlinableProtoAsset<M>>,
+{
     #[reflect(default)]
     pub mesh: bevy_impls::sprite::Mesh2dHandleInput,
-    #[schematic(asset(lazy))]
+    #[reflect(default)]
+    #[schematic(asset(inline))]
     pub material: Handle<M>,
     #[reflect(default)]
     pub transform: Transform,
@@ -781,12 +845,24 @@ pub struct MaterialMesh2dBundle<M: bevy::sprite::Material2d> {
 }
 
 #[cfg(feature = "bevy_sprite")]
-impl<M: bevy::sprite::Material2d> FromSchematicInput<MaterialMesh2dBundle<M>>
+impl<M: bevy::sprite::Material2d + AssetSchematic> FromSchematicInput<MaterialMesh2dBundle<M>>
     for bevy::sprite::MaterialMesh2dBundle<M>
+where
+    Handle<M>: FromSchematicInput<InlinableProtoAsset<M>>,
 {
-    fn from_input(input: MaterialMesh2dBundle<M>, context: &mut SchematicContext) -> Self {
+    fn from_input(
+        input: MaterialMesh2dBundle<M>,
+        id: SchematicId,
+        context: &mut SchematicContext,
+    ) -> Self {
         Self {
-            mesh: bevy::sprite::Mesh2dHandle::from_input(input.mesh, context),
+            mesh: bevy::sprite::Mesh2dHandle::from_input(
+                input.mesh,
+                id.next(bevy::utils::Uuid::from_u128(
+                    0xc96384968f7f4143906ec8802addfac0,
+                )),
+                context,
+            ),
             material: input.material,
             transform: input.transform,
             global_transform: input.global_transform,

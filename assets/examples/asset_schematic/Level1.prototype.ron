@@ -1,0 +1,14 @@
+(
+  name: "Level1",
+  schematics: {
+    "asset_schematic::CurrentLevel": (
+      // The `InlinableProtoAsset::Asset` variant allows us to define our asset inline.
+      level: Asset((
+        name: "Tutorial",
+        // Both `InlinableProtoAsset` and the standard `ProtoAsset` contain an `AssetPath`
+        // variant for cases where we want to reference an asset defined in a separate file.
+        player: AssetPath("textures/platformer/player/p1_front.png")
+      ))
+    ),
+  }
+)

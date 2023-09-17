@@ -1,0 +1,14 @@
+(
+  name: "Light",
+  schematics: {
+    "bevy_proto::custom::PointLightBundle": (
+      transform: (
+        translation: (
+          x: 4.0,
+          y: 5.0,
+          z: 4.0
+        ),
+      )
+    )
+  }
+)

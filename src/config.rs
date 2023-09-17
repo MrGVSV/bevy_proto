@@ -7,7 +7,7 @@ use bevy::prelude::Resource;
 
 use bevy_proto_backend::cycles::{Cycle, CycleResponse};
 use bevy_proto_backend::proto::Config;
-use bevy_proto_backend::schematics::{DynamicSchematic, SchematicContext};
+use bevy_proto_backend::schematics::{DynamicSchematic, SchematicContext, SchematicId};
 
 use crate::hooks::{
     OnAfterApplyPrototype, OnAfterApplySchematic, OnAfterRemovePrototype, OnAfterRemoveSchematic,
@@ -158,40 +158,44 @@ impl Config<Prototype> for ProtoConfig {
     fn on_before_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
         if let Some(on_before_apply_schematic) = &mut self.on_before_apply_schematic {
-            on_before_apply_schematic(schematic, context);
+            on_before_apply_schematic(schematic, id, context);
         }
     }
 
     fn on_after_apply_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
         if let Some(on_after_apply_schematic) = &mut self.on_after_apply_schematic {
-            on_after_apply_schematic(schematic, context);
+            on_after_apply_schematic(schematic, id, context);
         }
     }
 
     fn on_before_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
         if let Some(on_before_remove_schematic) = &mut self.on_before_remove_schematic {
-            on_before_remove_schematic(schematic, context);
+            on_before_remove_schematic(schematic, id, context);
         }
     }
 
     fn on_after_remove_schematic(
         &mut self,
         schematic: &DynamicSchematic,
+        id: SchematicId,
         context: &mut SchematicContext,
     ) {
         if let Some(on_after_remove_schematic) = &mut self.on_after_remove_schematic {
-            on_after_remove_schematic(schematic, context);
+            on_after_remove_schematic(schematic, id, context);
         }
     }
 
