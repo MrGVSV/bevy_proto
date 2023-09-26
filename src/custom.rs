@@ -33,7 +33,7 @@ pub(crate) fn register_custom_schematics(app: &mut App) {
     );
     #[cfg(feature = "bevy_render")]
     register_schematic!(app, VisibilityBundle, SpatialBundle);
-    #[cfg(feature = "bevy_sprite")]
+    #[cfg(feature = "bevy_scene")]
     register_schematic!(app, DynamicSceneBundle, SceneBundle);
     #[cfg(feature = "bevy_sprite")]
     register_schematic!(
