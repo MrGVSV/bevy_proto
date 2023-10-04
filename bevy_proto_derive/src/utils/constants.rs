@@ -8,7 +8,9 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::ToTokens;
 
 pub(crate) const SCHEMATIC_ATTR: &str = "schematic";
+pub(crate) const SCHEMATIC_ATTR_ATTR: &str = "schematic_attr";
 pub(crate) const ASSET_SCHEMATIC_ATTR: &str = "asset_schematic";
+pub(crate) const ASSET_SCHEMATIC_ATTR_ATTR: &str = "asset_schematic_attr";
 
 pub(crate) const ASSET_ATTR: &str = "asset";
 pub(crate) const ENTITY_ATTR: &str = "entity";

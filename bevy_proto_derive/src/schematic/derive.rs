@@ -113,7 +113,13 @@ impl DeriveSchematic {
         let ident: &Ident = self.io.ident();
         let (impl_generics, ty_generics, where_clause) = self.generics().split_for_impl();
 
-        let input = generate_input(self.io(), self.data(), self.generics(), true)?;
+        let input = generate_input(
+            self.io(),
+            self.data(),
+            self.generics(),
+            self.attrs.forward_attrs(),
+            true,
+        )?;
         let apply_def = self.apply_def();
         let remove_def = self.remove_def();
         let preload_def = self.preload_def()?;

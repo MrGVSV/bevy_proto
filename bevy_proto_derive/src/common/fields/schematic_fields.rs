@@ -4,12 +4,15 @@ use crate::common::fields::{
     OptionalArg, SchematicField,
 };
 use crate::common::input::{InputType, SchematicIo};
-use crate::utils::constants::{ASSET_ATTR, ENTITY_ATTR, FROM_ATTR};
+use crate::utils::constants::{
+    ASSET_ATTR, ASSET_SCHEMATIC_ATTR, ASSET_SCHEMATIC_ATTR_ATTR, ENTITY_ATTR, FROM_ATTR,
+    SCHEMATIC_ATTR, SCHEMATIC_ATTR_ATTR,
+};
 use crate::utils::{parse_bool, parse_nested_meta, AttrArg};
 use proc_macro2::Span;
 use syn::meta::ParseNestedMeta;
 use syn::spanned::Spanned;
-use syn::{Error, Field, Fields, Type};
+use syn::{Attribute, Error, Field, Fields, Type};
 
 /// The collection of fields for a struct or enum.
 pub(crate) enum SchematicFields {
@@ -71,16 +74,17 @@ struct ProtoFieldBuilder<'a> {
 impl<'a> ProtoFieldBuilder<'a> {
     fn build(mut self) -> Result<SchematicField, Error> {
         for attr in &self.field.attrs {
-            if attr.path().is_ident("reflect") {
-                self.proto_field.push_reflect_attr(attr.clone());
-            }
-
-            if !attr.path().is_ident(self.derive_type.attr_name()) {
-                continue;
-            }
-
             match self.derive_type {
                 DeriveType::Schematic => {
+                    if attr.path().is_ident(SCHEMATIC_ATTR_ATTR) {
+                        self.parse_forwarded_attr(attr)?;
+                        continue;
+                    }
+
+                    if !attr.path().is_ident(SCHEMATIC_ATTR) {
+                        continue;
+                    }
+
                     parse_nested_meta!(attr, |meta| {
                         FROM_ATTR => self.parse_from_meta(meta),
                         ASSET_ATTR => self.parse_asset_meta(meta),
@@ -89,9 +93,19 @@ impl<'a> ProtoFieldBuilder<'a> {
                     })?;
                 }
                 DeriveType::AssetSchematic => {
+                    if attr.path().is_ident(ASSET_SCHEMATIC_ATTR_ATTR) {
+                        self.parse_forwarded_attr(attr)?;
+                        continue;
+                    }
+
+                    if !attr.path().is_ident(ASSET_SCHEMATIC_ATTR) {
+                        continue;
+                    }
+
                     parse_nested_meta!(attr, |meta| {
                         FROM_ATTR => self.parse_from_meta(meta),
                         ASSET_ATTR => self.parse_asset_meta(meta),
+                        ENTITY_ATTR => self.parse_entity_meta(meta),
                         OptionalArg::NAME => self.parse_optional_meta(meta),
                     })?;
                 }
@@ -201,6 +215,13 @@ impl<'a> ProtoFieldBuilder<'a> {
         self.proto_field
             .config_mut()
             .try_set_optional(parse_bool(&meta)?, meta.input.span())
+    }
+
+    /// Parse a `#[schematic_attr]` attribute.
+    fn parse_forwarded_attr(&mut self, attr: &Attribute) -> Result<(), Error> {
+        self.proto_field
+            .forward_attrs_mut()
+            .extend_from_attribute(attr)
     }
 
     /// Method used to require that a `Schematic::Input` type be generated for the attribute

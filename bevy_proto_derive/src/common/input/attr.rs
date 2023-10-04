@@ -1,11 +1,13 @@
 use crate::common::input::{InputType, SchematicIo};
 use crate::utils::parse_nested_meta;
 use crate::utils::{define_attribute, AttrArg, AttrTarget};
-use proc_macro2::Ident;
-use quote::ToTokens;
+use proc_macro2::{Ident, TokenStream};
+use quote::{quote, ToTokens};
 use std::fmt::{Debug, Formatter};
 use syn::meta::ParseNestedMeta;
-use syn::{Error, Visibility};
+use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::{Attribute, Error, Meta, Token, Visibility};
 
 define_attribute!("vis" => InputVisArg(Visibility) for AttrTarget::InputVisibility, no_debug);
 define_attribute!("name" => InputNameArg(Ident) for AttrTarget::Input);
@@ -29,4 +31,39 @@ pub(crate) fn parse_input_meta(meta: ParseNestedMeta, io: &mut SchematicIo) -> R
         InputVisArg::NAME => io.try_set_input_vis(meta.value()?.parse()?, None),
         InputNameArg::NAME => io.try_set_input_ty(InputType::Generated(meta.value()?.parse()?), None),
     })
+}
+
+#[derive(Default)]
+pub(crate) struct ForwardAttributes {
+    attributes: Punctuated<Meta, Token![,]>,
+}
+
+impl ForwardAttributes {
+    pub fn extend_from_attribute(&mut self, attr: &Attribute) -> syn::Result<()> {
+        let other = attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
+        self.attributes.extend(other);
+
+        Ok(())
+    }
+}
+
+impl Parse for ForwardAttributes {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            attributes: input.parse_terminated(Meta::parse, Token![,])?,
+        })
+    }
+}
+
+impl ToTokens for ForwardAttributes {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        if self.attributes.is_empty() {
+            return;
+        }
+
+        let meta = self.attributes.iter();
+        tokens.extend(quote! {
+            #(#[ #meta ])*
+        })
+    }
 }
